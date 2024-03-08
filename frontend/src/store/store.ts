@@ -47,8 +47,8 @@ export const useBoundStoreOriginal = create<State>()(
     devtools((...a) => ({
       ...createFeatureEditorSlice(...a),
       ...createReorderFeatureSlice(...a),
-    })),
-  ),
+    }))
+  )
 );
 
 // This follows https://docs.pmnd.rs/zustand/guides/auto-generating-selectors
@@ -70,7 +70,7 @@ export const useEditingMode = () => {
   //   (state) => state.selectedFeatureIndexes
   // );
   const tool = useBoundStore.use.tool();
-  const selectedFeatureIndexes = useBoundStore.use.selectedFeatureIndexes;
+  const selectedFeatureIndexes = useBoundStore.use.selectedFeatureIndexes();
   const nebulaMode = getNebulaModeForTool(tool);
   const preventModeMisuse =
     selectedFeatureIndexes.length === 0 &&
