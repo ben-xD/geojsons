@@ -11,13 +11,13 @@ export const useMapHotkeys = () => {
   const undo = useBoundStore((state) => state.undo);
   const fc = useBoundStore((state) => state.featureCollection);
   const setSelectedFeatureIndexes = useBoundStore(
-    (state) => state.setSelectedFeatureIndexes,
+    (state) => state.setSelectedFeatureIndexes
   );
   const undoStackSize = useUndoStackSize();
   const redoStackSize = useRedoStackSize();
   const redo = useBoundStore((state) => state.redo);
   const deleteSelectedFeatures = useBoundStore(
-    (state) => state.deleteSelectedFeatures,
+    (state) => state.deleteSelectedFeatures
   );
   useHotkeys(["r"], () => setTool(Tool.rectangle));
   useHotkeys(["h"], () => setTool(Tool.hand));
@@ -27,8 +27,9 @@ export const useMapHotkeys = () => {
   useHotkeys(["m"], () => setTool(Tool.marker));
   useHotkeys(["shift+o"], () => setTool(Tool.ellipse));
   useHotkeys(["o"], () => setTool(Tool.circle));
+
   useHotkeys(["v"], () => setTool(Tool.select));
-  useHotkeys(["shift+v"], () => setTool(Tool.polygonSelect));
+  useHotkeys(["e"], () => setTool(Tool.edit));
 
   useHotkeys(["backspace", "delete"], () => deleteSelectedFeatures());
   useHotkeys(["meta+z"], () => {

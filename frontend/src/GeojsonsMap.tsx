@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Map, { AttributionControl, MapRef } from "react-map-gl/maplibre";
 import { default as EditableGeoJsonLayer } from "@nebula.gl/layers/src/layers/editable-geojson-layer";
 import { GeoJsonLayer } from "deck.gl/typed";
@@ -227,7 +227,7 @@ export const GeojsonsMap = () => {
   const isSelectionLayerEnabled =
     selectedFeatureIndexes.length === 0 &&
     !isMapDraggable &&
-    (tool === "select" || tool === Tool.polygonSelect);
+    (tool === "select" || tool === Tool.editPolygon);
   const selectionType = tool === "select" ? "rectangle" : "polygon";
   const selectionLayer = new SelectionLayer({
     id: "selection",
@@ -256,7 +256,6 @@ export const GeojsonsMap = () => {
   });
 
   const mapRef = useRef<MapRef>(null);
-  // todo also change cursor to hand. Default to pointer.
   useKeyPressedDown({
     key: "space",
     onKeyDown: () => {
@@ -268,6 +267,11 @@ export const GeojsonsMap = () => {
       setPickable(true);
     },
   });
+
+  useEffect(() => {
+    setIsMapDraggable(tool === Tool.hand);
+    setPickable(tool !== Tool.hand);
+  }, [setIsMapDraggable, setPickable, tool]);
 
   // Doesn't work nicely because getTooltip is only called when the mouse moves
   // Pressing alt whilst cursor hovers over a feature doesn't show tooltip unless you move the cursor. Even then, it would flicker.
@@ -326,7 +330,7 @@ export const GeojsonsMap = () => {
   // we need the 100% height because otherwise the main div has 0px height, and the context menu is constrained to the top of the page.
   return (
     <div
-      className="relative size-full"
+      className="relative size-full flex flex-col items-center"
       onContextMenu={(e) => e.preventDefault()}
     >
       <DeckGL

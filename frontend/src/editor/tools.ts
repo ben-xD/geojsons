@@ -9,11 +9,12 @@ import {
   DrawPolygonMode,
   GeoJsonEditMode,
   DrawPointMode,
+  ModifyMode,
 } from "@nebula.gl/edit-modes";
 
 export const Tool = {
   select: "select",
-  polygonSelect: "polygonSelect",
+  edit: "edit",
   hand: "hand",
   rectangle: "rectangle",
   circle: "circle",
@@ -30,8 +31,8 @@ export const getNebulaModeForTool = (tool: Tool): typeof GeoJsonEditMode => {
   switch (tool) {
     case Tool.select:
       return TransformMode;
-    case Tool.polygonSelect:
-      return ViewMode;
+    case Tool.edit:
+      return ModifyMode;
     case Tool.rectangle:
       return DrawRectangleMode;
     case Tool.circle:
