@@ -217,7 +217,7 @@ export const GeojsonsMap = () => {
     };
 
   const editableGeojsonLayer = new EditableGeoJsonLayer(
-    editableGeojsonLayerProps
+    editableGeojsonLayerProps,
   );
 
   // TODO only use selection layer if "select tool" is active (to prevent drawing selection when moving features)
@@ -243,7 +243,7 @@ export const GeojsonsMap = () => {
         setSelectedFeatureIndexes([]);
       } else {
         setSelectedFeatureIndexes(
-          Array.from(pickingInfos.map((pi) => pi.index))
+          Array.from(pickingInfos.map((pi) => pi.index)),
         );
       }
     },
@@ -305,7 +305,7 @@ export const GeojsonsMap = () => {
         return isMapDraggable ? "grab" : "default";
       }
     },
-    [isMapDraggable]
+    [isMapDraggable],
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {

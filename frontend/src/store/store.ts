@@ -47,8 +47,8 @@ export const useBoundStoreOriginal = create<State>()(
     devtools((...a) => ({
       ...createFeatureEditorSlice(...a),
       ...createReorderFeatureSlice(...a),
-    }))
-  )
+    })),
+  ),
 );
 
 // This follows https://docs.pmnd.rs/zustand/guides/auto-generating-selectors
