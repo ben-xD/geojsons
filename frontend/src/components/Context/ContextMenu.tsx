@@ -9,19 +9,20 @@ import { useBoundStore } from "../../store/store";
 
 export const ContextMenu = (props: ControlledMenuProps) => {
   const deleteCurrentSelectedFeatures = useBoundStore(
-    (state) => state.deleteSelectedFeatures,
+    (state) => state.deleteSelectedFeatures
   );
   const bringSelectionForward = useBoundStore(
-    (state) => state.bringSelectionForward,
+    (state) => state.bringSelectionForward
   );
-  const bringSelectionToFront = useBoundStore(
-    (state) => state.bringSelectionToFront,
-  );
+  const bringSelectionToFront = useBoundStore.use.bringSelectionToFront();
+  // const bringSelectionToFront = useBoundStore(
+  //   (state) => state.bringSelectionToFront,
+  // );
   const sendSelectionBackward = useBoundStore(
-    (state) => state.sendSelectionBackward,
+    (state) => state.sendSelectionBackward
   );
   const sendSelectionToBack = useBoundStore(
-    (state) => state.sendSelectionToBack,
+    (state) => state.sendSelectionToBack
   );
 
   const onDelete = (event: ClickEvent) => {

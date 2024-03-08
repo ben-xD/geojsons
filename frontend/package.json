@@ -25,11 +25,13 @@
     "react-dom": "^18.2.0",
     "react-hotkeys-hook": "^4.5.0",
     "react-map-gl": "^7.1.7",
+    "react-resizable-panels": "^2.0.12",
     "uuid": "^9.0.1",
     "zustand": "^4.5.1"
   },
   "devDependencies": {
     "@types/geojson": "^7946.0.14",
+    "@types/node": "^20.11.25",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@types/uuid": "^9.0.8",

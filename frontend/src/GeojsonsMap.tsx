@@ -217,7 +217,7 @@ export const GeojsonsMap = () => {
     };
 
   const editableGeojsonLayer = new EditableGeoJsonLayer(
-    editableGeojsonLayerProps,
+    editableGeojsonLayerProps
   );
 
   // TODO only use selection layer if "select tool" is active (to prevent drawing selection when moving features)
@@ -243,7 +243,7 @@ export const GeojsonsMap = () => {
         setSelectedFeatureIndexes([]);
       } else {
         setSelectedFeatureIndexes(
-          Array.from(pickingInfos.map((pi) => pi.index)),
+          Array.from(pickingInfos.map((pi) => pi.index))
         );
       }
     },
@@ -301,7 +301,7 @@ export const GeojsonsMap = () => {
         return isMapDraggable ? "grab" : "default";
       }
     },
-    [isMapDraggable],
+    [isMapDraggable]
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
@@ -326,8 +326,7 @@ export const GeojsonsMap = () => {
   // we need the 100% height because otherwise the main div has 0px height, and the context menu is constrained to the top of the page.
   return (
     <div
-      // style={{ overflow: "hidden", height: "100%" }}
-      // onClick={() => console.log('div onClick')}
+      className="relative size-full"
       onContextMenu={(e) => e.preventDefault()}
     >
       <DeckGL
