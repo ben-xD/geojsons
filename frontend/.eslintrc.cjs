@@ -17,6 +17,10 @@ module.exports = {
       "warn",
       { allowConstantExport: true },
     ],
+    // Disable prop-types rule since we use TS. This does disable runtime prop checks
+    // We do this to prevent errors in some shadcn/ui components e.g. `error  'className' is missing in props validation`
+    // Code taken from https://github.com/shadcn-ui/ui/issues/120#issuecomment-1828081539
+    "react/prop-types": "off",
   },
   parserOptions: {
     ecmaVersion: "latest",
@@ -29,4 +33,14 @@ module.exports = {
       version: "detect",
     },
   },
+  // Alternative approach to avoid shadcn/ui prop types eslint errors (but needs hardcoding of specific props)
+  // overrides: [
+  //   {
+  //     files: ["**/components/ui/*.tsx"],
+  //     rules: {
+  //       "react/prop-types": [2, { ignore: ["className", "sideOffset"] }],
+  //       "react-refresh/only-export-components": "off",
+  //     },
+  //   },
+  // ],
 };
