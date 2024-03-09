@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Map, { AttributionControl, MapRef } from "react-map-gl/maplibre";
-import { GeoJsonLayer } from "deck.gl/typed";
-import DeckGL, { DeckGLRef, DeckProps, PickingInfo } from "deck.gl/typed";
+import DeckGL, {
+  DeckGLRef,
+  DeckProps,
+  Layer,
+  PickingInfo,
+} from "deck.gl/typed";
 import type { Feature, FeatureCollection } from "geojson";
-import { polygonOverScotlandCollection } from "./mockData/featureCollections";
 import { EditableGeoJsonLayer } from "@nebula.gl/layers";
 
 // Following some random github issue to fix styling
@@ -13,7 +16,6 @@ import "@szhsin/react-menu/dist/index.css";
 import { useKeyPressedDown } from "./hooks/useKeyPressedDown.tsx";
 import { MapLibreEvent } from "maplibre-gl";
 import { MjolnirGestureEvent } from "mjolnir.js";
-import { EditableGeojsonLayerProps } from "@nebula.gl/layers/dist-types/layers/editable-geojson-layer";
 import { ContextMenu } from "./components/Context/ContextMenu.tsx";
 import { SelectionLayer } from "@nebula.gl/layers";
 import { useMapHotkeys } from "./editor/useMapHotkeys";
@@ -59,6 +61,27 @@ const initialViewState = {
   zoom: 5,
 };
 
+// declaration merge to override contructor for EditableGeoJsonLayer. Unfortunately the types say
+// EditableGeoJsonLayer constructor takes 0 args.
+// This didn't help fix error for SelectionLayer: `error TS2554: Expected 0 arguments, but got 1.`
+// declare module "@nebula.gl/layers" {
+//   interface EditableGeoJsonLayer {
+//     new: (
+//       props: EditableGeojsonLayerProps<FeatureCollection>
+//     ) => EditableGeoJsonLayer;
+//   }
+
+//   interface SelectionLayerProps extends CompositeLayerProps {
+//     layerIds: string[];
+//     onSelect: (info: PickingInfo[]) => boolean;
+//     selectionType: string | null;
+//   }
+
+//   interface SelectionLayer<D> {
+//     new: (props: SelectionLayerProps) => SelectionLayer<D>;
+//   }
+// }
+
 export const GeojsonsMap = () => {
   useMapHotkeys();
   const editingMode = useEditingMode();
@@ -87,162 +110,170 @@ export const GeojsonsMap = () => {
   // const hoveredFeature = useRef<Feature>();
 
   const [hoveredFeatureIndex, setHoveredFeatureIndex] = useState<number>();
-  // The types for nebula aren't very good yet
-  const editableGeojsonLayerProps: EditableGeojsonLayerProps<FeatureCollection> =
-    {
-      opacity: 1,
-      id: editableGeojsonLayerId,
-      data: draggedFc ?? fc,
-      getFillColor: (feature: Feature, isSelected: boolean) => {
-        if (isSelected) {
-          return [57, 62, 65, 50];
-        }
-        return [57, 62, 65, 25];
-      },
-      pickable,
-      modeConfig: {
-        dragToDraw: true,
-        // enableSnapping: true,
-      },
-      getLineWidth: (feature: Feature) => {
-        if (feature.geometry.type === "LineString") {
-          return 4;
-        }
-        return 1;
-      },
-      getEditHandlePointColor: [0, 0, 0, 255],
-      getTentativeLineWidth: 1,
-      getLineColor: [57, 62, 65, 200],
-      // getLineColor: (feature: Feature, isSelected: boolean, mode: unknown) => {
-      //   // console.log("getLineColor", {feature, isSelected, mode});
-      //   // getLineColor is not called when the feature is hovered, so we can't change the color when it's hovered.
-      //   // Turns out, there's a feature deck.gl called autoHighlight, see https://medium.com/vis-gl/automatic-gpu-based-object-highlighting-in-deck-gl-layers-7fe3def44c89
-      //   //   if (hoveredFeature.current && feature === hoveredFeature.current) {
-      //   //     return [0, 255, 0, 255];
-      //   //   }
-      //   if (isSelected) return [0, 157, 255, 255];
-      //   return [57, 62, 65, 200];
-      // },
-      autoHighlight: true,
-      highlightColor: [57, 62, 65, 50],
-      selectedFeatureIndexes,
-      mode: editingMode,
-      onClick: (pickInfo: PickingInfo, hammerInput: MjolnirGestureEvent) => {
-        console.log("click", { pickInfo, hammerInput, fc });
-        // onClick is called even when user clicks on guide features
-        if (pickInfo.isGuide) return;
-        setSelectedFeatureIndexes([pickInfo.index]);
+  // The types for nebula aren't very good yet. Using EditableGeojsonLayerProps<FeatureCollection> here
+  // will throw error: error TS2353: Object literal may only specify known properties, and 'opacity' does not exist
+  // in type 'EditableGeojsonLayerProps<FeatureCollection<Geometry, GeoJsonProperties>>'.
+  // TODO type our own EditableGeojsonLayerProps correctly, because we can't use EditableGeojsonLayerProps<FeatureCollection>
+  const editableGeojsonLayerProps = {
+    opacity: 1,
+    id: editableGeojsonLayerId,
+    data: draggedFc ?? fc,
+    getFillColor: (_feature: Feature, isSelected: boolean) => {
+      if (isSelected) {
+        return [57, 62, 65, 50];
+      }
+      return [57, 62, 65, 25];
+    },
+    pickable,
+    modeConfig: {
+      dragToDraw: true,
+      // enableSnapping: true,
+    },
+    getLineWidth: (feature: Feature) => {
+      if (feature.geometry.type === "LineString") {
+        return 4;
+      }
+      return 1;
+    },
+    getEditHandlePointColor: [0, 0, 0, 255],
+    getTentativeLineWidth: 1,
+    getLineColor: [57, 62, 65, 200],
+    autoHighlight: true,
+    highlightColor: [57, 62, 65, 50],
+    selectedFeatureIndexes,
+    mode: editingMode,
+    onClick: (pickInfo: PickingInfo, hammerInput: MjolnirGestureEvent) => {
+      console.log("click", { pickInfo, hammerInput, fc });
+      // onClick is called even when user clicks on guide features
+      if ("isGuide" in pickInfo && pickInfo.isGuide) return;
+      setSelectedFeatureIndexes([pickInfo.index]);
 
-        // The types are wrong again... tapCount exists.
-        if (pickInfo.picked && hammerInput.tapCount === 2) {
-          setTool(Tool.edit);
-        }
-      },
-      onDragStart: () => (isDraggingRef.current = true),
-      onDragEnd: () => {
-        console.log("onDragEnd");
-        isDraggingRef.current = false;
-        if (featureCollectionRef.current) {
-          setDraggedFc(undefined);
-          updateFc(featureCollectionRef.current);
-          featureCollectionRef.current = undefined;
-        }
-      },
-      onHover: (info: PickingInfo) => {
-        if (info.picked) {
-          // console.log(`Hovering on ${info.index}`, info, event);
-          setHoveredFeatureIndex(info.index);
-        } else {
-          // console.log(`Hovering not picked`, info, event);
-          setHoveredFeatureIndex(undefined);
-        }
-      },
-      _subLayerProps: {
-        geojson: {
-          pointType: "icon",
-          updateTriggers: {
-            getIcon: [selectedFeatureIndexes, hoveredFeatureIndex],
-          },
-          getIcon: (feature: Feature) => {
-            const index = fc.features.indexOf(feature);
-            const hovered = hoveredFeatureIndex === index;
-            // console.log({ index, hovered });
-            if (selectedFeatureIndexes.includes(index)) {
-              return {
-                url: "https://avatars1.githubusercontent.com/u/7025232?v=4",
-                width: markerSizeInPx,
-                height: markerSizeInPx,
-                anchorY: markerSizeInPx / 2,
-              };
-            } else if (hovered) {
-              // return a different icon when hovered
-            }
-            if (feature.properties?.type === "cat") {
-              // TODO refactor into iconDescription or Icon
-              return {
-                url: "https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png",
-                width: markerSizeInPx,
-                height: markerSizeInPx,
-                anchorY: markerSizeInPx / 2,
-              };
-            }
+      // The types are wrong again... tapCount exists.
+      if (
+        pickInfo.picked &&
+        "tapCount" in hammerInput &&
+        hammerInput.tapCount === 2
+      ) {
+        setTool(Tool.edit);
+      }
+    },
+    onDragStart: () => (isDraggingRef.current = true),
+    onDragEnd: () => {
+      console.log("onDragEnd");
+      isDraggingRef.current = false;
+      if (featureCollectionRef.current) {
+        setDraggedFc(undefined);
+        updateFc(featureCollectionRef.current);
+        featureCollectionRef.current = undefined;
+      }
+    },
+    onHover: (info: PickingInfo) => {
+      if (info.picked) {
+        // console.log(`Hovering on ${info.index}`, info, event);
+        setHoveredFeatureIndex(info.index);
+      } else {
+        // console.log(`Hovering not picked`, info, event);
+        setHoveredFeatureIndex(undefined);
+      }
+    },
+    _subLayerProps: {
+      geojson: {
+        pointType: "icon",
+        updateTriggers: {
+          getIcon: [selectedFeatureIndexes, hoveredFeatureIndex],
+        },
+        getIcon: (feature: Feature) => {
+          const index = fc.features.indexOf(feature);
+          const hovered = hoveredFeatureIndex === index;
+          // console.log({ index, hovered });
+          if (selectedFeatureIndexes.includes(index)) {
             return {
-              url: markerSvg,
+              url: "https://avatars1.githubusercontent.com/u/7025232?v=4",
               width: markerSizeInPx,
               height: markerSizeInPx,
               anchorY: markerSizeInPx / 2,
             };
-          },
-
-          iconSizeScale: 1,
-          getIconSize: markerSizeInPx,
+          } else if (hovered) {
+            // return a different icon when hovered
+          }
+          if (feature.properties?.type === "cat") {
+            // TODO refactor into iconDescription or Icon
+            return {
+              url: "https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png",
+              width: markerSizeInPx,
+              height: markerSizeInPx,
+              anchorY: markerSizeInPx / 2,
+            };
+          }
+          return {
+            url: markerSvg,
+            width: markerSizeInPx,
+            height: markerSizeInPx,
+            anchorY: markerSizeInPx / 2,
+          };
         },
-      },
-      // types say it takes a function with 4 args, but actually it gets a single object argument, with 4 properties
-      // onEdit: (
-      //   updatedData: any | undefined,
-      //   editType: string | undefined,
-      //   featureIndexes: number[] | undefined,
-      //   editContext: any | undefined
-      //   // updatedData: FeatureCollection,
-      //   // editType: string,
-      //   // featureIndexes: number[],
-      //   // editContext: any | null
-      // ) => {
 
-      onEdit: ({ updatedData, editType, featureIndexes, editContext }) => {
-        console.log("onEdit", {
+        iconSizeScale: 1,
+        getIconSize: markerSizeInPx,
+      },
+    },
+    // types say it takes a function with 4 args, but actually it gets a single object argument, with 4 properties
+    // onEdit: (
+    //   updatedData: any | undefined,
+    //   editType: string | undefined,
+    //   featureIndexes: number[] | undefined,
+    //   editContext: any | undefined
+    //   // updatedData: FeatureCollection,
+    //   // editType: string,
+    //   // featureIndexes: number[],
+    //   // editContext: any | null
+    // ) => {
+
+    onEdit: ({
+      updatedData,
+      editType,
+      featureIndexes,
+      editContext,
+    }: {
+      updatedData: FeatureCollection | undefined;
+      editType: string;
+      featureIndexes: number[];
+      editContext: Feature;
+    }) => {
+      console.log("onEdit", {
+        updatedData,
+        editType,
+        featureIndexes,
+        editContext,
+      });
+      if (isDraggingRef.current) {
+        featureCollectionRef.current = updatedData;
+        setDraggedFc(updatedData);
+        return;
+      }
+      if (updatedData && updatedData.features) {
+        // onEdit is called even when there are no changes (clicking on the map for the first time)
+        if (updatedData.features.length === fc.features.length) return;
+        if (editType === "addFeature" && tool === Tool.catMarker) {
+          const newFeature =
+            updatedData.features[updatedData.features.length - 1];
+          newFeature.properties = { type: "cat" };
+        }
+        updateFc(updatedData);
+      } else {
+        console.error("onEdit called with no features", {
           updatedData,
           editType,
           featureIndexes,
           editContext,
         });
-        if (isDraggingRef.current) {
-          featureCollectionRef.current = updatedData;
-          setDraggedFc(updatedData);
-          return;
-        }
-        if (updatedData && updatedData.features) {
-          // onEdit is called even when there are no changes (clicking on the map for the first time)
-          if (updatedData.features.length === fc.features.length) return;
-          if (editType === "addFeature" && tool === Tool.catMarker) {
-            const newFeature =
-              updatedData.features[updatedData.features.length - 1];
-            newFeature.properties = { type: "cat" };
-          }
-          updateFc(updatedData);
-        } else {
-          console.error("onEdit called with no features", {
-            updatedData,
-            editType,
-            featureIndexes,
-            editContext,
-          });
-        }
-      },
-    };
+      }
+    },
+  };
 
-  const editableGeojsonLayer = new EditableGeoJsonLayer(
+  // workaround nebula.gl types using https://github.com/uber/nebula.gl/issues/568#issuecomment-836324975
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const editableGeojsonLayer = new (EditableGeoJsonLayer as any)(
     editableGeojsonLayerProps
   );
 
@@ -253,14 +284,16 @@ export const GeojsonsMap = () => {
   const isSelectionLayerEnabled =
     selectedFeatureIndexes.length === 0 &&
     !isMapDraggable &&
-    (tool === "select" || tool === Tool.editPolygon);
+    (tool === "select" || tool === Tool.edit);
   const selectionType = tool === "select" ? "rectangle" : "polygon";
-  const selectionLayer = new SelectionLayer({
+  // workaround nebula.gl types using https://github.com/uber/nebula.gl/issues/568#issuecomment-836324975
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const selectionLayer = new (SelectionLayer<FeatureCollection> as any)({
     id: "selection",
     // visible: isSelectionLayerVisible,
     selectionType,
     // selectionType: "polygon",
-    onSelect: ({ pickingInfos }) => {
+    onSelect: ({ pickingInfos }: { pickingInfos: PickingInfo[] }) => {
       console.log(`onSelect`, { pickingInfos });
       // Even though layer is invisible, onSelect will still be called if the layer is added. However, since we remove the layer, this is not necessary. It would be necessary if we use visible: instead of removing it.
       // if (!isSelectionLayerVisible) return;
@@ -269,7 +302,7 @@ export const GeojsonsMap = () => {
         setSelectedFeatureIndexes([]);
       } else {
         setSelectedFeatureIndexes(
-          Array.from(pickingInfos.map((pi) => pi.index))
+          Array.from(pickingInfos.map((pi: PickingInfo) => pi.index))
         );
       }
     },
@@ -392,8 +425,10 @@ export const GeojsonsMap = () => {
         ref={deckGlRef}
         initialViewState={initialViewState}
         layers={[
-          editableGeojsonLayer,
-          isSelectionLayerEnabled ? selectionLayer : undefined,
+          editableGeojsonLayer as unknown as Layer,
+          isSelectionLayerEnabled
+            ? (selectionLayer as unknown as Layer)
+            : undefined,
         ]}
       >
         <Map

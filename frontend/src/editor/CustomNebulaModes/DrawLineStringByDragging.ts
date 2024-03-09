@@ -1,4 +1,4 @@
-import throttle from 'lodash.throttle';
+import throttle from "lodash.throttle";
 import {
   ClickEvent,
   DraggingEvent,
@@ -7,10 +7,22 @@ import {
   LineString,
   ModeProps,
   StartDraggingEvent,
+  Pick,
 } from "@nebula.gl/edit-modes";
-import {StopDraggingEvent} from "@nebula.gl/edit-modes/src/types.ts";
-import {getPickedEditHandle} from "@nebula.gl/edit-modes/src/utils.ts";
+import { getPickedEditHandle } from "@nebula.gl/edit-modes";
+import {
+  EditHandleFeature,
+  StopDraggingEvent,
+} from "@nebula.gl/edit-modes/dist-types/types";
+// import { StopDraggingEvent, getPickedEditHandle } from "@nebula.gl/edit-modes";
 
+// // getPickedEditHandle is available, fix the type here using declaration merging
+declare module "@nebula.gl/edit-modes" {
+  export function getPickedEditHandle(
+    picks: Pick[] | null | undefined
+  ): EditHandleFeature | null | undefined;
+}
+//
 /* Inspired by nebula.gl's DrawPolygonByDraggingMode */
 type DraggingHandler = (
   event: DraggingEvent,
@@ -21,7 +33,7 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
   handleDraggingThrottled: DraggingHandler | null | undefined = null;
 
   // Override the default behavior of DrawLineStringMode to not add a point when the user clicks on the map
-  handleClick(event: ClickEvent, props: ModeProps<FeatureCollection>) {
+  handleClick(_event: ClickEvent, _props: ModeProps<FeatureCollection>) {
     return;
   }
 
@@ -40,7 +52,10 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
     }
   }
 
-  handleStopDragging(event: StopDraggingEvent, props: ModeProps<FeatureCollection>) {
+  handleStopDragging(
+    event: StopDraggingEvent,
+    props: ModeProps<FeatureCollection>
+  ) {
     this.addClickSequence(event);
     const clickSequence = this.getClickSequence();
     // @ts-ignore
@@ -51,7 +66,7 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
 
     if (clickSequence.length > 2) {
       const lineStringToAdd: LineString = {
-        type: 'LineString',
+        type: "LineString",
         coordinates: clickSequence,
       };
 
@@ -64,8 +79,10 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
     }
   }
 
-
-  handleDraggingAux(event: DraggingEvent, props: ModeProps<FeatureCollection>) {
+  handleDraggingAux(
+    event: DraggingEvent,
+    _props: ModeProps<FeatureCollection>
+  ) {
     const { picks } = event;
     const clickedEditHandle = getPickedEditHandle(picks);
 
