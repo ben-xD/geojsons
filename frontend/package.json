@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "lint": "prettier . --check && eslint .",
     "lint:fix": "prettier . --write && eslint --fix .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "pnpm build && pnpx wrangler pages deploy dist"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
