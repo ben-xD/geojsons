@@ -1,18 +1,18 @@
-import { FeatureCollection, Feature } from "geojson";
-import { Tool } from "../editor/tools";
-import { StateCreator } from "zustand";
-import { arraysEqual } from "../arrays/areArraysEqual";
-import { State, Mutators } from "./store";
-import { v4 as uuidv4 } from "uuid";
+import {FeatureCollection, Feature} from "geojson";
+import {Tool} from "../editor/tools";
+import {StateCreator} from "zustand";
+import {arraysEqual} from "../arrays/areArraysEqual";
+import {State, Mutators} from "./store";
+import {v4 as uuidv4} from "uuid";
 
 export type UserAction =
   | { type: "featureCollection"; collection: FeatureCollection }
   | { type: "selection"; selectedFeatureIndexes: number[] }
   | {
-      type: "reordering"; // changing both feature collection and the selected indexes
-      collection: FeatureCollection;
-      selectedFeatureIndexes: number[];
-    };
+  type: "reordering"; // changing both feature collection and the selected indexes
+  collection: FeatureCollection;
+  selectedFeatureIndexes: number[];
+};
 
 export interface FeatureEditorSlice {
   enabled: boolean;
@@ -53,7 +53,7 @@ export const createFeatureEditorSlice: StateCreator<
         state.tool = tool;
       },
       false,
-      { type: "setTool" },
+      {type: "setTool"},
     ),
   pickable: true,
   setPickable: (pickable: boolean) =>
@@ -80,7 +80,7 @@ export const createFeatureEditorSlice: StateCreator<
         // get().updateFeatureCollection({ ...state.featureCollection, features });
       },
       false,
-      { type: "deleteSelectedFeatures" },
+      {type: "deleteSelectedFeatures"},
     ),
   updateFeatureCollection: (data: FeatureCollection) =>
     set(
@@ -88,7 +88,7 @@ export const createFeatureEditorSlice: StateCreator<
         applyFeatureCollectionUpdate(state, data);
       },
       false,
-      { type: "updateFeatureCollection" },
+      {type: "updateFeatureCollection"},
     ),
   setSelectedFeatureIndexes: (indexes: number[]) =>
     set(
@@ -103,9 +103,12 @@ export const createFeatureEditorSlice: StateCreator<
         ];
         state.selectedFeatureIndexes = indexes;
         state.tool = Tool.select;
+        // if (state.tool !== Tool.select && state.tool !== Tool.edit) {
+        //   state.tool = Tool.select;
+        // }
       },
       false,
-      { type: "setSelectedFeatureIndexes" },
+      {type: "setSelectedFeatureIndexes"},
     ),
   undo: () =>
     set(
@@ -150,7 +153,7 @@ export const createFeatureEditorSlice: StateCreator<
         }
       },
       false,
-      { type: "undo" },
+      {type: "undo"},
     ),
   redo: () =>
     set(
@@ -195,7 +198,7 @@ export const createFeatureEditorSlice: StateCreator<
         }
       },
       false,
-      { type: "redo" },
+      {type: "redo"},
     ),
 });
 
@@ -242,7 +245,7 @@ export const applyFeatureCollectionUpdate = (
     state.selectedFeatureIndexes = [Math.max(next.features.length - 1, 0)];
     state.tool = Tool.select;
   }
-  state.featureCollection = { ...next, features };
+  state.featureCollection = {...next, features};
 };
 
 export const applyReordering = (
@@ -263,5 +266,5 @@ export const applyReordering = (
     },
   ];
   state.redoStack = [];
-  state.featureCollection = { ...newCollection, features };
+  state.featureCollection = {...newCollection, features};
 };

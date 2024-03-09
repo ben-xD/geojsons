@@ -1,30 +1,40 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import Map, { AttributionControl, MapRef } from "react-map-gl/maplibre";
-import { default as EditableGeoJsonLayer } from "@nebula.gl/layers/src/layers/editable-geojson-layer";
-import { GeoJsonLayer } from "deck.gl/typed";
-import DeckGL, { DeckGLRef, DeckProps, PickingInfo } from "deck.gl/typed";
-import type { Feature, FeatureCollection } from "geojson";
-import { polygonOverScotlandCollection } from "./mockData/featureCollections";
+import {useCallback, useEffect, useRef, useState} from "react";
+import Map, {AttributionControl, MapRef} from "react-map-gl/maplibre";
+import {GeoJsonLayer} from "deck.gl/typed";
+import DeckGL, {DeckGLRef, DeckProps, PickingInfo} from "deck.gl/typed";
+import type {Feature, FeatureCollection} from "geojson";
+import {polygonOverScotlandCollection} from "./mockData/featureCollections";
+import {EditableGeoJsonLayer} from "@nebula.gl/layers";
 
 // Following some random github issue to fix styling
 import "maplibre-gl/dist/maplibre-gl.css";
 // Following https://szhsin.github.io/react-menu#context-menu
 import "@szhsin/react-menu/dist/index.css";
-import { useKeyPressedDown } from "./hooks/useKeyPressedDown.tsx";
-import { MapLibreEvent } from "maplibre-gl";
-import { MjolnirGestureEvent } from "mjolnir.js";
-import { EditableGeojsonLayerProps } from "@nebula.gl/layers/dist-types/layers/editable-geojson-layer";
-import { ContextMenu } from "./components/Context/ContextMenu.tsx";
-import { SelectionLayer } from "@nebula.gl/layers";
-import { useMapHotkeys } from "./editor/useMapHotkeys";
-import { useBoundStore } from "./store/store.ts";
-import { useEditingMode } from "./store/store";
+import {useKeyPressedDown} from "./hooks/useKeyPressedDown.tsx";
+import {MapLibreEvent} from "maplibre-gl";
+import {MjolnirGestureEvent} from "mjolnir.js";
+import {EditableGeojsonLayerProps} from "@nebula.gl/layers/dist-types/layers/editable-geojson-layer";
+import {ContextMenu} from "./components/Context/ContextMenu.tsx";
+import {SelectionLayer} from "@nebula.gl/layers";
+import {useMapHotkeys} from "./editor/useMapHotkeys";
+import {useBoundStore} from "./store/store.ts";
+import {useEditingMode} from "./store/store";
 import {
   primaryTentativeFillRgba,
   primaryTentativeLineRgba,
 } from "./tokens/colors";
-import { Tool } from "./editor/tools.ts";
-import { Toolbar } from "./Toolbar.tsx";
+import {Tool} from "./editor/tools.ts";
+import {Toolbar} from "./Toolbar.tsx";
+
+const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
+
+const markerSizeInPx = 36;
+
+const markerSvg = createSvgUrl(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C12 22 20 16 20 10C20 7.87827 19.1571 5.84344 17.6569 4.34315C16.1566 2.84285 14.1217 2 12 2C9.87827 2 7.84344 2.84285 6.34315 4.34315C4.84285 5.84344 4 7.87827 4 10C4 16 12 22 12 22ZM15 10C15 11.6569 13.6569 13 12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10Z" fill="black"/>
+</svg>
+`);
+
 
 // reusable version of Parameters<NonNullable<DeckProps["getCursor"]>>[0]
 // This is because DeckProps["getCursor"] is a function with a parameter `state: CursorState`, but `CursorState` is not exported.
@@ -53,6 +63,7 @@ export const GeojsonsMap = () => {
   useMapHotkeys();
   const editingMode = useEditingMode();
   const tool = useBoundStore.use.tool();
+  const setTool = useBoundStore.use.setTool();
   const fc = useBoundStore.use.featureCollection();
   const updateFc = useBoundStore.use.updateFeatureCollection();
   const pickable = useBoundStore.use.pickable();
@@ -71,20 +82,9 @@ export const GeojsonsMap = () => {
   const [contextMenuAnchorPoint, setContextMenuAnchorPoint] = useState<{
     x: number;
     y: number;
-  }>({ x: 100, y: 100 });
+  }>({x: 100, y: 100});
   const deckGlRef = useRef<DeckGLRef>(null);
   // const hoveredFeature = useRef<Feature>();
-
-  const geojsonLayer = new GeoJsonLayer({
-    opacity: 0.1,
-    data: polygonOverScotlandCollection,
-    id: "geojson-layer-ben",
-    getFillColor: [255, 0, 0],
-    pickable: false,
-    onClick: (pickInfo, hammerInput) => {
-      console.log("click", { pickInfo, hammerInput, fc });
-    },
-  });
 
   const [hoveredFeatureIndex, setHoveredFeatureIndex] = useState<number>();
   // The types for nebula aren't very good yet
@@ -104,7 +104,13 @@ export const GeojsonsMap = () => {
         dragToDraw: true,
         // enableSnapping: true,
       },
-      getLineWidth: 1,
+      getLineWidth: (feature: Feature) => {
+        if (feature.geometry.type === "LineString") {
+          return 4;
+        }
+        return 1;
+      },
+      getEditHandlePointColor: [0, 0, 0, 255],
       getTentativeLineWidth: 1,
       getLineColor: [57, 62, 65, 200],
       // getLineColor: (feature: Feature, isSelected: boolean, mode: unknown) => {
@@ -122,14 +128,14 @@ export const GeojsonsMap = () => {
       selectedFeatureIndexes,
       mode: editingMode,
       onClick: (pickInfo: PickingInfo, hammerInput: MjolnirGestureEvent) => {
-        console.log("click", { pickInfo, hammerInput, fc });
+        console.log("click", {pickInfo, hammerInput, fc});
         // onClick is called even when user clicks on guide features
         if (pickInfo.isGuide) return;
         setSelectedFeatureIndexes([pickInfo.index]);
 
         // The types are wrong again... tapCount exists.
         if (pickInfo.picked && hammerInput.tapCount === 2) {
-          console.log("enter into edit shape");
+          setTool(Tool.edit);
         }
       },
       onDragStart: () => (isDraggingRef.current = true),
@@ -164,23 +170,32 @@ export const GeojsonsMap = () => {
             if (selectedFeatureIndexes.includes(index)) {
               return {
                 url: "https://avatars1.githubusercontent.com/u/7025232?v=4",
-                width: 128,
-                height: 128,
-                anchorY: 128 / 2,
+                width: markerSizeInPx,
+                height: markerSizeInPx,
+                anchorY: markerSizeInPx / 2,
               };
             } else if (hovered) {
               // return a different icon when hovered
             }
+            if (feature.properties?.type === "cat") {
+              // TODO refactor into iconDescription or Icon
+              return {
+                url: "https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png",
+                width: markerSizeInPx,
+                height: markerSizeInPx,
+                anchorY: markerSizeInPx / 2,
+              };
+            }
             return {
-              url: "https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png",
-              width: 128,
-              height: 128,
-              anchorY: 128 / 2,
-            };
+              url: markerSvg,
+              width: markerSizeInPx,
+              height: markerSizeInPx,
+              anchorY: markerSizeInPx / 2,
+            }
           },
 
           iconSizeScale: 1,
-          getIconSize: 100,
+          getIconSize: markerSizeInPx,
         },
       },
       // types say it takes a function with 4 args, but actually it gets a single object argument, with 4 properties
@@ -195,7 +210,8 @@ export const GeojsonsMap = () => {
       //   // editContext: any | null
       // ) => {
 
-      onEdit: ({ updatedData, editType, featureIndexes, editContext }) => {
+      onEdit: ({updatedData, editType, featureIndexes, editContext}) => {
+        console.log('onEdit', {updatedData, editType, featureIndexes, editContext})
         if (isDraggingRef.current) {
           featureCollectionRef.current = updatedData;
           setDraggedFc(updatedData);
@@ -204,6 +220,10 @@ export const GeojsonsMap = () => {
         if (updatedData && updatedData.features) {
           // onEdit is called even when there are no changes (clicking on the map for the first time)
           if (updatedData.features.length === fc.features.length) return;
+          if (editType === "addFeature" && tool === Tool.catMarker) {
+            const newFeature = updatedData.features[updatedData.features.length - 1];
+            newFeature.properties = {type: "cat"};
+          }
           updateFc(updatedData);
         } else {
           console.error("onEdit called with no features", {
@@ -217,7 +237,7 @@ export const GeojsonsMap = () => {
     };
 
   const editableGeojsonLayer = new EditableGeoJsonLayer(
-    editableGeojsonLayerProps,
+    editableGeojsonLayerProps
   );
 
   // TODO only use selection layer if "select tool" is active (to prevent drawing selection when moving features)
@@ -234,16 +254,16 @@ export const GeojsonsMap = () => {
     // visible: isSelectionLayerVisible,
     selectionType,
     // selectionType: "polygon",
-    onSelect: ({ pickingInfos }) => {
-      console.log(`onSelect`, { pickingInfos });
+    onSelect: ({pickingInfos}) => {
+      console.log(`onSelect`, {pickingInfos});
       // Even though layer is invisible, onSelect will still be called if the layer is added. However, since we remove the layer, this is not necessary. It would be necessary if we use visible: instead of removing it.
       // if (!isSelectionLayerVisible) return;
-      console.log(`onSelect`, { pickingInfos });
+      console.log(`onSelect`, {pickingInfos});
       if (pickingInfos.length === 0) {
         setSelectedFeatureIndexes([]);
       } else {
         setSelectedFeatureIndexes(
-          Array.from(pickingInfos.map((pi) => pi.index)),
+          Array.from(pickingInfos.map((pi) => pi.index))
         );
       }
     },
@@ -305,11 +325,11 @@ export const GeojsonsMap = () => {
         return isMapDraggable ? "grab" : "default";
       }
     },
-    [isMapDraggable],
+    [isMapDraggable]
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
-    console.log("DeckGL onClick", { info, event });
+    console.log("DeckGL onClick", {info, event});
     if (!info.picked) {
       setSelectedFeatureIndexes([]);
       // setContextMenuOpen(false);
@@ -317,8 +337,8 @@ export const GeojsonsMap = () => {
     if (info.picked && event.rightButton) {
       console.log("right clicked");
       setContextMenuOpen(true);
-      const { x, y } = info;
-      setContextMenuAnchorPoint({ x, y });
+      const {x, y} = info;
+      setContextMenuAnchorPoint({x, y});
       // TODO Show the context menu
     }
     // Use the info.object or info.index to get the picked object and show more context
@@ -356,18 +376,17 @@ export const GeojsonsMap = () => {
           if (info.picked && isAltPressedRef.current) {
             return {
               text: `feature ${info.index} from ${info.layer}`,
-              style: { top: "10px" },
+              style: {top: "10px"},
             };
           }
           return null;
         }}
         getCursor={getCursor}
-        controller={{ dragPan: isMapDraggable, doubleClickZoom: false }}
+        controller={{dragPan: isMapDraggable, doubleClickZoom: false}}
         ref={deckGlRef}
         initialViewState={initialViewState}
         layers={[
           editableGeojsonLayer,
-          geojsonLayer,
           isSelectionLayerEnabled ? selectionLayer : undefined,
         ]}
       >
@@ -376,17 +395,17 @@ export const GeojsonsMap = () => {
           onLoad={onMapLoad}
           ref={mapRef}
           initialViewState={initialViewState}
-          style={{ width: 600, height: 400 }}
+          style={{width: 600, height: 400}}
           // We render a separate component for it to allow it to be clicked. Otherwise, deck.gl prevents clicks. See https://github.com/visgl/deck.gl/issues/4165
           attributionControl={false}
           // doesn't allow dragging still...
           mapStyle="https://demotiles.maplibre.org/style.json"
         >
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
-          <AttributionControl customAttribution="Custom attribution text" />
+          <AttributionControl customAttribution="Custom attribution text"/>
         </Map>
       </DeckGL>
-      <Toolbar />
+      <Toolbar/>
       <ContextMenu
         onClose={() => setContextMenuOpen(false)}
         anchorPoint={contextMenuAnchorPoint}

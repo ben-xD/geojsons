@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1600pt" height="1600pt" viewBox="0 0 1600 1600" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Adapted in Figma based on Dave Branson's https://thenounproject.com/icon/polygon-189082/ -->
+    <path d="M1253.5 1123L815.5 451.5" stroke="currentColor" stroke-width="88.8885" stroke-miterlimit="10" stroke-linecap="round"/>
+    <path d="M338.5 1023L816.5 445" stroke="currentColor" stroke-width="88.8885" stroke-miterlimit="10" stroke-linecap="round"/>
+    <path d="M1089.44 990.551H1398.77V1286.93H1089.44V990.551Z" fill="currentColor" stroke="currentColor" stroke-width="22.2221" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+    <path d="M1153.55 1044.44H1345.84V1222.79H1153.55V1044.44Z" fill="currentColor" stroke="currentColor" stroke-width="22.2221" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+    <path d="M665 313H974.332V609.377H665V313Z" fill="currentColor" stroke="currentColor" stroke-width="22.2221" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+    <path d="M184 896H493.332V1192.38H184V896Z" fill="currentColor" stroke="currentColor" stroke-width="22.2221" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+</svg>

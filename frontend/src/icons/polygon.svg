@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128pt" height="128pt" version="1.1" fill="currentColor" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+ <!-- By Dave Branson on https://thenounproject.com/icon/polygon-189082/ -->
+ <g stroke="currentColor" stroke-miterlimit="10">
+  <path transform="scale(.88889)" d="m26.89 37.503 81.439-21.467" stroke-linecap="round" stroke-width="8"/>
+  <path transform="scale(.88889)" d="m108.33 17.156 18.048 109.14" stroke-linecap="round" stroke-width="8"/>
+  <path transform="scale(.88889)" d="m126.38 127.39-100.61-21.41" stroke-linecap="round" stroke-width="8"/>
+  <path transform="scale(.88889)" d="m24.311 105.4 2.9048-66.924" stroke-linecap="round" stroke-width="8"/>
+  <path transform="scale(.88889)" d="m110.2 109.04h27.839v26.675h-27.839z" stroke-linejoin="bevel" stroke-width="2"/>
+  <path transform="scale(.88889)" d="m115.97 113.89h17.306v16.053h-17.306z" stroke-linejoin="bevel" stroke-width="2"/>
+  <path transform="scale(.88889)" d="m94.408 3.8188h27.839v26.675h-27.839z" stroke-linejoin="bevel" stroke-width="2"/>
+  <path transform="scale(.88889)" d="m100.18 8.6748h17.306v16.053h-17.306z" stroke-linejoin="bevel" stroke-width="2"/>
+  <path transform="scale(.88889)" d="m13.298 92.061h27.839v26.675h-27.839z" stroke-linejoin="bevel" stroke-width="2"/>
+  <path transform="scale(.88889)" d="m19.063 96.917h17.306v16.053h-17.306z" stroke-linejoin="bevel" stroke-width="2"/>
+  <path transform="scale(.88889)" d="m12.968 25.141h27.839v26.675h-27.839z" stroke-linejoin="bevel" stroke-width="2"/>
+  <path transform="scale(.88889)" d="m18.738 29.993h17.306v16.053h-17.306z" stroke-linejoin="bevel" stroke-width="2"/>
+ </g>
+</svg>

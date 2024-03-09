@@ -11,25 +11,28 @@ export const useMapHotkeys = () => {
   const undo = useBoundStore((state) => state.undo);
   const fc = useBoundStore((state) => state.featureCollection);
   const setSelectedFeatureIndexes = useBoundStore(
-    (state) => state.setSelectedFeatureIndexes,
+    (state) => state.setSelectedFeatureIndexes
   );
   const undoStackSize = useUndoStackSize();
   const redoStackSize = useRedoStackSize();
   const redo = useBoundStore((state) => state.redo);
   const deleteSelectedFeatures = useBoundStore(
-    (state) => state.deleteSelectedFeatures,
+    (state) => state.deleteSelectedFeatures
   );
-  useHotkeys(["r"], () => setTool(Tool.rectangle));
-  useHotkeys(["h"], () => setTool(Tool.hand));
-  useHotkeys(["p"], () => setTool(Tool.polygon));
-  useHotkeys(["l"], () => setTool(Tool.line));
-  useHotkeys(["shift+p"], () => setTool(Tool.pencil));
-  useHotkeys(["m"], () => setTool(Tool.marker));
-  useHotkeys(["shift+o"], () => setTool(Tool.ellipse));
-  useHotkeys(["o"], () => setTool(Tool.circle));
 
   useHotkeys(["v"], () => setTool(Tool.select));
   useHotkeys(["e"], () => setTool(Tool.edit));
+  useHotkeys(["h"], () => setTool(Tool.hand));
+
+  useHotkeys(["g"], () => setTool(Tool.polygon));
+  useHotkeys(["d"], () => setTool(Tool.drawPolygonByDragging));
+
+  useHotkeys(["l"], () => setTool(Tool.line));
+  useHotkeys(["r"], () => setTool(Tool.rectangle));
+  useHotkeys(["p"], () => setTool(Tool.pencil));
+  useHotkeys(["m"], () => setTool(Tool.marker));
+  useHotkeys(["o"], () => setTool(Tool.circle));
+  useHotkeys(["shift+o"], () => setTool(Tool.ellipse));
 
   useHotkeys(["backspace", "delete"], () => deleteSelectedFeatures());
   useHotkeys(["meta+z"], () => {
@@ -40,6 +43,6 @@ export const useMapHotkeys = () => {
   });
 
   useHotkeys(["meta+a"], () => {
-    setSelectedFeatureIndexes(fc.features.map((f, i) => i));
+    setSelectedFeatureIndexes(fc.features.map((_f, i) => i));
   });
 };

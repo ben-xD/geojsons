@@ -11,6 +11,7 @@ import {
   DrawPointMode,
   ModifyMode,
 } from "@nebula.gl/edit-modes";
+import { DrawLineStringByDraggingMode } from "@/editor/CustomNebulaModes/DrawLineStringByDragging";
 
 export const Tool = {
   select: "select",
@@ -20,7 +21,9 @@ export const Tool = {
   circle: "circle",
   ellipse: "ellipse",
   marker: "marker",
+  catMarker: "catMarker",
   polygon: "polygon",
+  drawPolygonByDragging: "drawPolygonByDragging",
   pencil: "pencil",
   line: "line",
 } as const;
@@ -39,11 +42,15 @@ export const getNebulaModeForTool = (tool: Tool): typeof GeoJsonEditMode => {
       return DrawCircleByDiameterMode;
     case Tool.polygon:
       return DrawPolygonMode;
-    case Tool.pencil:
+    case Tool.drawPolygonByDragging:
       return DrawPolygonByDraggingMode;
+    case Tool.pencil:
+      return DrawLineStringByDraggingMode;
     case Tool.line:
       return DrawLineStringMode;
     case Tool.marker:
+      return DrawPointMode;
+    case Tool.catMarker:
       return DrawPointMode;
     case Tool.ellipse:
       return DrawEllipseByBoundingBoxMode;
