@@ -271,9 +271,10 @@ export const GeojsonsMap = () => {
     },
   };
 
-  // workaround nebula.gl types using https://github.com/uber/nebula.gl/issues/568#issuecomment-836324975
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const editableGeojsonLayer = new (EditableGeoJsonLayer as any)(
+  const editableGeojsonLayer = new EditableGeoJsonLayer(
+    // Workaround for error `TS2554: Expected 0 arguments, but got 1.`,
+    // see https://github.com/uber/nebula.gl/issues/568#issuecomment-1986910461
+    // @ts-expect-error TS2554
     editableGeojsonLayerProps
   );
 
@@ -287,10 +288,9 @@ export const GeojsonsMap = () => {
     (tool === "select" || tool === Tool.edit);
   const selectionType = tool === "select" ? "rectangle" : "polygon";
   // workaround nebula.gl types using https://github.com/uber/nebula.gl/issues/568#issuecomment-836324975
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const selectionLayer = new (SelectionLayer<FeatureCollection> as any)({
+  // @ts-expect-error TS2554
+  const selectionLayer = new SelectionLayer<FeatureCollection>({
     id: "selection",
-    // visible: isSelectionLayerVisible,
     selectionType,
     // selectionType: "polygon",
     onSelect: ({ pickingInfos }: { pickingInfos: PickingInfo[] }) => {
