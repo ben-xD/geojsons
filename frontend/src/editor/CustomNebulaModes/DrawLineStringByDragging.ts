@@ -7,21 +7,10 @@ import {
   LineString,
   ModeProps,
   StartDraggingEvent,
-  Pick,
 } from "@nebula.gl/edit-modes";
-import { getPickedEditHandle } from "@nebula.gl/edit-modes";
-import {
-  EditHandleFeature,
-  StopDraggingEvent,
-} from "@nebula.gl/edit-modes/dist-types/types";
-// import { StopDraggingEvent, getPickedEditHandle } from "@nebula.gl/edit-modes";
+import { StopDraggingEvent } from "@nebula.gl/edit-modes/dist-types/types";
+import { getPickedEditHandle } from "./nebulaCode";
 
-// // getPickedEditHandle is available, fix the type here using declaration merging
-declare module "@nebula.gl/edit-modes" {
-  export function getPickedEditHandle(
-    picks: Pick[] | null | undefined
-  ): EditHandleFeature | null | undefined;
-}
 //
 /* Inspired by nebula.gl's DrawPolygonByDraggingMode */
 type DraggingHandler = (

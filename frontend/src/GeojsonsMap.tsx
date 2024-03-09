@@ -32,11 +32,43 @@ const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
 const markerSizeInPx = 36;
 
-const markerSvg =
+const createMarkerSvg = (color = "currentColor") =>
   createSvgUrl(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C12 22 20 16 20 10C20 7.87827 19.1571 5.84344 17.6569 4.34315C16.1566 2.84285 14.1217 2 12 2C9.87827 2 7.84344 2.84285 6.34315 4.34315C4.84285 5.84344 4 7.87827 4 10C4 16 12 22 12 22ZM15 10C15 11.6569 13.6569 13 12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10Z" fill="black"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C12 22 20 16 20 10C20 7.87827 19.1571 5.84344 17.6569 4.34315C16.1566 2.84285 14.1217 2 12 2C9.87827 2 7.84344 2.84285 6.34315 4.34315C4.84285 5.84344 4 7.87827 4 10C4 16 12 22 12 22ZM15 10C15 11.6569 13.6569 13 12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10Z" fill="${color}"/>
 </svg>
 `);
+
+const createSelectedMarkerSvg = (color = "currentColor") =>
+  createSvgUrl(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C12 22 20 16 20 10C20 7.87827 19.1571 5.84344 17.6569 4.34315C16.1566 2.84285 14.1217 2 12 2C9.87827 2 7.84344 2.84285 6.34315 4.34315C4.84285 5.84344 4 7.87827 4 10C4 16 12 22 12 22ZM15 10C15 11.6569 13.6569 13 12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10Z" fill="${color}"/>
+  <rect x="2.5" y="0.5" width="19" height="23" rx="1.5" stroke="black" stroke-linejoin="round"/>
+  </svg>
+`);
+
+interface IconDescription {
+  url: string;
+  width: number;
+  height: number;
+  anchorY: number;
+}
+
+const markerSvg = createMarkerSvg("rgb(65, 90, 119)");
+// const selectedMarkerSvg = createMarkerSvg("rgb(13, 27, 42)");
+const selectedMarkerSvg = createSelectedMarkerSvg("rgb(65, 90, 119)");
+// const hoveredMarkerSvg = createMarkerSvg("rgb(65, 90, 119)");
+const defaultMarkerIconDescription: IconDescription = {
+  url: markerSvg,
+  width: markerSizeInPx,
+  height: markerSizeInPx,
+  anchorY: markerSizeInPx / 2,
+};
+
+const defaultCatMarkerIconDescription: IconDescription = {
+  url: "https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png",
+  width: markerSizeInPx,
+  height: markerSizeInPx,
+  anchorY: markerSizeInPx / 2,
+};
 
 // reusable version of Parameters<NonNullable<DeckProps["getCursor"]>>[0]
 // This is because DeckProps["getCursor"] is a function with a parameter `state: CursorState`, but `CursorState` is not exported.
@@ -184,33 +216,20 @@ export const GeojsonsMap = () => {
         },
         getIcon: (feature: Feature) => {
           const index = fc.features.indexOf(feature);
-          const hovered = hoveredFeatureIndex === index;
-          // console.log({ index, hovered });
-          if (selectedFeatureIndexes.includes(index)) {
-            return {
-              url: "https://avatars1.githubusercontent.com/u/7025232?v=4",
-              width: markerSizeInPx,
-              height: markerSizeInPx,
-              anchorY: markerSizeInPx / 2,
-            };
-          } else if (hovered) {
-            // return a different icon when hovered
-          }
+          // const hovered = hoveredFeatureIndex === index;
           if (feature.properties?.type === "cat") {
-            // TODO refactor into iconDescription or Icon
-            return {
-              url: "https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png",
-              width: markerSizeInPx,
-              height: markerSizeInPx,
-              anchorY: markerSizeInPx / 2,
-            };
+            return defaultCatMarkerIconDescription;
+          } else {
+            if (selectedFeatureIndexes.includes(index)) {
+              return {
+                ...defaultMarkerIconDescription,
+                url: selectedMarkerSvg,
+              };
+              // } else if (hovered) {
+              //   return { ...defaultMarkerIconDescription, url: hoveredMarkerSvg };
+            }
+            return defaultMarkerIconDescription;
           }
-          return {
-            url: markerSvg,
-            width: markerSizeInPx,
-            height: markerSizeInPx,
-            anchorY: markerSizeInPx / 2,
-          };
         },
 
         iconSizeScale: 1,
@@ -369,9 +388,8 @@ export const GeojsonsMap = () => {
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
     console.log("DeckGL onClick", { info, event });
-    if (!info.picked) {
+    if (!info.picked && tool === Tool.select) {
       setSelectedFeatureIndexes([]);
-      // setContextMenuOpen(false);
     }
     if (info.picked && event.rightButton) {
       console.log("right clicked");

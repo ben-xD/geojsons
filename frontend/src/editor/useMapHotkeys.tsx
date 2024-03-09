@@ -32,6 +32,7 @@ export const useMapHotkeys = () => {
   useHotkeys(["p"], () => setTool(Tool.pencil));
   useHotkeys(["m"], () => setTool(Tool.marker));
   useHotkeys(["o"], () => setTool(Tool.circle));
+  useHotkeys(["c"], () => setTool(Tool.catMarker));
   useHotkeys(["shift+o"], () => setTool(Tool.ellipse));
 
   useHotkeys(["backspace", "delete"], () => deleteSelectedFeatures());
