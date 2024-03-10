@@ -19,6 +19,7 @@ import {Tool} from "../editor/tools.ts";
 import {Toolbar} from "../Toolbar.tsx";
 import {mapTilerKey} from "@/MapStyle.ts";
 import {MapAttribution} from "@/map/MapAttribution.tsx";
+import {BenAttribution} from "@/map/BenAttribution.tsx";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -68,7 +69,7 @@ type DeckPropCallbackParameter1<T extends keyof DeckProps> = Parameters<
   NonNullable<DeckProps[T]>
 >[0];
 
-const editableGeojsonLayerId = "editable-geojson-layer-ben";
+const editableGeojsonLayerId = "editable-geojson-layer";
 
 // When using the @deck.gl/mapbox module, and MapboxLayer and MapboxOverlay https://deck.gl/docs/api-reference/mapbox/overview
 // Mapbox is the root element and deck.gl is the child, with Mapbox handling all user inputs
@@ -444,6 +445,7 @@ export const GeojsonsMap = () => {
       </DeckGL>
       <Toolbar/>
       <MapAttribution/>
+      <BenAttribution/>
       <ContextMenu
         onClose={() => setContextMenuOpen(false)}
         anchorPoint={contextMenuAnchorPoint}
