@@ -1,4 +1,4 @@
-import { FeatureCollection } from "geojson";
+import { FeatureCollection } from "@/data/validator/geojson.ts";
 
 export const polygonOverScotlandCollection: FeatureCollection = {
   type: "FeatureCollection",

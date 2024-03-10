@@ -1,9 +1,10 @@
-import { FeatureCollection, Feature } from "geojson";
+import { FeatureCollection, Feature } from "@/data/validator/geojson";
 import { Tool } from "../editor/tools";
 import { StateCreator } from "zustand";
 import { arraysEqual } from "../arrays/areArraysEqual";
 import { State, Mutators } from "./store";
 import { v4 as uuidv4 } from "uuid";
+import {emptyFeatureCollection} from "@/data/featureCollection";
 
 export type UserAction =
   | { type: "featureCollection"; collection: FeatureCollection }
@@ -201,23 +202,6 @@ export const createFeatureEditorSlice: StateCreator<
       { type: "redo" }
     ),
 });
-
-const emptyFeatureCollection: FeatureCollection = {
-  type: "FeatureCollection",
-  features: [],
-};
-
-// const testFeatureCollection: FeatureCollection = {
-//   type: "FeatureCollection",
-//   features: [
-//     // first feature is at the bottom of the stack
-//     circleOverIreland,
-//     polygonOverEngland,
-//     pointInSouthUK,
-//     pointInLondon,
-//     // Last one goes in front
-//   ],
-// };
 
 const createFeatureId = () => `feature-${uuidv4()}`;
 

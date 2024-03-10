@@ -5,6 +5,21 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@codemirror/commands':
+    specifier: ^6.3.3
+    version: 6.3.3
+  '@codemirror/lang-json':
+    specifier: ^6.0.1
+    version: 6.0.1
+  '@codemirror/language':
+    specifier: ^6.10.1
+    version: 6.10.1
+  '@codemirror/state':
+    specifier: ^6.4.1
+    version: 6.4.1
+  '@codemirror/view':
+    specifier: ^6.25.1
+    version: 6.25.1
   '@fortawesome/fontawesome-svg-core':
     specifier: ^6.5.1
     version: 6.5.1
@@ -14,6 +29,9 @@ dependencies:
   '@fortawesome/react-fontawesome':
     specifier: ^0.2.0
     version: 0.2.0(@fortawesome/fontawesome-svg-core@6.5.1)(react@18.2.0)
+  '@lezer/json':
+    specifier: ^1.0.2
+    version: 1.0.2
   '@nebula.gl/edit-modes':
     specifier: ^1.0.4
     version: 1.0.4
@@ -41,9 +59,6 @@ dependencies:
   deck.gl:
     specifier: ^8.9.34
     version: 8.9.34(@loaders.gl/core@3.4.14)(@loaders.gl/gltf@3.4.14)(@loaders.gl/images@3.4.14)(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/shadertools@8.5.21)(@luma.gl/webgl@8.5.21)(@math.gl/core@3.6.3)(@math.gl/web-mercator@3.6.3)(@types/react@18.2.58)(gl-matrix@3.4.3)(react-dom@18.2.0)(react@18.2.0)
-  geojson:
-    specifier: ^0.5.0
-    version: 0.5.0
   immer:
     specifier: ^10.0.3
     version: 10.0.3
@@ -80,6 +95,9 @@ dependencies:
   react-resizable-panels:
     specifier: ^2.0.12
     version: 2.0.12(react-dom@18.2.0)(react@18.2.0)
+  state,:
+    specifier: link:@codemirror/state,
+    version: link:@codemirror/state,
   tailwind-merge:
     specifier: ^2.2.1
     version: 2.2.1
@@ -89,6 +107,9 @@ dependencies:
   uuid:
     specifier: ^9.0.1
     version: 9.0.1
+  zod:
+    specifier: ^3.22.4
+    version: 3.22.4
   zustand:
     specifier: ^4.5.1
     version: 4.5.1(@types/react@18.2.58)(immer@10.0.3)(react@18.2.0)
@@ -97,9 +118,6 @@ devDependencies:
   '@svgr/plugin-svgo':
     specifier: ^8.1.0
     version: 8.1.0(@svgr/core@8.1.0)(typescript@5.3.3)
-  '@types/geojson':
-    specifier: ^7946.0.14
-    version: 7946.0.14
   '@types/lodash.throttle':
     specifier: ^4.1.9
     version: 4.1.9
@@ -450,6 +468,13 @@ packages:
       '@codemirror/state': 6.4.1
       '@codemirror/view': 6.25.1
       '@lezer/common': 1.2.1
+    dev: false
+
+  /@codemirror/lang-json@6.0.1:
+    resolution: {integrity: sha512-+T1flHdgpqDDlJZ2Lkil/rLiRy684WMLc74xUnjJH48GQdfJo/pudlTRreZmKwzP8/tGdKf83wlbAdOCzlJOGQ==}
+    dependencies:
+      '@codemirror/language': 6.10.1
+      '@lezer/json': 1.0.2
     dev: false
 
   /@codemirror/language@6.10.1:
@@ -1350,6 +1375,14 @@ packages:
     resolution: {integrity: sha512-WrS5Mw51sGrpqjlh3d4/fOwpEV2Hd3YOkp9DBt4k8XZQcoTHZFB7sx030A6OcahF4J1nDQAa3jXlTVVYH50IFA==}
     dependencies:
       '@lezer/common': 1.2.1
+    dev: false
+
+  /@lezer/json@1.0.2:
+    resolution: {integrity: sha512-xHT2P4S5eeCYECyKNPhr4cbEL9tc8w83SPwRC373o9uEdrvGKTZoJVAGxpOsZckMlEh9W23Pc72ew918RWQOBQ==}
+    dependencies:
+      '@lezer/common': 1.2.1
+      '@lezer/highlight': 1.2.0
+      '@lezer/lr': 1.4.0
     dev: false
 
   /@lezer/lr@1.4.0:
@@ -2956,6 +2989,7 @@ packages:
 
   /@types/geojson@7946.0.14:
     resolution: {integrity: sha512-WCfD5Ht3ZesJUsONdhvm84dmzWOiOzOAqOncN0++w0lBw1o8OuDNJF2McvvCef/yBqb/HYRahp1BYtODFQ8bRg==}
+    dev: false
 
   /@types/geojson@7946.0.8:
     resolution: {integrity: sha512-1rkryxURpr6aWP7R786/UQOkJ3PcpQiWkAXBmdWc7ryFWqN6a4xfK7BtjXvFBKO9LjQ+MWQSWxYeZX1OApnArA==}
@@ -6705,7 +6739,6 @@ packages:
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
-    dev: true
 
   /zustand@4.5.1(@types/react@18.2.58)(immer@10.0.3)(react@18.2.0):
     resolution: {integrity: sha512-XlauQmH64xXSC1qGYNv00ODaQ3B+tNPoy22jv2diYiP4eoDKr9LA+Bh5Bc3gplTrFdb6JVI+N4kc1DZ/tbtfPg==}

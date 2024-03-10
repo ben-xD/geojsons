@@ -6,7 +6,7 @@ import DeckGL, {
   Layer,
   PickingInfo,
 } from "deck.gl/typed";
-import type { Feature, FeatureCollection } from "geojson";
+import type { Feature, FeatureCollection } from "@/data/validator/geojson.ts";
 import { EditableGeoJsonLayer } from "@nebula.gl/layers";
 
 // Following some random github issue to fix styling
