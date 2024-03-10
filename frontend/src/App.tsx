@@ -4,9 +4,9 @@ import {RawGeojsonPanel} from "@/GeojsonPanel/RawGeojsonPanel.tsx";
 function App() {
   return (
     <PanelGroup direction="horizontal">
-      <Panel className="bg-blue-500">
+      <Panel>
         <PanelGroup direction="vertical">
-          <Panel className="bg-green-500">
+          <Panel>
             <GeojsonsMap />
           </Panel>
           {/*<PanelResizeHandle />*/}
