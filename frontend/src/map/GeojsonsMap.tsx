@@ -28,6 +28,7 @@ import { Toolbar } from "../Toolbar.tsx";
 import { MapAttribution } from "@/map/MapAttribution.tsx";
 import { BenAttribution } from "@/map/BenAttribution.tsx";
 import { env } from "@/env.ts";
+import { toolsWithCrosshairCursor } from "@/editor/tools";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -373,11 +374,13 @@ export const GeojsonsMap = () => {
       // console.log(`getCursor. ${state.isDragging} ${state.isHovering}`);
       if (state.isHovering) {
         return "pointer";
+      } else if (toolsWithCrosshairCursor.has(tool)) {
+        return "crosshair";
       } else {
         return isMapDraggable ? "grab" : "default";
       }
     },
-    [isMapDraggable]
+    [isMapDraggable, tool]
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
