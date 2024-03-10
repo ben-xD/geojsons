@@ -1,33 +1,24 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import Map, { AttributionControl, MapRef } from "react-map-gl/maplibre";
-import DeckGL, {
-  DeckGLRef,
-  DeckProps,
-  Layer,
-  PickingInfo,
-} from "deck.gl/typed";
-import type { Feature, FeatureCollection } from "@/data/validator/geojson.ts";
-import { EditableGeoJsonLayer } from "@nebula.gl/layers";
+import {useCallback, useEffect, useRef, useState} from "react";
+import Map, {MapRef} from "react-map-gl/maplibre";
+import DeckGL, {DeckGLRef, DeckProps, Layer, PickingInfo,} from "deck.gl/typed";
+import type {Feature, FeatureCollection} from "@/data/validator/geojson.ts";
+import {EditableGeoJsonLayer, SelectionLayer} from "@nebula.gl/layers";
 
 // Following some random github issue to fix styling
 import "maplibre-gl/dist/maplibre-gl.css";
 // Following https://szhsin.github.io/react-menu#context-menu
 import "@szhsin/react-menu/dist/index.css";
-import { useKeyPressedDown } from "./hooks/useKeyPressedDown.tsx";
-import { MapLibreEvent } from "maplibre-gl";
-import { MjolnirGestureEvent } from "mjolnir.js";
-import { ContextMenu } from "./components/Context/ContextMenu.tsx";
-import { SelectionLayer } from "@nebula.gl/layers";
-import { useMapHotkeys } from "./editor/useMapHotkeys";
-import { useBoundStore } from "./store/store.ts";
-import { useEditingMode } from "./store/store";
-import {
-  primaryTentativeFillRgba,
-  primaryTentativeLineRgba,
-} from "./tokens/colors";
-import { Tool } from "./editor/tools.ts";
-import { Toolbar } from "./Toolbar.tsx";
-import {mapStyle, mapTilerKey} from "@/MapStyle.ts";
+import {useKeyPressedDown} from "../hooks/useKeyPressedDown.tsx";
+import {MapLibreEvent} from "maplibre-gl";
+import {MjolnirGestureEvent} from "mjolnir.js";
+import {ContextMenu} from "../components/Context/ContextMenu.tsx";
+import {useMapHotkeys} from "../editor/useMapHotkeys.tsx";
+import {useBoundStore, useEditingMode} from "../store/store.ts";
+import {primaryTentativeFillRgba, primaryTentativeLineRgba,} from "../tokens/colors.ts";
+import {Tool} from "../editor/tools.ts";
+import {Toolbar} from "../Toolbar.tsx";
+import {mapTilerKey} from "@/MapStyle.ts";
+import {MapAttribution} from "@/map/MapAttribution.tsx";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -91,7 +82,7 @@ const editableGeojsonLayerId = "editable-geojson-layer-ben";
 const initialViewState = {
   longitude: -0.08648816636906795,
   latitude: 51.519898434555685,
-  zoom: 5,
+  zoom: 1,
 };
 
 // declaration merge to override contructor for EditableGeoJsonLayer. Unfortunately the types say
@@ -139,7 +130,7 @@ export const GeojsonsMap = () => {
   const [contextMenuAnchorPoint, setContextMenuAnchorPoint] = useState<{
     x: number;
     y: number;
-  }>({ x: 100, y: 100 });
+  }>({x: 100, y: 100});
   const deckGlRef = useRef<DeckGLRef>(null);
   // const hoveredFeature = useRef<Feature>();
 
@@ -177,7 +168,7 @@ export const GeojsonsMap = () => {
     selectedFeatureIndexes,
     mode: editingMode,
     onClick: (pickInfo: PickingInfo, hammerInput: MjolnirGestureEvent) => {
-      console.log("click", { pickInfo, hammerInput, fc });
+      console.log("click", {pickInfo, hammerInput, fc});
       // onClick is called even when user clicks on guide features
       if ("isGuide" in pickInfo && pickInfo.isGuide) return;
       setSelectedFeatureIndexes([pickInfo.index]);
@@ -239,34 +230,17 @@ export const GeojsonsMap = () => {
       },
     },
     // types say it takes a function with 4 args, but actually it gets a single object argument, with 4 properties
-    // onEdit: (
-    //   updatedData: any | undefined,
-    //   editType: string | undefined,
-    //   featureIndexes: number[] | undefined,
-    //   editContext: any | undefined
-    //   // updatedData: FeatureCollection,
-    //   // editType: string,
-    //   // featureIndexes: number[],
-    //   // editContext: any | null
-    // ) => {
-
     onEdit: ({
-      updatedData,
-      editType,
-      featureIndexes,
-      editContext,
-    }: {
+               updatedData,
+               editType,
+               featureIndexes,
+               editContext,
+             }: {
       updatedData: FeatureCollection | undefined;
       editType: string;
       featureIndexes: number[];
       editContext: Feature;
     }) => {
-      console.log("onEdit", {
-        updatedData,
-        editType,
-        featureIndexes,
-        editContext,
-      });
       if (isDraggingRef.current) {
         featureCollectionRef.current = updatedData;
         setDraggedFc(updatedData);
@@ -278,7 +252,7 @@ export const GeojsonsMap = () => {
         if (editType === "addFeature" && tool === Tool.catMarker) {
           const newFeature =
             updatedData.features[updatedData.features.length - 1];
-          newFeature.properties = { type: "cat" };
+          newFeature.properties = {type: "cat"};
         }
         updateFc(updatedData);
       } else {
@@ -314,11 +288,11 @@ export const GeojsonsMap = () => {
     id: "selection",
     selectionType,
     // selectionType: "polygon",
-    onSelect: ({ pickingInfos }: { pickingInfos: PickingInfo[] }) => {
-      console.log(`onSelect`, { pickingInfos });
+    onSelect: ({pickingInfos}: { pickingInfos: PickingInfo[] }) => {
+      console.log(`onSelect`, {pickingInfos});
       // Even though layer is invisible, onSelect will still be called if the layer is added. However, since we remove the layer, this is not necessary. It would be necessary if we use visible: instead of removing it.
       // if (!isSelectionLayerVisible) return;
-      console.log(`onSelect`, { pickingInfos });
+      console.log(`onSelect`, {pickingInfos});
       if (pickingInfos.length === 0) {
         setSelectedFeatureIndexes([]);
       } else {
@@ -389,15 +363,15 @@ export const GeojsonsMap = () => {
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
-    console.log("DeckGL onClick", { info, event });
+    console.log("DeckGL onClick", {info, event});
     if (!info.picked && tool === Tool.select) {
       setSelectedFeatureIndexes([]);
     }
     if (info.picked && event.rightButton) {
       console.log("right clicked");
       setContextMenuOpen(true);
-      const { x, y } = info;
-      setContextMenuAnchorPoint({ x, y });
+      const {x, y} = info;
+      setContextMenuAnchorPoint({x, y});
       // TODO Show the context menu
     }
     // Use the info.object or info.index to get the picked object and show more context
@@ -435,7 +409,7 @@ export const GeojsonsMap = () => {
           if (info.picked && isAltPressedRef.current) {
             return {
               text: `feature ${info.index} from ${info.layer}`,
-              style: { top: "10px" },
+              style: {top: "10px"},
             };
           }
           return null;
@@ -456,7 +430,7 @@ export const GeojsonsMap = () => {
           onLoad={onMapLoad}
           ref={mapRef}
           initialViewState={initialViewState}
-          style={{ width: 600, height: 400 }}
+          style={{width: 600, height: 400}}
           // We render could a separate component for it to allow it to be clicked. Otherwise, deck.gl prevents clicks. See https://github.com/visgl/deck.gl/issues/4165
           attributionControl={false}
           // Maplibre demo basemap style
@@ -468,7 +442,8 @@ export const GeojsonsMap = () => {
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
         </Map>
       </DeckGL>
-      <Toolbar />
+      <Toolbar/>
+      <MapAttribution/>
       <ContextMenu
         onClose={() => setContextMenuOpen(false)}
         anchorPoint={contextMenuAnchorPoint}
