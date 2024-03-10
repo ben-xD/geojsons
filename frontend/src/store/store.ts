@@ -89,8 +89,8 @@ export const useRedoStackSize = () =>
   useStore((state) => state.redoStack.length);
 
 export const resetStateAndReloadPage = (): void => {
-  localStorage.removeItem(applicationLocalStorageName);
+  useStore.persist.clearStorage();
 
-  // Reload the page to clear all in-memory state
+  // Reload the page to reload the state
   window.location.reload();
 };
