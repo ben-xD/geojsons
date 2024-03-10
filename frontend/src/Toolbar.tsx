@@ -4,7 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Tool } from "./editor/tools";
+import { Tool, toolToConfig } from "./editor/tools";
 import {
   MousePointer,
   MousePointerClick,
@@ -51,7 +51,7 @@ const toolButtonPropsByTool: Record<Tool, ToolButtonProps> = {
     tool: Tool.hand,
   },
   [Tool.rectangle]: {
-    tooltipText: "Rectangle · R",
+    tooltipText: "Rectangle",
     icon: <Square />,
     tool: Tool.rectangle,
   },
@@ -101,12 +101,7 @@ export const Toolbar = () => {
   return (
     <div className="absolute text-slate-700 bottom-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
       {Object.values(toolButtonPropsByTool).map((tool) => (
-        <ToolButton
-          key={tool.tool}
-          icon={tool.icon}
-          tooltipText={tool.tooltipText}
-          tool={tool.tool}
-        />
+        <ToolButton key={tool.tool} icon={tool.icon} tool={tool.tool} />
       ))}
       <div className="bg-slate-500 w-0.5 my-2 mx-2"></div>
       <UndoButton></UndoButton>
@@ -121,7 +116,7 @@ const UndoButton = () => {
     <button
       onClick={undo}
       className={cn(
-        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500",
+        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500"
       )}
     >
       <Undo />
@@ -134,7 +129,7 @@ const RedoButton = () => {
     <button
       onClick={redo}
       className={cn(
-        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500",
+        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500"
       )}
     >
       <Redo />
@@ -142,14 +137,15 @@ const RedoButton = () => {
   );
 };
 
-const ToolButton = (props: {
-  icon: React.ReactNode;
-  tooltipText: string;
-  tool: Tool;
-}) => {
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+const ToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
   const setTool = useBoundStore.use.setTool();
-  const tool = useBoundStore.use.tool();
-  const isSelected = tool === props.tool;
+  const currentTool = useBoundStore.use.tool();
+  const isSelected = currentTool === props.tool;
+  const tooltipText = toolToConfig[props.tool].tooltipText;
 
   const onClick = () => setTool(props.tool);
 
@@ -160,14 +156,14 @@ const ToolButton = (props: {
           <div
             className={cn(
               "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100",
-              { "bg-blue-500 text-white hover:bg-blue-600": isSelected },
+              { "bg-blue-500 text-white hover:bg-blue-600": isSelected }
             )}
           >
             {props.icon}
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{props.tooltipText}</p>
+          <p>{tooltipText}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

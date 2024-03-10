@@ -30,6 +30,62 @@ export const Tool = {
 
 export type Tool = keyof typeof Tool;
 
+export interface ToolConfig {
+  tooltipText: string;
+  keys: string[];
+}
+
+export const toolToConfig: Record<Tool, ToolConfig> = {
+  select: {
+    tooltipText: "Select · V",
+    keys: ["v"],
+  },
+  edit: {
+    tooltipText: "Edit · E",
+    keys: ["e"],
+  },
+  hand: {
+    tooltipText: "Hand · H",
+    keys: ["h"],
+  },
+  rectangle: {
+    tooltipText: "Rectangle · R",
+    keys: ["r"],
+  },
+  circle: {
+    tooltipText: "Circle · O",
+    keys: ["o"],
+  },
+  ellipse: {
+    tooltipText: "Ellipse · Shift + O",
+    keys: ["shift+o"],
+  },
+  marker: {
+    tooltipText: "Marker · M",
+    keys: ["m"],
+  },
+  catMarker: {
+    tooltipText: "Cat marker · C",
+    keys: ["c"],
+  },
+  polygon: {
+    tooltipText: "Polygon · G",
+    keys: ["g"],
+  },
+  drawPolygonByDragging: {
+    tooltipText: "Polygon by dragging · D",
+    keys: ["d"],
+  },
+  pencil: {
+    tooltipText: "Pencil · P",
+    keys: ["p"],
+  },
+  line: {
+    tooltipText: "Line · L",
+    keys: ["l"],
+  },
+};
+
 export const getNebulaModeForTool = (tool: Tool): typeof GeoJsonEditMode => {
   switch (tool) {
     case Tool.select:

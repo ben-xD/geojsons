@@ -4,36 +4,40 @@ import {
   useRedoStackSize,
   useUndoStackSize,
 } from "../store/store";
-import { Tool } from "./tools";
+import { Tool, toolToConfig } from "./tools";
+
+const useKeyboardConfig = (tool: Tool) => {
+  const setTool = useBoundStore((state) => state.setTool);
+  useHotkeys(toolToConfig[tool].keys, () => setTool(tool));
+};
 
 export const useMapHotkeys = () => {
-  const setTool = useBoundStore((state) => state.setTool);
   const undo = useBoundStore((state) => state.undo);
   const fc = useBoundStore((state) => state.featureCollection);
   const setSelectedFeatureIndexes = useBoundStore(
-    (state) => state.setSelectedFeatureIndexes,
+    (state) => state.setSelectedFeatureIndexes
   );
   const undoStackSize = useUndoStackSize();
   const redoStackSize = useRedoStackSize();
   const redo = useBoundStore((state) => state.redo);
   const deleteSelectedFeatures = useBoundStore(
-    (state) => state.deleteSelectedFeatures,
+    (state) => state.deleteSelectedFeatures
   );
 
-  useHotkeys(["v"], () => setTool(Tool.select));
-  useHotkeys(["e"], () => setTool(Tool.edit));
-  useHotkeys(["h"], () => setTool(Tool.hand));
+  useKeyboardConfig(Tool.select);
+  useKeyboardConfig(Tool.edit);
+  useKeyboardConfig(Tool.hand);
 
-  useHotkeys(["g"], () => setTool(Tool.polygon));
-  useHotkeys(["d"], () => setTool(Tool.drawPolygonByDragging));
+  useKeyboardConfig(Tool.polygon);
+  useKeyboardConfig(Tool.drawPolygonByDragging);
 
-  useHotkeys(["l"], () => setTool(Tool.line));
-  useHotkeys(["r"], () => setTool(Tool.rectangle));
-  useHotkeys(["p"], () => setTool(Tool.pencil));
-  useHotkeys(["m"], () => setTool(Tool.marker));
-  useHotkeys(["o"], () => setTool(Tool.circle));
-  useHotkeys(["c"], () => setTool(Tool.catMarker));
-  useHotkeys(["shift+o"], () => setTool(Tool.ellipse));
+  useKeyboardConfig(Tool.line);
+  useKeyboardConfig(Tool.rectangle);
+  useKeyboardConfig(Tool.pencil);
+  useKeyboardConfig(Tool.marker);
+  useKeyboardConfig(Tool.circle);
+  useKeyboardConfig(Tool.catMarker);
+  useKeyboardConfig(Tool.ellipse);
 
   useHotkeys(["backspace", "delete"], () => deleteSelectedFeatures());
   useHotkeys(["meta+z"], () => {
