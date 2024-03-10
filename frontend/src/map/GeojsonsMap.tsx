@@ -27,6 +27,7 @@ import {
 } from "./tokens/colors";
 import { Tool } from "./editor/tools.ts";
 import { Toolbar } from "./Toolbar.tsx";
+import {mapStyle, mapTilerKey} from "@/MapStyle.ts";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -128,6 +129,7 @@ export const GeojsonsMap = () => {
     useBoundStore.use.setSelectedFeatureIndexes();
   const isMapDraggable = useBoundStore.use.isMapDraggable();
   const setIsMapDraggable = useBoundStore.use.setIsMapDraggable();
+  const isDoubleClickZoomEnabled = useBoundStore.use.isDoubleClickZoomEnabled();
 
   const isDraggingRef = useRef(false);
   const [draggedFc, setDraggedFc] = useState<FeatureCollection | undefined>();
@@ -439,7 +441,7 @@ export const GeojsonsMap = () => {
           return null;
         }}
         getCursor={getCursor}
-        controller={{ dragPan: isMapDraggable, doubleClickZoom: false }}
+        controller={{dragPan: isMapDraggable, doubleClickZoom: isDoubleClickZoomEnabled}}
         ref={deckGlRef}
         initialViewState={initialViewState}
         layers={[
@@ -455,13 +457,15 @@ export const GeojsonsMap = () => {
           ref={mapRef}
           initialViewState={initialViewState}
           style={{ width: 600, height: 400 }}
-          // We render a separate component for it to allow it to be clicked. Otherwise, deck.gl prevents clicks. See https://github.com/visgl/deck.gl/issues/4165
+          // We render could a separate component for it to allow it to be clicked. Otherwise, deck.gl prevents clicks. See https://github.com/visgl/deck.gl/issues/4165
           attributionControl={false}
-          // doesn't allow dragging still...
-          mapStyle="https://demotiles.maplibre.org/style.json"
+          // Maplibre demo basemap style
+          // mapStyle="https://demotiles.maplibre.org/style.json"
+          // Using custom map style object
+          // mapStyle={mapStyle}
+          mapStyle={`https://api.maptiler.com/maps/landscape/style.json?key=${mapTilerKey}`}
         >
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
-          <AttributionControl customAttribution="Custom attribution text" />
         </Map>
       </DeckGL>
       <Toolbar />

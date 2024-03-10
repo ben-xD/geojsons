@@ -30,6 +30,19 @@ export const Tool = {
 
 export type Tool = keyof typeof Tool;
 
+export const drawingTools = new Set<Tool>([
+  Tool.edit,
+  Tool.rectangle,
+  Tool.circle,
+  Tool.ellipse,
+  Tool.marker,
+  Tool.catMarker,
+  Tool.polygon,
+  Tool.drawPolygonByDragging,
+  Tool.pencil,
+  Tool.line,
+]);
+
 export const getNebulaModeForTool = (tool: Tool): typeof GeoJsonEditMode => {
   switch (tool) {
     case Tool.select:

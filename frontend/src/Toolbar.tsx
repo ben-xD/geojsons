@@ -96,7 +96,7 @@ const toolButtonPropsByTool: Record<Tool, ToolButtonProps> = {
 
 export const Toolbar = () => {
   return (
-    <div className="absolute bottom-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
+    <div className="absolute top-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
       {Object.values(toolButtonPropsByTool).map((tool) => (
         <ToolView
           key={tool.tool}

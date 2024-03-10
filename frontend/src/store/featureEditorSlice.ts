@@ -1,5 +1,5 @@
 import { FeatureCollection, Feature } from "@/data/validator/geojson";
-import { Tool } from "../editor/tools";
+import {drawingTools, Tool} from "../editor/tools";
 import { StateCreator } from "zustand";
 import { arraysEqual } from "../arrays/areArraysEqual";
 import { State, Mutators } from "./store";
@@ -24,6 +24,7 @@ export interface FeatureEditorSlice {
   setPickable: (pickable: boolean) => void;
   isMapDraggable: boolean;
   setIsMapDraggable: (isMapDraggable: boolean) => void;
+  isDoubleClickZoomEnabled: boolean;
   setTool: (tool: Tool) => void;
   deleteSelectedFeatures: () => void;
   updateFeatureCollection: (collection: FeatureCollection) => void;
@@ -42,16 +43,18 @@ export const createFeatureEditorSlice: StateCreator<
   FeatureEditorSlice
 > = (set) => ({
   enabled: true,
-  tool: "select",
+  tool: Tool.hand,
   isMapDraggable: false,
   setIsMapDraggable: (isMapDraggable: boolean) =>
     set((state) => {
       state.isMapDraggable = isMapDraggable;
     }),
+  isDoubleClickZoomEnabled: true,
   setTool: (tool: Tool) =>
     set(
       (state) => {
         state.tool = tool;
+        state.isDoubleClickZoomEnabled = !drawingTools.has(tool);
       },
       false,
       { type: "setTool" }
