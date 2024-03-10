@@ -4,7 +4,7 @@ export const BenAttribution = () => {
       <p>
         a 100% free app, by{" "}
         <a
-          className="hover:underline hover:text-slate-700"
+          className="underline hover:text-slate-700"
           target="_blank"
           rel="noreferrer"
           href="https://orth.uk/"
