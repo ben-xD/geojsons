@@ -157,14 +157,14 @@ const ToolButton = (props: {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger onClick={onClick}>
-          <button
+          <div
             className={cn(
               "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100",
               { "bg-blue-500 text-white hover:bg-blue-600": isSelected },
             )}
           >
             {props.icon}
-          </button>
+          </div>
         </TooltipTrigger>
         <TooltipContent>
           <p>{props.tooltipText}</p>

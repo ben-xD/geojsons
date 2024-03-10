@@ -318,7 +318,6 @@ export const GeojsonsMap = () => {
     getTentativeLineWidth: 1,
   });
 
-  const mapRef = useRef<MapRef>(null);
   useKeyPressedDown({
     key: "space",
     onKeyDown: () => {
@@ -326,8 +325,10 @@ export const GeojsonsMap = () => {
       setPickable(false);
     },
     onKeyUp: () => {
-      setIsMapDraggable(false);
-      setPickable(true);
+      if (tool === Tool.hand) {
+        setIsMapDraggable(false);
+        setPickable(true);
+      }
     },
   });
 
@@ -348,8 +349,17 @@ export const GeojsonsMap = () => {
   // const [glContext,setGlContext] = useState<WebGLRenderingContext>();
 
   const onMapLoad = useCallback((e: MapLibreEvent) => {
-    console.log("Map loaded");
     const map = e.target;
+    // Setting up terrain like this is easier than having my own styles.json file/configuration
+    const terrainSourceId = "terrain";
+    map.setMaxPitch(85); // highest value
+    map.addSource(terrainSourceId, {
+      type: "raster-dem",
+      url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${mapTilerKey}`,
+    });
+    map.setTerrain({
+      source: terrainSourceId,
+    });
     map.on("contextmenu", () => {
       console.log("contextmenu clicked");
     });
@@ -438,9 +448,10 @@ export const GeojsonsMap = () => {
         ]}
       >
         <Map
-          onClick={() => console.log("map onclick")}
           onLoad={onMapLoad}
-          ref={mapRef}
+          onClick={() => console.log("map onclick")}
+          // I don't use the map from the ref because the map isn't loaded yet, so it's not useful
+          // ref={(map) => setMap(map)}
           initialViewState={initialViewState}
           style={{ width: 600, height: 400 }}
           // We render could a separate component for it to allow it to be clicked. Otherwise, deck.gl prevents clicks. See https://github.com/visgl/deck.gl/issues/4165
