@@ -15,9 +15,6 @@ function App() {
           </Panel>
         </PanelGroup>
       </Panel>
-      {/*<PanelResizeHandle />*/}
-      {/*<Panel defaultSize={20}>*/}
-      {/*</Panel>*/}
     </PanelGroup>
   );
 }

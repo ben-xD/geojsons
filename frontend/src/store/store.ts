@@ -41,8 +41,7 @@ export type Mutators = [["zustand/immer", never], ["zustand/devtools", never]];
 
 // reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md
 // > because devtools mutates the setState and adds a type parameter on it, which could get lost if other middlewares (like immer) also mutate setState before devtools.
-// Bounded store just means ?
-export const useBoundStoreOriginal = create<State>()(
+export const useStoreOriginal = create<State>()(
   immer(
     devtools((...a) => ({
       ...createFeatureEditorSlice(...a),
@@ -53,9 +52,11 @@ export const useBoundStoreOriginal = create<State>()(
 
 // This follows https://docs.pmnd.rs/zustand/guides/auto-generating-selectors
 // Just allows a slighter shorter way of getting properties and actions (auto generated selectors)
-// You can use it like `const tool = useBoundStore.use.tool()` instead of
-// `const tool = useBoundStore((state) => state.tool);`
-export const useBoundStore = createSelectors(useBoundStoreOriginal);
+// You can use it like `const tool = useStore.use.tool()` instead of
+// `const tool = useStore((state) => state.tool);`
+// The zustand docs would call this useBoundStore, to avoid confusion with useStore exported by zustand.
+// See discord conversation: https://discord.com/channels/740090768164651008/740093228904218657/1215437737491042304
+export const useStore = createSelectors(useStoreOriginal);
 
 const modesRequiringFeatures = new Set<typeof GeoJsonEditMode>([
   RotateMode,
@@ -65,12 +66,12 @@ const modesRequiringFeatures = new Set<typeof GeoJsonEditMode>([
 
 export const useEditingMode = () => {
   // If we didn't use `createSelectors`, we'd need to do e.g.:
-  // const tool = useBoundStore((state) => state.tool);
-  // const selectedFeatureIndexes = useBoundStore(
+  // const tool = useStore((state) => state.tool);
+  // const selectedFeatureIndexes = useStore(
   //   (state) => state.selectedFeatureIndexes
   // );
-  const tool = useBoundStore.use.tool();
-  const selectedFeatureIndexes = useBoundStore.use.selectedFeatureIndexes();
+  const tool = useStore.use.tool();
+  const selectedFeatureIndexes = useStore.use.selectedFeatureIndexes();
   const nebulaMode = getNebulaModeForTool(tool);
   const preventModeMisuse =
     selectedFeatureIndexes.length === 0 &&
@@ -79,6 +80,6 @@ export const useEditingMode = () => {
 };
 
 export const useUndoStackSize = () =>
-  useBoundStore((state) => state.undoStack.length);
+  useStore((state) => state.undoStack.length);
 export const useRedoStackSize = () =>
-  useBoundStore((state) => state.redoStack.length);
+  useStore((state) => state.redoStack.length);

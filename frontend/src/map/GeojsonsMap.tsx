@@ -18,7 +18,7 @@ import { MapLibreEvent } from "maplibre-gl";
 import { MjolnirGestureEvent } from "mjolnir.js";
 import { ContextMenu } from "../components/Context/ContextMenu.tsx";
 import { useMapHotkeys } from "../editor/useMapHotkeys.tsx";
-import { useBoundStore, useEditingMode } from "../store/store.ts";
+import { useStore, useEditingMode } from "../store/store.ts";
 import {
   primaryTentativeFillRgba,
   primaryTentativeLineRgba,
@@ -118,18 +118,17 @@ const initialViewState = {
 export const GeojsonsMap = () => {
   useMapHotkeys();
   const editingMode = useEditingMode();
-  const tool = useBoundStore.use.tool();
-  const setTool = useBoundStore.use.setTool();
-  const fc = useBoundStore.use.featureCollection();
-  const updateFc = useBoundStore.use.updateFeatureCollection();
-  const pickable = useBoundStore.use.pickable();
-  const setPickable = useBoundStore.use.setPickable();
-  const selectedFeatureIndexes = useBoundStore.use.selectedFeatureIndexes();
-  const setSelectedFeatureIndexes =
-    useBoundStore.use.setSelectedFeatureIndexes();
-  const isMapDraggable = useBoundStore.use.isMapDraggable();
-  const setIsMapDraggable = useBoundStore.use.setIsMapDraggable();
-  const isDoubleClickZoomEnabled = useBoundStore.use.isDoubleClickZoomEnabled();
+  const tool = useStore.use.tool();
+  const setTool = useStore.use.setTool();
+  const fc = useStore.use.featureCollection();
+  const updateFc = useStore.use.updateFeatureCollection();
+  const pickable = useStore.use.pickable();
+  const setPickable = useStore.use.setPickable();
+  const selectedFeatureIndexes = useStore.use.selectedFeatureIndexes();
+  const setSelectedFeatureIndexes = useStore.use.setSelectedFeatureIndexes();
+  const isMapDraggable = useStore.use.isMapDraggable();
+  const setIsMapDraggable = useStore.use.setIsMapDraggable();
+  const isDoubleClickZoomEnabled = useStore.use.isDoubleClickZoomEnabled();
 
   const isDraggingRef = useRef(false);
   const [draggedFc, setDraggedFc] = useState<FeatureCollection | undefined>();

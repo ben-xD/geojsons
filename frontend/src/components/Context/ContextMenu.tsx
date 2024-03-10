@@ -5,25 +5,21 @@ import {
   MenuItem,
   SubMenu,
 } from "@szhsin/react-menu";
-import { useBoundStore } from "../../store/store";
+import { useStore } from "../../store/store";
 
 export const ContextMenu = (props: ControlledMenuProps) => {
-  const deleteCurrentSelectedFeatures = useBoundStore(
+  const deleteCurrentSelectedFeatures = useStore(
     (state) => state.deleteSelectedFeatures,
   );
-  const bringSelectionForward = useBoundStore(
+  const bringSelectionForward = useStore(
     (state) => state.bringSelectionForward,
   );
-  const bringSelectionToFront = useBoundStore.use.bringSelectionToFront();
-  // const bringSelectionToFront = useBoundStore(
-  //   (state) => state.bringSelectionToFront,
-  // );
-  const sendSelectionBackward = useBoundStore(
+  const bringSelectionToFront = useStore.use.bringSelectionToFront();
+
+  const sendSelectionBackward = useStore(
     (state) => state.sendSelectionBackward,
   );
-  const sendSelectionToBack = useBoundStore(
-    (state) => state.sendSelectionToBack,
-  );
+  const sendSelectionToBack = useStore((state) => state.sendSelectionToBack);
 
   const onDelete = (event: ClickEvent) => {
     deleteCurrentSelectedFeatures();

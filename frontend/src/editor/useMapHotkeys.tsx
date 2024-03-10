@@ -1,26 +1,22 @@
 import { useHotkeys } from "react-hotkeys-hook";
-import {
-  useBoundStore,
-  useRedoStackSize,
-  useUndoStackSize,
-} from "../store/store";
+import { useStore, useRedoStackSize, useUndoStackSize } from "../store/store";
 import { Tool, toolToConfig } from "./tools";
 
 const useKeyboardConfig = (tool: Tool) => {
-  const setTool = useBoundStore((state) => state.setTool);
+  const setTool = useStore((state) => state.setTool);
   useHotkeys(toolToConfig[tool].keys, () => setTool(tool));
 };
 
 export const useMapHotkeys = () => {
-  const undo = useBoundStore((state) => state.undo);
-  const fc = useBoundStore((state) => state.featureCollection);
-  const setSelectedFeatureIndexes = useBoundStore(
+  const undo = useStore((state) => state.undo);
+  const fc = useStore((state) => state.featureCollection);
+  const setSelectedFeatureIndexes = useStore(
     (state) => state.setSelectedFeatureIndexes,
   );
   const undoStackSize = useUndoStackSize();
   const redoStackSize = useRedoStackSize();
-  const redo = useBoundStore((state) => state.redo);
-  const deleteSelectedFeatures = useBoundStore(
+  const redo = useStore((state) => state.redo);
+  const deleteSelectedFeatures = useStore(
     (state) => state.deleteSelectedFeatures,
   );
 

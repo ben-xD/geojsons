@@ -16,7 +16,7 @@ import {
   Undo,
   Redo,
 } from "lucide-react";
-import { useBoundStore } from "./store/store";
+import { useStore, useUndoStackSize } from "./store/store";
 import PolygonIcon from "../src/icons/polygon.svg?react";
 import LineStringPencilIcon from "../src/icons/lineStringPencil.svg?react";
 import PolygonPencilIcon from "../src/icons/polygonPencil.svg?react";
@@ -24,6 +24,7 @@ import LineStringIcon from "../src/icons/linestring.svg?react";
 import EllipseIcon from "../src/icons/ellipse.svg?react";
 import React from "react";
 import { cn } from "@/lib/utils.ts";
+import { useRedoStackSize } from "@/store/store";
 
 interface ToolButtonProps {
   tooltipText: string;
@@ -114,9 +115,11 @@ const isMacDevice = navigator.userAgent.includes("Macintosh");
 const metaKey = isMacDevice ? "Cmd" : "Ctrl";
 
 const UndoButton = () => {
-  const undo = useBoundStore.use.undo();
+  const undo = useStore.use.undo();
+  const canUndo = useUndoStackSize() !== 0;
   return (
     <ToolbarButton
+      disabled={!canUndo}
       icon={<Undo />}
       tooltipText={`Undo · ${metaKey} + Z`}
       onClick={undo}
@@ -124,9 +127,11 @@ const UndoButton = () => {
   );
 };
 const RedoButton = () => {
-  const redo = useBoundStore.use.redo();
+  const redo = useStore.use.redo();
+  const canRedo = useRedoStackSize() !== 0;
   return (
     <ToolbarButton
+      disabled={!canRedo}
       icon={<Redo />}
       tooltipText={`Redo · ${metaKey} + Shift + Z`}
       onClick={redo}
@@ -135,10 +140,10 @@ const RedoButton = () => {
 };
 
 const ToolbarToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
-  const setTool = useBoundStore.use.setTool();
+  const setTool = useStore.use.setTool();
   const onClick = () => setTool(props.tool);
   const tooltipText = toolToConfig[props.tool].tooltipText;
-  const currentTool = useBoundStore.use.tool();
+  const currentTool = useStore.use.tool();
   const isSelected = currentTool === props.tool;
 
   return (
@@ -155,20 +160,22 @@ const ToolbarButton = (props: {
   icon: React.ReactNode;
   onClick: () => void;
   tooltipText: string;
+  disabled?: boolean;
   className?: string;
 }) => {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger onClick={props.onClick}>
-          <div
+        <TooltipTrigger onClick={props.onClick} asChild>
+          <button
+            disabled={props.disabled}
             className={cn(
               props.className,
-              "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500",
+              "p-2 rounded-lg m-1 transition-all ease-in-out hover:enabled:bg-blue-100 active:enabled:bg-blue-500 disabled:text-slate-300",
             )}
           >
             {props.icon}
-          </div>
+          </button>
         </TooltipTrigger>
         <TooltipContent>
           <p>{props.tooltipText}</p>

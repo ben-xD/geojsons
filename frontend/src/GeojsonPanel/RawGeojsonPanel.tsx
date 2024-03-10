@@ -1,19 +1,18 @@
-import { useBoundStore } from "@/store/store.ts";
+import { useStore } from "@/store/store.ts";
 import { EditorState } from "@codemirror/state";
 import { basicSetup } from "codemirror";
 import { EditorView, keymap } from "@codemirror/view";
-import { defaultKeymap } from "@codemirror/commands";
 import { json } from "@codemirror/lang-json";
 import { emptyFeatureCollection } from "@/data/featureCollection.ts";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import "@codemirror/lang-json";
 import { FeatureCollection } from "@/data/validator/geojson.ts";
-import { Delete, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 export const RawGeojsonPanel = () => {
-  const fc = useBoundStore.use.featureCollection();
-  const setFc = useBoundStore.use.updateFeatureCollection();
+  const fc = useStore.use.featureCollection();
+  const setFc = useStore.use.updateFeatureCollection();
   const [userUpdatedFc, setUserUpdatedFc] = useState<FeatureCollection>();
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const editorViewRef = useRef<EditorView>();
