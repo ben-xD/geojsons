@@ -61,7 +61,7 @@ export const GeometryCollection = z.object({
       MultiPoint,
       MultiLineString,
       MultiPolygon,
-    ]),
+    ])
   ),
 });
 export type GeometryCollection = z.infer<typeof GeometryCollection>;
@@ -87,6 +87,6 @@ export type Feature = z.infer<typeof Feature>;
 
 export const FeatureCollection = z.object({
   type: z.literal("FeatureCollection"),
-  features: z.array(Feature),
+  features: Feature.array(),
 });
 export type FeatureCollection = z.infer<typeof FeatureCollection>;

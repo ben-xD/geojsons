@@ -61,7 +61,7 @@ const defaultMarkerIconDescription: IconDescription = {
   url: markerSvg,
   width: markerSizeInPx,
   height: markerSizeInPx,
-  anchorY: markerSizeInPx / 2,
+  anchorY: markerSizeInPx,
 };
 
 const defaultCatMarkerIconDescription: IconDescription = {
@@ -278,7 +278,7 @@ export const GeojsonsMap = () => {
     // Workaround for error `TS2554: Expected 0 arguments, but got 1.`,
     // see https://github.com/uber/nebula.gl/issues/568#issuecomment-1986910461
     // @ts-expect-error TS2554
-    editableGeojsonLayerProps,
+    editableGeojsonLayerProps
   );
 
   // TODO only use selection layer if "select tool" is active (to prevent drawing selection when moving features)
@@ -305,7 +305,7 @@ export const GeojsonsMap = () => {
         setSelectedFeatureIndexes([]);
       } else {
         setSelectedFeatureIndexes(
-          Array.from(pickingInfos.map((pi: PickingInfo) => pi.index)),
+          Array.from(pickingInfos.map((pi: PickingInfo) => pi.index))
         );
       }
     },
@@ -377,7 +377,7 @@ export const GeojsonsMap = () => {
         return isMapDraggable ? "grab" : "default";
       }
     },
-    [isMapDraggable],
+    [isMapDraggable]
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {

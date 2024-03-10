@@ -13,7 +13,6 @@ import { Trash2 } from "lucide-react";
 export const RawGeojsonPanel = () => {
   const fc = useStore.use.featureCollection();
   const setFc = useStore.use.updateFeatureCollection();
-  const [userUpdatedFc, setUserUpdatedFc] = useState<FeatureCollection>();
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const editorViewRef = useRef<EditorView>();
 
@@ -26,17 +25,21 @@ export const RawGeojsonPanel = () => {
       //   ".cm-scroller": { overflow: "auto" },
       // }),
       basicSetup,
-      // keymap.of(defaultKeymap),
       json(),
       EditorView.lineWrapping,
       EditorView.updateListener.of(function (e) {
         if (e.docChanged) {
+          const unparsedJsonString = e.state.doc.toString();
+          const fc = useStore.getState().featureCollection;
+          const stringifiedFc = JSON.stringify(fc, null, 2);
+          // This is important for undo/redo. Why?: it prevents changes via the map/nebula from causing a change in the editor which will cause a change in the map.
+          // It will make the undo/stack larger.
+          if (stringifiedFc === unparsedJsonString) return;
           try {
-            const unparsedJsonString = e.state.doc.toString();
             const parsedJsonString = JSON.parse(unparsedJsonString);
             const data = FeatureCollection.parse(parsedJsonString);
             setErrorMessage(undefined);
-            setUserUpdatedFc(data);
+            setFc(data);
           } catch (error) {
             // TODO get the zod error or JSON parse error
             setErrorMessage("Invalid FeatureCollection");
@@ -44,7 +47,7 @@ export const RawGeojsonPanel = () => {
         }
       }),
     ],
-    [setUserUpdatedFc],
+    [setFc]
   );
 
   useEffect(() => {
@@ -60,6 +63,8 @@ export const RawGeojsonPanel = () => {
     editorViewRef.current = editorView;
 
     return () => {
+      // This shouldn't happen until this component is unmounted / no longer needed
+      // console.log("Destroying editor view");
       editorViewRef.current?.destroy();
     };
   }, [extensions]);
@@ -67,7 +72,8 @@ export const RawGeojsonPanel = () => {
   useEffect(() => {
     const view = editorViewRef.current;
     if (!view) return;
-    console.log(`fc updated`, fc);
+    if (view.hasFocus) return;
+
     setErrorMessage(undefined);
     // Check if its identical, only update if it's not. Prevents infinite render loop.
     const newContent = JSON.stringify(fc, null, 2);
@@ -93,18 +99,15 @@ export const RawGeojsonPanel = () => {
     // view.dispatch(transaction);
   }, [extensions, fc]);
 
-  useEffect(() => {
-    console.log(`userUpdatedFc updated`);
-    if (userUpdatedFc) setFc(userUpdatedFc);
-  }, [setFc, userUpdatedFc]);
-
   return (
     <div className="flex flex-col gap-2 m-2">
       <div className="flex justify-between items-center p-2 flex-wrap text-slate-800">
         <h2 className="text-2xl">geojsons.com</h2>
         <Trash2 onClick={() => setFc(emptyFeatureCollection)} />
       </div>
-      <p className="text-lg">Draw like its Excalidraw or Figma, but on maps.</p>
+      <p className="text-lg">
+        Draw just like its Excalidraw or Figma, on maps.
+      </p>
       <p>
         See{" "}
         <a
