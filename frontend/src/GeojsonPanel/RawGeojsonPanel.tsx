@@ -8,7 +8,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import "@codemirror/lang-json";
 import { FeatureCollection } from "@/data/validator/geojson.ts";
-import { Trash2 } from "lucide-react";
+import { Bomb, Trash2 } from "lucide-react";
+import { resetStateAndReloadPage } from "@/store/store";
+import { ClearDataAlertDialog } from "@/GeojsonPanel/ClearDataAlertDialog";
 
 export const RawGeojsonPanel = () => {
   const fc = useStore.use.featureCollection();
@@ -103,7 +105,10 @@ export const RawGeojsonPanel = () => {
     <div className="flex flex-col gap-2 m-2">
       <div className="flex justify-between items-center p-2 flex-wrap text-slate-800">
         <h2 className="text-2xl">geojsons.com</h2>
-        <Trash2 onClick={() => setFc(emptyFeatureCollection)} />
+        <div className="flex gap-4">
+          <Trash2 onClick={() => setFc(emptyFeatureCollection)} />
+          <ClearDataAlertDialog />
+        </div>
       </div>
       <p className="text-lg">
         Draw just like its{" "}

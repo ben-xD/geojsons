@@ -24,6 +24,8 @@
     "@nebula.gl/edit-modes": "^1.0.4",
     "@nebula.gl/layers": "^1.0.4",
     "@nebula.gl/overlays": "^1.0.4",
+    "@radix-ui/react-alert-dialog": "^1.0.5",
+    "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@szhsin/react-menu": "^4.1.0",
     "class-variance-authority": "^0.7.0",
