@@ -103,36 +103,35 @@ export const RawGeojsonPanel = () => {
 
   return (
     <div className="flex flex-col gap-2 m-2">
-      <div className="flex justify-between items-center p-2 flex-wrap text-slate-800">
-        <h2 className="text-2xl">geojsons.com</h2>
+      <div className="flex justify-between items-center flex-wrap text-slate-800">
+        <p className="text-2xl">
+          Draw like its{" "}
+          <a
+            className="underline text-slate-600"
+            target="_blank"
+            href="https://excalidraw.com"
+            rel="noreferrer"
+          >
+            excalidraw
+          </a>{" "}
+          or{" "}
+          <a
+            className="underline text-slate-600"
+            target="_blank"
+            href="https://tldraw.com"
+            rel="noreferrer"
+          >
+            tldraw
+          </a>
+          , but on a map.
+        </p>
         <div className="flex gap-4">
           <Trash2 onClick={() => setFc(emptyFeatureCollection)} />
           <ClearDataAlertDialog />
         </div>
       </div>
-      <p className="text-lg">
-        Draw just like its{" "}
-        <a
-          className="underline text-slate-600"
-          target="_blank"
-          href="https://excalidraw.com"
-          rel="noreferrer"
-        >
-          excalidraw
-        </a>{" "}
-        or{" "}
-        <a
-          className="underline text-slate-600"
-          target="_blank"
-          href="https://tldraw.com"
-          rel="noreferrer"
-        >
-          tldraw
-        </a>
-        , but on a map.
-      </p>
       <p>
-        See{" "}
+        To learn more, see{" "}
         <a
           className="underline text-slate-600"
           target="_blank"
@@ -149,8 +148,8 @@ export const RawGeojsonPanel = () => {
           href="https://www.rfc-editor.org/rfc/rfc7946"
         >
           RFC7946
-        </a>{" "}
-        to learn more.
+        </a>
+        .
       </p>
       {errorMessage && (
         <p>
