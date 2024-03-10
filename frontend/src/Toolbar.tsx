@@ -12,7 +12,7 @@ import {
   Circle,
   Hand,
   Pencil,
-  MapPin, Cat,
+  MapPin, Cat, Undo, Redo,
 } from "lucide-react";
 import { useBoundStore } from "./store/store";
 import PolygonIcon from "../src/icons/polygon.svg?react";
@@ -96,20 +96,32 @@ const toolButtonPropsByTool: Record<Tool, ToolButtonProps> = {
 
 export const Toolbar = () => {
   return (
-    <div className="absolute top-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
+    <div className="absolute text-slate-700 top-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
       {Object.values(toolButtonPropsByTool).map((tool) => (
-        <ToolView
+        <ToolButton
           key={tool.tool}
           icon={tool.icon}
           tooltipText={tool.tooltipText}
           tool={tool.tool}
         />
       ))}
+      <div className="bg-slate-500 w-0.5 my-2 mx-2"></div>
+      <UndoButton></UndoButton>
+      <RedoButton></RedoButton>
     </div>
   );
 };
 
-const ToolView = (props: {
+const UndoButton = () => {
+  const undo = useBoundStore.use.undo();
+  return <button onClick={undo} className={cn("p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500")}><Undo/></button>
+}
+const RedoButton = () => {
+  const redo = useBoundStore.use.redo();
+  return <button onClick={redo} className={cn("p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500")}><Redo/></button>
+}
+
+const ToolButton = (props: {
   icon: React.ReactNode;
   tooltipText: string;
   tool: Tool;
@@ -123,8 +135,8 @@ const ToolView = (props: {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger onClick={onClick} className="text-slate-700">
-          <div className={cn("p-2 rounded-lg m-1 transition-all ease-in-out", {"bg-blue-500 text-white": isSelected})}>{props.icon}</div>
+        <TooltipTrigger onClick={onClick}>
+          <button className={cn("p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100", {"bg-blue-500 text-white hover:bg-blue-600": isSelected})}>{props.icon}</button>
         </TooltipTrigger>
         <TooltipContent>
           <p>{props.tooltipText}</p>

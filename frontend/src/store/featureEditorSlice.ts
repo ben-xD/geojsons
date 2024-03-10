@@ -132,6 +132,7 @@ export const createFeatureEditorSlice: StateCreator<
               (value) => value < lastItem?.collection?.features?.length
             );
           } else if (lastItem.type === "selection") {
+            state.tool = Tool.select;
             state.redoStack = [
               ...state.redoStack,
               {
@@ -177,6 +178,7 @@ export const createFeatureEditorSlice: StateCreator<
               (value) => value < lastItem?.collection?.features?.length
             );
           } else if (lastItem.type === "selection") {
+            state.tool = Tool.select;
             state.undoStack = [
               ...state.undoStack,
               {
