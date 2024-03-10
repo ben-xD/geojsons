@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import "@codemirror/lang-json";
 import { FeatureCollection } from "@/data/validator/geojson.ts";
+import { Delete, Trash2 } from "lucide-react";
 
 export const RawGeojsonPanel = () => {
   const fc = useBoundStore.use.featureCollection();
@@ -44,7 +45,7 @@ export const RawGeojsonPanel = () => {
         }
       }),
     ],
-    [setUserUpdatedFc],
+    [setUserUpdatedFc]
   );
 
   useEffect(() => {
@@ -100,7 +101,10 @@ export const RawGeojsonPanel = () => {
 
   return (
     <div className="flex flex-col gap-2 m-2">
-      <h2 className="text-2xl text-slate-800">geojsons.com</h2>
+      <div className="flex justify-between items-center p-2 flex-wrap text-slate-800">
+        <h2 className="text-2xl">geojsons.com</h2>
+        <Trash2 onClick={() => setFc(emptyFeatureCollection)} />
+      </div>
       <p className="text-lg">Draw like its Excalidraw or Figma, but on maps.</p>
       <p>
         See{" "}
