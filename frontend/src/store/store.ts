@@ -1,7 +1,7 @@
 import { immer } from "zustand/middleware/immer";
 import { getNebulaModeForTool } from "../editor/tools";
 import { create, StateCreator } from "zustand";
-import { devtools } from "zustand/middleware";
+import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import {
   GeoJsonEditMode,
   RotateMode,
@@ -39,15 +39,19 @@ export type GeojsonsStateCreator<T> = StateCreator<State, Mutators, [], T>;
 
 export type Mutators = [["zustand/immer", never], ["zustand/devtools", never]];
 
+const applicationLocalStorageName = "geojsons.com";
 // reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md
 // > because devtools mutates the setState and adds a type parameter on it, which could get lost if other middlewares (like immer) also mutate setState before devtools.
 export const useStoreOriginal = create<State>()(
-  immer(
-    devtools((...a) => ({
-      ...createFeatureEditorSlice(...a),
-      ...createReorderFeatureSlice(...a),
-    })),
-  ),
+  persist(
+    immer(
+      devtools((...a) => ({
+        ...createFeatureEditorSlice(...a),
+        ...createReorderFeatureSlice(...a),
+      }))
+    ),
+    { name: applicationLocalStorageName }
+  )
 );
 
 // This follows https://docs.pmnd.rs/zustand/guides/auto-generating-selectors
