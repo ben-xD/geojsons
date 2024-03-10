@@ -101,7 +101,7 @@ export const Toolbar = () => {
   return (
     <div className="mx-2 flex-wrap absolute text-slate-700 bottom-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
       {Object.values(toolButtonPropsByTool).map((tool) => (
-        <ToolButton key={tool.tool} icon={tool.icon} tool={tool.tool} />
+        <ToolbarToolButton key={tool.tool} icon={tool.icon} tool={tool.tool} />
       ))}
       <div className="bg-slate-500 w-0.5 my-2 mx-2"></div>
       <UndoButton></UndoButton>
@@ -110,60 +110,68 @@ export const Toolbar = () => {
   );
 };
 
+const isMacDevice = navigator.userAgent.includes("Macintosh");
+const metaKey = isMacDevice ? "Cmd" : "Ctrl";
+
 const UndoButton = () => {
   const undo = useBoundStore.use.undo();
   return (
-    <button
+    <ToolbarButton
+      icon={<Undo />}
+      tooltipText={`Undo · ${metaKey} + Z`}
       onClick={undo}
-      className={cn(
-        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500"
-      )}
-    >
-      <Undo />
-    </button>
+    />
   );
 };
 const RedoButton = () => {
   const redo = useBoundStore.use.redo();
   return (
-    <button
+    <ToolbarButton
+      icon={<Redo />}
+      tooltipText={`Redo · ${metaKey} + Shift + Z`}
       onClick={redo}
-      className={cn(
-        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500"
-      )}
-    >
-      <Redo />
-    </button>
+    />
   );
 };
 
-function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-const ToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
+const ToolbarToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
   const setTool = useBoundStore.use.setTool();
+  const onClick = () => setTool(props.tool);
+  const tooltipText = toolToConfig[props.tool].tooltipText;
   const currentTool = useBoundStore.use.tool();
   const isSelected = currentTool === props.tool;
-  const tooltipText = toolToConfig[props.tool].tooltipText;
 
-  const onClick = () => setTool(props.tool);
+  return (
+    <ToolbarButton
+      className={cn({ "bg-blue-500 text-white hover:bg-blue-600": isSelected })}
+      onClick={onClick}
+      icon={props.icon}
+      tooltipText={tooltipText}
+    />
+  );
+};
 
+const ToolbarButton = (props: {
+  icon: React.ReactNode;
+  onClick: () => void;
+  tooltipText: string;
+  className?: string;
+}) => {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger onClick={onClick}>
+        <TooltipTrigger onClick={props.onClick}>
           <div
             className={cn(
-              "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100",
-              { "bg-blue-500 text-white hover:bg-blue-600": isSelected }
+              props.className,
+              "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500",
             )}
           >
             {props.icon}
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{tooltipText}</p>
+          <p>{props.tooltipText}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
