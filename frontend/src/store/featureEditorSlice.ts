@@ -1,9 +1,9 @@
-import { FeatureCollection, Feature } from "@/data/validator/geojson";
-import {drawingTools, Tool} from "../editor/tools";
-import { StateCreator } from "zustand";
-import { arraysEqual } from "../arrays/areArraysEqual";
-import { State, Mutators } from "./store";
-import { v4 as uuidv4 } from "uuid";
+import {Feature, FeatureCollection} from "@/data/validator/geojson";
+import {Tool} from "../editor/tools";
+import {StateCreator} from "zustand";
+import {arraysEqual} from "../arrays/areArraysEqual";
+import {Mutators, State} from "./store";
+import {v4 as uuidv4} from "uuid";
 import {emptyFeatureCollection} from "@/data/featureCollection";
 
 export type UserAction =
@@ -54,7 +54,7 @@ export const createFeatureEditorSlice: StateCreator<
     set(
       (state) => {
         state.tool = tool;
-        state.isDoubleClickZoomEnabled = !drawingTools.has(tool);
+        state.isDoubleClickZoomEnabled = tool === Tool.hand;
       },
       false,
       { type: "setTool" }
