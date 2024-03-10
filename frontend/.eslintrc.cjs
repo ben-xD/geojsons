@@ -17,6 +17,9 @@ module.exports = {
       "warn",
       { allowConstantExport: true },
     ],
+    // Too much spam when we don't use variables when overriding methods in classes.
+    // Also see https://www.totaltypescript.com/tsconfig-cheat-sheet
+    "@typescript-eslint/no-unused-vars": "off",
     // Disable prop-types rule since we use TS. This does disable runtime prop checks
     // We do this to prevent errors in some shadcn/ui components e.g. `error  'className' is missing in props validation`
     // Code taken from https://github.com/shadcn-ui/ui/issues/120#issuecomment-1828081539

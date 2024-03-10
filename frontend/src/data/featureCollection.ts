@@ -1,4 +1,4 @@
-import {FeatureCollection} from "@/data/validator/geojson";
+import { FeatureCollection } from "@/data/validator/geojson";
 
 export const emptyFeatureCollection: FeatureCollection = {
   type: "FeatureCollection",

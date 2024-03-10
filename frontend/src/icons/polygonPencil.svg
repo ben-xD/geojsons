@@ -1,15 +1,13 @@
-<svg width="164pt" height="164pt" viewBox="0 0 164 164" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clip-path="url(#clip0_91_33)">
-        <path d="M98.9197 17.8398C100.141 16.3968 101.651 15.2222 103.355 14.391C105.058 13.5597 106.918 13.09 108.814 13.0117C110.711 12.9334 112.603 13.2484 114.37 13.9365C116.137 14.6245 117.74 15.6706 119.078 17.0081C120.415 18.3455 121.457 19.945 122.138 21.7045C122.818 23.4641 123.122 25.3451 123.03 27.2277C122.938 29.1102 122.452 30.9531 121.603 32.6388C120.754 34.3245 119.56 35.8161 118.098 37.0184L53.3705 101.746L27 108.938L34.192 82.5676L98.9197 17.8398Z" stroke="currentColor" stroke-width="9.58929" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M89.3304 27.4282L108.509 46.6068" stroke="currentColor" stroke-width="9.58929" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M13 95H41V122H13V95Z" stroke="currentColor" stroke-width="8" stroke-miterlimit="10" stroke-linejoin="bevel"/>
-        <path d="M71 122H99V149H71V122Z" fill="currentColor" stroke="currentColor" stroke-width="2.37037" stroke-miterlimit="10" stroke-linejoin="bevel"/>
-        <path d="M123 90H151V117H123V90Z" fill="currentColor" stroke="currentColor" stroke-width="2.37037" stroke-miterlimit="10" stroke-linejoin="bevel"/>
-        <path d="M26 107.5L85.5 135.5L137.5 102" stroke="currentColor" stroke-width="9.48149" stroke-miterlimit="10" stroke-linecap="round"/>
-    </g>
-    <defs>
-        <clipPath id="clip0_91_33">
-            <rect width="164" height="164" fill="white"/>
-        </clipPath>
-    </defs>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="171pt" height="171pt" viewBox="0 0 171 171" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M29.5 43L137 131.5" stroke="currentColor" stroke-width="9.48149" stroke-miterlimit="10" stroke-linecap="round"/>
+    <path d="M138 132.5L30.5422 125.606" stroke="currentColor" stroke-width="9.48149" stroke-miterlimit="10" stroke-linecap="round"/>
+    <path d="M28.8131 124.919L32.2558 45.6016" stroke="currentColor" stroke-width="9.48149" stroke-miterlimit="10" stroke-linecap="round"/>
+    <path d="M121 117H153.994V148.615H121V117Z" fill="currentColor" stroke="currentColor" stroke-width="2.37037" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+    <path d="M15.7606 109.109H48.755V140.724H15.7606V109.109Z" fill="currentColor" stroke="currentColor" stroke-width="2.37037" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+    <path d="M22.5932 114.865H43.104V133.891H22.5932V114.865Z" fill="currentColor" stroke="currentColor" stroke-width="2.37037" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+    <path d="M15.3695 29.7969H48.3639V61.4117H15.3695V29.7969Z" fill="currentColor" stroke="currentColor" stroke-width="2.37037" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+    <path d="M22.208 35.5474H42.7188V54.5732H22.208V35.5474Z" fill="currentColor" stroke="currentColor" stroke-width="2.37037" stroke-miterlimit="10" stroke-linejoin="bevel"/>
+    <path d="M130.132 20.9943C131.39 19.5052 132.947 18.2932 134.703 17.4354C136.459 16.5776 138.375 16.0928 140.33 16.0121C142.285 15.9313 144.235 16.2563 146.057 16.9663C147.878 17.6764 149.531 18.7559 150.91 20.136C152.288 21.5161 153.362 23.1666 154.064 24.9823C154.765 26.798 155.078 28.7391 154.983 30.6817C154.888 32.6244 154.387 34.5261 153.512 36.2656C152.637 38.0051 151.407 39.5443 149.9 40.785L83.1816 107.578L56 115L63.4132 87.7878L130.132 20.9943Z" stroke="currentColor" stroke-width="9.58929" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M120.216 30.7163L140.284 50.7839" stroke="currentColor" stroke-width="9.58929" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

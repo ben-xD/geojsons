@@ -1,6 +1,6 @@
 import { GeojsonsMap } from "./map/GeojsonsMap.tsx";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
-import {RawGeojsonPanel} from "@/GeojsonPanel/RawGeojsonPanel.tsx";
+import { RawGeojsonPanel } from "@/GeojsonPanel/RawGeojsonPanel.tsx";
 function App() {
   return (
     <PanelGroup direction="horizontal">
@@ -9,18 +9,15 @@ function App() {
           <Panel>
             <GeojsonsMap />
           </Panel>
-          {/*<PanelResizeHandle />*/}
-          {/*<Panel>*/}
-          {/*  <PanelGroup direction="horizontal">*/}
-          {/*    <Panel>left</Panel>*/}
-          {/*  </PanelGroup>*/}
-          {/*</Panel>*/}
+          <PanelResizeHandle />
+          <Panel defaultSize={40}>
+            <RawGeojsonPanel />
+          </Panel>
         </PanelGroup>
       </Panel>
-      <PanelResizeHandle />
-      <Panel defaultSize={20}>
-        <RawGeojsonPanel/>
-      </Panel>
+      {/*<PanelResizeHandle />*/}
+      {/*<Panel defaultSize={20}>*/}
+      {/*</Panel>*/}
     </PanelGroup>
   );
 }

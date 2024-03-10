@@ -19,14 +19,14 @@ import { EditHandleFeature } from "@nebula.gl/edit-modes/dist-types/types";
 //   }
 
 export function getPickedEditHandles(
-  picks: Pick[] | null | undefined
+  picks: Pick[] | null | undefined,
 ): EditHandleFeature[] {
   const handles =
     (picks &&
       picks
         .filter(
           (pick) =>
-            pick.isGuide && pick.object.properties.guideType === "editHandle"
+            pick.isGuide && pick.object.properties.guideType === "editHandle",
         )
         .map((pick) => pick.object)) ||
     [];
@@ -35,7 +35,7 @@ export function getPickedEditHandles(
 }
 
 export function getPickedEditHandle(
-  picks: Pick[] | null | undefined
+  picks: Pick[] | null | undefined,
 ): EditHandleFeature | null | undefined {
   const handles = getPickedEditHandles(picks);
   return handles.length ? handles[0] : null;

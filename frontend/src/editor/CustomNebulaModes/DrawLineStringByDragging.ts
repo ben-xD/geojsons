@@ -10,31 +10,38 @@ import {
 } from "@nebula.gl/edit-modes";
 import { StopDraggingEvent } from "@nebula.gl/edit-modes/dist-types/types";
 import { getPickedEditHandle } from "./nebulaCode";
+import { DebouncedFunc } from "lodash";
 
 //
 /* Inspired by nebula.gl's DrawPolygonByDraggingMode */
-type DraggingHandler = (
+type DragHandler = (
   event: DraggingEvent,
-  props: ModeProps<FeatureCollection>
+  props: ModeProps<FeatureCollection>,
 ) => void;
 
+type ThrottledDragHandler = DebouncedFunc<DragHandler>;
+
 export class DrawLineStringByDraggingMode extends DrawLineStringMode {
-  handleDraggingThrottled: DraggingHandler | null | undefined = null;
+  handleDraggingThrottled:
+    | ThrottledDragHandler
+    | DragHandler
+    | null
+    | undefined = null;
 
   // Override the default behavior of DrawLineStringMode to not add a point when the user clicks on the map
-  handleClick(_event: ClickEvent, _props: ModeProps<FeatureCollection>) {
+  handleClick(event: ClickEvent, props: ModeProps<FeatureCollection>) {
     return;
   }
 
   handleStartDragging(
     event: StartDraggingEvent,
-    props: ModeProps<FeatureCollection>
+    props: ModeProps<FeatureCollection>,
   ) {
     event.cancelPan();
     if (props.modeConfig && props.modeConfig.throttleMs) {
       this.handleDraggingThrottled = throttle(
         this.handleDraggingAux,
-        props.modeConfig.throttleMs
+        props.modeConfig.throttleMs,
       );
     } else {
       this.handleDraggingThrottled = this.handleDraggingAux;
@@ -43,13 +50,14 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
 
   handleStopDragging(
     event: StopDraggingEvent,
-    props: ModeProps<FeatureCollection>
+    props: ModeProps<FeatureCollection>,
   ) {
     this.addClickSequence(event);
     const clickSequence = this.getClickSequence();
-    // @ts-ignore
-    if (this.handleDraggingThrottled && this.handleDraggingThrottled.cancel) {
-      // @ts-ignore
+    if (
+      this.handleDraggingThrottled &&
+      "cancel" in this.handleDraggingThrottled
+    ) {
       this.handleDraggingThrottled.cancel();
     }
 
@@ -68,10 +76,7 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
     }
   }
 
-  handleDraggingAux(
-    event: DraggingEvent,
-    _props: ModeProps<FeatureCollection>
-  ) {
+  handleDraggingAux(event: DraggingEvent, props: ModeProps<FeatureCollection>) {
     const { picks } = event;
     const clickedEditHandle = getPickedEditHandle(picks);
 
