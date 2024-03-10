@@ -25,9 +25,9 @@ import {
 } from "../tokens/colors.ts";
 import { Tool } from "../editor/tools.ts";
 import { Toolbar } from "../Toolbar.tsx";
-import { mapTilerKey } from "@/MapStyle.ts";
 import { MapAttribution } from "@/map/MapAttribution.tsx";
 import { BenAttribution } from "@/map/BenAttribution.tsx";
+import { env } from "@/env.ts";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -279,7 +279,7 @@ export const GeojsonsMap = () => {
     // Workaround for error `TS2554: Expected 0 arguments, but got 1.`,
     // see https://github.com/uber/nebula.gl/issues/568#issuecomment-1986910461
     // @ts-expect-error TS2554
-    editableGeojsonLayerProps,
+    editableGeojsonLayerProps
   );
 
   // TODO only use selection layer if "select tool" is active (to prevent drawing selection when moving features)
@@ -306,7 +306,7 @@ export const GeojsonsMap = () => {
         setSelectedFeatureIndexes([]);
       } else {
         setSelectedFeatureIndexes(
-          Array.from(pickingInfos.map((pi: PickingInfo) => pi.index)),
+          Array.from(pickingInfos.map((pi: PickingInfo) => pi.index))
         );
       }
     },
@@ -355,7 +355,7 @@ export const GeojsonsMap = () => {
     map.setMaxPitch(85); // highest value
     map.addSource(terrainSourceId, {
       type: "raster-dem",
-      url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${mapTilerKey}`,
+      url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${env.maptilerApiKey}`,
     });
     map.setTerrain({
       source: terrainSourceId,
@@ -378,7 +378,7 @@ export const GeojsonsMap = () => {
         return isMapDraggable ? "grab" : "default";
       }
     },
-    [isMapDraggable],
+    [isMapDraggable]
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
@@ -460,7 +460,7 @@ export const GeojsonsMap = () => {
           // mapStyle="https://demotiles.maplibre.org/style.json"
           // Using custom map style object
           // mapStyle={mapStyle}
-          mapStyle={`https://api.maptiler.com/maps/landscape/style.json?key=${mapTilerKey}`}
+          mapStyle={`https://api.maptiler.com/maps/landscape/style.json?key=${env.maptilerApiKey}`}
         >
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
         </Map>
