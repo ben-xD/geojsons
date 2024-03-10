@@ -11,7 +11,7 @@ function App() {
             <GeojsonsMap />
           </Panel>
           <PanelResizeHandle />
-          <Panel defaultSize={40}>
+          <Panel style={{ overflow: "auto" }} defaultSize={40}>
             <RawGeojsonPanel />
           </Panel>
         </PanelGroup>
