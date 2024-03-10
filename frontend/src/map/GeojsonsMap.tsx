@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import Map, { MapRef } from "react-map-gl/maplibre";
+import Map, { MapRef, ViewState } from "react-map-gl/maplibre";
 import DeckGL, {
   DeckGLRef,
   DeckProps,
@@ -89,12 +89,6 @@ const editableGeojsonLayerId = "editable-geojson-layer";
 // deck.log.enable();
 // deck.log.level = 3; // or 1 or 2
 
-const initialViewState = {
-  longitude: -0.08648816636906795,
-  latitude: 51.519898434555685,
-  zoom: 1,
-};
-
 // declaration merge to override contructor for EditableGeoJsonLayer. Unfortunately the types say
 // EditableGeoJsonLayer constructor takes 0 args.
 // This didn't help fix error for SelectionLayer: `error TS2554: Expected 0 arguments, but got 1.`
@@ -130,6 +124,8 @@ export const GeojsonsMap = () => {
   const isMapDraggable = useStore.use.isMapDraggable();
   const setIsMapDraggable = useStore.use.setIsMapDraggable();
   const isDoubleClickZoomEnabled = useStore.use.isDoubleClickZoomEnabled();
+  const viewState = useStore.use.viewState();
+  const setViewState = useStore.use.setViewState();
 
   const isDraggingRef = useRef(false);
   const [draggedFc, setDraggedFc] = useState<FeatureCollection | undefined>();
@@ -384,12 +380,10 @@ export const GeojsonsMap = () => {
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
-    console.log("DeckGL onClick", { info, event });
     if (!info.picked && tool === Tool.select) {
       setSelectedFeatureIndexes([]);
     }
     if (info.picked && event.rightButton) {
-      console.log("right clicked");
       setContextMenuOpen(true);
       const { x, y } = info;
       setContextMenuAnchorPoint({ x, y });
@@ -441,7 +435,13 @@ export const GeojsonsMap = () => {
           doubleClickZoom: isDoubleClickZoomEnabled,
         }}
         ref={deckGlRef}
-        initialViewState={initialViewState}
+        // Use Object.assign to create a new object instead of mutating it, to avoid error: `Object is not extensible`
+        initialViewState={Object.assign({}, viewState)}
+        onViewStateChange={(params) =>
+          setViewState(
+            Object.assign({}, params.viewState as unknown as ViewState)
+          )
+        }
         layers={[
           editableGeojsonLayer as unknown as Layer,
           isSelectionLayerEnabled
@@ -454,7 +454,6 @@ export const GeojsonsMap = () => {
           onClick={() => console.log("map onclick")}
           // I don't use the map from the ref because the map isn't loaded yet, so it's not useful
           // ref={(map) => setMap(map)}
-          initialViewState={initialViewState}
           style={{ width: 600, height: 400 }}
           // We render could a separate component for it to allow it to be clicked. Otherwise, deck.gl prevents clicks. See https://github.com/visgl/deck.gl/issues/4165
           attributionControl={false}

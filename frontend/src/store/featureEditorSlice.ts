@@ -5,6 +5,7 @@ import { arraysEqual } from "../arrays/areArraysEqual";
 import { Mutators, State } from "./store";
 import { v4 as uuidv4 } from "uuid";
 import { emptyFeatureCollection } from "@/data/featureCollection";
+import { ViewState } from "react-map-gl/dist/esm/types";
 
 export type UserAction =
   | { type: "featureCollection"; collection: FeatureCollection }
@@ -33,6 +34,8 @@ export interface FeatureEditorSlice {
   redo: () => void;
   undoStack: UserAction[];
   redoStack: UserAction[];
+  viewState: ViewState;
+  setViewState: (viewState: ViewState) => void;
 }
 
 // TODO prompt redo stack will be cleared when doing an action?
@@ -57,7 +60,7 @@ export const createFeatureEditorSlice: StateCreator<
         state.isDoubleClickZoomEnabled = tool === Tool.hand;
       },
       false,
-      { type: "setTool" },
+      { type: "setTool" }
     ),
   pickable: true,
   setPickable: (pickable: boolean) =>
@@ -73,7 +76,7 @@ export const createFeatureEditorSlice: StateCreator<
     set(
       (state) => {
         const features = state.featureCollection.features.filter(
-          (_f, i) => !state.selectedFeatureIndexes.includes(i),
+          (_f, i) => !state.selectedFeatureIndexes.includes(i)
         );
         console.log(`final features`, features.length);
         applyFeatureCollectionUpdate(state, {
@@ -84,7 +87,7 @@ export const createFeatureEditorSlice: StateCreator<
         // get().updateFeatureCollection({ ...state.featureCollection, features });
       },
       false,
-      { type: "deleteSelectedFeatures" },
+      { type: "deleteSelectedFeatures" }
     ),
   updateFeatureCollection: (data: FeatureCollection) =>
     set(
@@ -92,7 +95,7 @@ export const createFeatureEditorSlice: StateCreator<
         applyFeatureCollectionUpdate(state, data);
       },
       false,
-      { type: "updateFeatureCollection" },
+      { type: "updateFeatureCollection" }
     ),
   setSelectedFeatureIndexes: (indexes: number[]) =>
     set(
@@ -112,7 +115,7 @@ export const createFeatureEditorSlice: StateCreator<
         // }
       },
       false,
-      { type: "setSelectedFeatureIndexes" },
+      { type: "setSelectedFeatureIndexes" }
     ),
   undo: () =>
     set(
@@ -129,7 +132,7 @@ export const createFeatureEditorSlice: StateCreator<
             ];
             state.featureCollection = lastItem.collection;
             state.selectedFeatureIndexes = state.selectedFeatureIndexes.filter(
-              (value) => value < lastItem?.collection?.features?.length,
+              (value) => value < lastItem?.collection?.features?.length
             );
           } else if (lastItem.type === "selection") {
             state.tool = Tool.select;
@@ -158,7 +161,7 @@ export const createFeatureEditorSlice: StateCreator<
         }
       },
       false,
-      { type: "undo" },
+      { type: "undo" }
     ),
   redo: () =>
     set(
@@ -175,7 +178,7 @@ export const createFeatureEditorSlice: StateCreator<
             ];
             state.featureCollection = lastItem.collection;
             state.selectedFeatureIndexes = state.selectedFeatureIndexes.filter(
-              (value) => value < lastItem?.collection?.features?.length,
+              (value) => value < lastItem?.collection?.features?.length
             );
           } else if (lastItem.type === "selection") {
             state.tool = Tool.select;
@@ -204,15 +207,32 @@ export const createFeatureEditorSlice: StateCreator<
         }
       },
       false,
-      { type: "redo" },
+      { type: "redo" }
     ),
+  viewState: {
+    longitude: -0.08648816636906795,
+    latitude: 51.519898434555685,
+    zoom: 1,
+    pitch: 0,
+    bearing: 0,
+    padding: {
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+    },
+  },
+  setViewState: (viewState: ViewState) =>
+    set((state) => {
+      state.viewState = viewState;
+    }),
 });
 
 const createFeatureId = () => `feature-${uuidv4()}`;
 
 export const applyFeatureCollectionUpdate = (
   state: FeatureEditorSlice,
-  next: FeatureCollection,
+  next: FeatureCollection
 ) => {
   const features = next.features.map<Feature>((f) => ({
     id: createFeatureId(),
@@ -240,7 +260,7 @@ export const applyFeatureCollectionUpdate = (
 export const applyReordering = (
   state: FeatureEditorSlice,
   newCollection: FeatureCollection,
-  newSelectedFeatureIndexes: number[],
+  newSelectedFeatureIndexes: number[]
 ) => {
   const features = newCollection.features.map<Feature>((f, i) => ({
     id: state.featureCollection.features[i].id,
