@@ -1,5 +1,6 @@
 import { useBoundStore } from "@/store/store.ts";
 import { EditorState } from "@codemirror/state";
+import { basicSetup } from "codemirror";
 import { EditorView, keymap } from "@codemirror/view";
 import { defaultKeymap } from "@codemirror/commands";
 import { json } from "@codemirror/lang-json";
@@ -20,7 +21,12 @@ export const RawGeojsonPanel = () => {
 
   const extensions = useMemo(
     () => [
-      keymap.of(defaultKeymap),
+      // EditorView.theme({
+      //   // "&": { maxHeight: "100%" },
+      //   ".cm-scroller": { overflow: "auto" },
+      // }),
+      basicSetup,
+      // keymap.of(defaultKeymap),
       json(),
       EditorView.lineWrapping,
       EditorView.updateListener.of(function (e) {
@@ -42,11 +48,6 @@ export const RawGeojsonPanel = () => {
   );
 
   useEffect(() => {
-    // const styleExtension = EditorView.theme({
-    //   "&": {maxHeight: "100%"},
-    //   ".cm-scroller": {overflow: "auto"}
-    // })
-
     const startState = EditorState.create({
       doc: JSON.stringify(emptyFeatureCollection),
       extensions,
@@ -64,21 +65,41 @@ export const RawGeojsonPanel = () => {
   }, [extensions]);
 
   useEffect(() => {
+    const view = editorViewRef.current;
+    if (!view) return;
+    console.log(`fc updated`, fc);
     setErrorMessage(undefined);
-    editorViewRef.current?.setState(
-      EditorState.create({
-        doc: JSON.stringify(fc, null, 2),
-        extensions,
-      }),
-    );
+    // Check if its identical, only update if it's not. Prevents infinite render loop.
+    const newContent = JSON.stringify(fc, null, 2);
+    const currentContent = view.state.doc.toString();
+    if (currentContent === newContent) return;
+
+    view.dispatch({
+      changes: {
+        from: 0,
+        to: view.state.doc.length,
+        insert: newContent,
+      },
+    });
+
+    // Alternative syntax:
+    // const transaction = view.state.update({
+    //   changes: {
+    //     from: 0,
+    //     to: view.state.doc.length,
+    //     insert: newContent,
+    //   },
+    // });
+    // view.dispatch(transaction);
   }, [extensions, fc]);
 
   useEffect(() => {
+    console.log(`userUpdatedFc updated`);
     if (userUpdatedFc) setFc(userUpdatedFc);
   }, [setFc, userUpdatedFc]);
 
   return (
-    <div className="flex flex-col gap-2 w-full m-2">
+    <div className="flex flex-col gap-2 m-2">
       <h2 className="text-2xl text-slate-800">geojsons.com</h2>
       <p className="text-lg">Draw like its Excalidraw or Figma, but on maps.</p>
       <p>
@@ -108,7 +129,7 @@ export const RawGeojsonPanel = () => {
           {errorMessage}
         </p>
       )}
-      <div className="overflow-auto max-h-full" ref={editorContainerRef}></div>
+      <div className="" ref={editorContainerRef}></div>
       {/*Previous display without code mirror:*/}
       {/*<pre className="overflow-auto max-h-full whitespace-pre-wrap">{JSON.stringify(fc, null, 2)}</pre>*/}
     </div>

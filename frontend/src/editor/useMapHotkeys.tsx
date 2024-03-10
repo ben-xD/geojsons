@@ -15,13 +15,13 @@ export const useMapHotkeys = () => {
   const undo = useBoundStore((state) => state.undo);
   const fc = useBoundStore((state) => state.featureCollection);
   const setSelectedFeatureIndexes = useBoundStore(
-    (state) => state.setSelectedFeatureIndexes
+    (state) => state.setSelectedFeatureIndexes,
   );
   const undoStackSize = useUndoStackSize();
   const redoStackSize = useRedoStackSize();
   const redo = useBoundStore((state) => state.redo);
   const deleteSelectedFeatures = useBoundStore(
-    (state) => state.deleteSelectedFeatures
+    (state) => state.deleteSelectedFeatures,
   );
 
   useKeyboardConfig(Tool.select);

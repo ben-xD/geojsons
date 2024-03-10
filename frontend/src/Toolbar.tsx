@@ -116,7 +116,7 @@ const UndoButton = () => {
     <button
       onClick={undo}
       className={cn(
-        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500"
+        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500",
       )}
     >
       <Undo />
@@ -129,7 +129,7 @@ const RedoButton = () => {
     <button
       onClick={redo}
       className={cn(
-        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500"
+        "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100 active:bg-blue-500",
       )}
     >
       <Redo />
@@ -156,7 +156,7 @@ const ToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
           <div
             className={cn(
               "p-2 rounded-lg m-1 transition-all ease-in-out hover:bg-blue-100",
-              { "bg-blue-500 text-white hover:bg-blue-600": isSelected }
+              { "bg-blue-500 text-white hover:bg-blue-600": isSelected },
             )}
           >
             {props.icon}
