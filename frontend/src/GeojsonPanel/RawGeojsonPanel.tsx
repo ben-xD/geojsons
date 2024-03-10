@@ -106,7 +106,25 @@ export const RawGeojsonPanel = () => {
         <Trash2 onClick={() => setFc(emptyFeatureCollection)} />
       </div>
       <p className="text-lg">
-        Draw just like its Excalidraw or Figma, on maps.
+        Draw just like its{" "}
+        <a
+          className="underline text-slate-600"
+          target="_blank"
+          href="https://excalidraw.com"
+          rel="noreferrer"
+        >
+          excalidraw
+        </a>{" "}
+        or{" "}
+        <a
+          className="underline text-slate-600"
+          target="_blank"
+          href="https://tldraw.com"
+          rel="noreferrer"
+        >
+          tldraw
+        </a>
+        , but on a map.
       </p>
       <p>
         See{" "}
