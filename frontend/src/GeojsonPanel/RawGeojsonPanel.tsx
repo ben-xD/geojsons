@@ -49,7 +49,7 @@ export const RawGeojsonPanel = () => {
         }
       }),
     ],
-    [setFc]
+    [setFc],
   );
 
   useEffect(() => {

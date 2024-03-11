@@ -60,7 +60,7 @@ export const createFeatureEditorSlice: StateCreator<
         state.isDoubleClickZoomEnabled = tool === Tool.hand;
       },
       false,
-      { type: "setTool" }
+      { type: "setTool" },
     ),
   pickable: true,
   setPickable: (pickable: boolean) =>
@@ -76,7 +76,7 @@ export const createFeatureEditorSlice: StateCreator<
     set(
       (state) => {
         const features = state.featureCollection.features.filter(
-          (_f, i) => !state.selectedFeatureIndexes.includes(i)
+          (_f, i) => !state.selectedFeatureIndexes.includes(i),
         );
         console.log(`final features`, features.length);
         applyFeatureCollectionUpdate(state, {
@@ -87,7 +87,7 @@ export const createFeatureEditorSlice: StateCreator<
         // get().updateFeatureCollection({ ...state.featureCollection, features });
       },
       false,
-      { type: "deleteSelectedFeatures" }
+      { type: "deleteSelectedFeatures" },
     ),
   updateFeatureCollection: (data: FeatureCollection) =>
     set(
@@ -95,7 +95,7 @@ export const createFeatureEditorSlice: StateCreator<
         applyFeatureCollectionUpdate(state, data);
       },
       false,
-      { type: "updateFeatureCollection" }
+      { type: "updateFeatureCollection" },
     ),
   setSelectedFeatureIndexes: (indexes: number[]) =>
     set(
@@ -115,7 +115,7 @@ export const createFeatureEditorSlice: StateCreator<
         // }
       },
       false,
-      { type: "setSelectedFeatureIndexes" }
+      { type: "setSelectedFeatureIndexes" },
     ),
   undo: () =>
     set(
@@ -132,7 +132,7 @@ export const createFeatureEditorSlice: StateCreator<
             ];
             state.featureCollection = lastItem.collection;
             state.selectedFeatureIndexes = state.selectedFeatureIndexes.filter(
-              (value) => value < lastItem?.collection?.features?.length
+              (value) => value < lastItem?.collection?.features?.length,
             );
           } else if (lastItem.type === "selection") {
             state.tool = Tool.select;
@@ -161,7 +161,7 @@ export const createFeatureEditorSlice: StateCreator<
         }
       },
       false,
-      { type: "undo" }
+      { type: "undo" },
     ),
   redo: () =>
     set(
@@ -178,7 +178,7 @@ export const createFeatureEditorSlice: StateCreator<
             ];
             state.featureCollection = lastItem.collection;
             state.selectedFeatureIndexes = state.selectedFeatureIndexes.filter(
-              (value) => value < lastItem?.collection?.features?.length
+              (value) => value < lastItem?.collection?.features?.length,
             );
           } else if (lastItem.type === "selection") {
             state.tool = Tool.select;
@@ -207,7 +207,7 @@ export const createFeatureEditorSlice: StateCreator<
         }
       },
       false,
-      { type: "redo" }
+      { type: "redo" },
     ),
   viewState: {
     longitude: -0.08648816636906795,
@@ -232,7 +232,7 @@ const createFeatureId = () => `feature-${uuidv4()}`;
 
 export const applyFeatureCollectionUpdate = (
   state: FeatureEditorSlice,
-  next: FeatureCollection
+  next: FeatureCollection,
 ) => {
   const features = next.features.map<Feature>((f) => ({
     id: createFeatureId(),
@@ -260,7 +260,7 @@ export const applyFeatureCollectionUpdate = (
 export const applyReordering = (
   state: FeatureEditorSlice,
   newCollection: FeatureCollection,
-  newSelectedFeatureIndexes: number[]
+  newSelectedFeatureIndexes: number[],
 ) => {
   const features = newCollection.features.map<Feature>((f, i) => ({
     id: state.featureCollection.features[i].id,

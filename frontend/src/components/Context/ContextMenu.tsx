@@ -9,15 +9,15 @@ import { useStore } from "../../store/store";
 
 export const ContextMenu = (props: ControlledMenuProps) => {
   const deleteCurrentSelectedFeatures = useStore(
-    (state) => state.deleteSelectedFeatures
+    (state) => state.deleteSelectedFeatures,
   );
   const bringSelectionForward = useStore(
-    (state) => state.bringSelectionForward
+    (state) => state.bringSelectionForward,
   );
   const bringSelectionToFront = useStore.use.bringSelectionToFront();
 
   const sendSelectionBackward = useStore(
-    (state) => state.sendSelectionBackward
+    (state) => state.sendSelectionBackward,
   );
   const sendSelectionToBack = useStore((state) => state.sendSelectionToBack);
 

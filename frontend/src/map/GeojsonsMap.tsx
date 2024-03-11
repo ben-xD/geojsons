@@ -275,7 +275,7 @@ export const GeojsonsMap = () => {
     // Workaround for error `TS2554: Expected 0 arguments, but got 1.`,
     // see https://github.com/uber/nebula.gl/issues/568#issuecomment-1986910461
     // @ts-expect-error TS2554
-    editableGeojsonLayerProps
+    editableGeojsonLayerProps,
   );
 
   // TODO only use selection layer if "select tool" is active (to prevent drawing selection when moving features)
@@ -302,7 +302,7 @@ export const GeojsonsMap = () => {
         setSelectedFeatureIndexes([]);
       } else {
         setSelectedFeatureIndexes(
-          Array.from(pickingInfos.map((pi: PickingInfo) => pi.index))
+          Array.from(pickingInfos.map((pi: PickingInfo) => pi.index)),
         );
       }
     },
@@ -376,7 +376,7 @@ export const GeojsonsMap = () => {
         return isMapDraggable ? "grab" : "default";
       }
     },
-    [isMapDraggable, tool]
+    [isMapDraggable, tool],
   );
 
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
@@ -439,7 +439,7 @@ export const GeojsonsMap = () => {
         initialViewState={Object.assign({}, viewState)}
         onViewStateChange={(params) =>
           setViewState(
-            Object.assign({}, params.viewState as unknown as ViewState)
+            Object.assign({}, params.viewState as unknown as ViewState),
           )
         }
         layers={[

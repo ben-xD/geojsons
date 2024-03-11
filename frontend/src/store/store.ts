@@ -48,10 +48,10 @@ export const useStoreOriginal = create<State>()(
       devtools((...a) => ({
         ...createFeatureEditorSlice(...a),
         ...createReorderFeatureSlice(...a),
-      }))
+      })),
     ),
-    { name: applicationLocalStorageName }
-  )
+    { name: applicationLocalStorageName },
+  ),
 );
 
 // This follows https://docs.pmnd.rs/zustand/guides/auto-generating-selectors

@@ -61,7 +61,7 @@ export const GeometryCollection = z.object({
       MultiPoint,
       MultiLineString,
       MultiPolygon,
-    ])
+    ]),
   ),
 });
 export type GeometryCollection = z.infer<typeof GeometryCollection>;
