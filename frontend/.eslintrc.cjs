@@ -13,8 +13,9 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   plugins: ["react-refresh"],
   rules: {
+    // Following changes similar to https://github.com/shadcn-ui/ui/issues/1534#issue-1899453318 because shadcn/ui doesn't respect this rule
     "react-refresh/only-export-components": [
-      "warn",
+      "off",
       { allowConstantExport: true },
     ],
     // Too much spam when we don't use variables when overriding methods in classes.
