@@ -20,10 +20,11 @@ export const ClearDataAlertDialog = () => {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogTitle>Clear all data?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete any local data and refresh the page.
-            You can't undo this.
+            {
+              "This will permanently delete any local data and refresh the page. You can't undo this."
+            }
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
