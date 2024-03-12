@@ -1,7 +1,12 @@
 import { immer } from "zustand/middleware/immer";
 import { getNebulaModeForTool } from "../editor/tools";
 import { create, StateCreator } from "zustand";
-import { createJSONStorage, devtools, persist } from "zustand/middleware";
+import {
+  createJSONStorage,
+  devtools,
+  persist,
+  subscribeWithSelector,
+} from "zustand/middleware";
 import {
   GeoJsonEditMode,
   RotateMode,
@@ -19,47 +24,54 @@ import {
 } from "./featureEditorSlice";
 import { createSelectors } from "./createSelectors";
 
-//  TODO make TS config stricter
-
-// Slices pattern in this file follows the pattern in https://github.com/pmndrs/zustand/issues/508#issuecomment-955722581
-
-// If we need computed properties, consider https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721 or a middleware: https://github.com/cmlarsen/zustand-middleware-computed-state
-
-// It was weird getting types to work with Zustand + middleware (immer, devtools). After waking up the next day, it just worked. 🫠️.
-// see https://github.com/pmndrs/zustand/discussions/2195
-// see https://docs.pmnd.rs/zustand/guides/typescript
-// see https://github.com/pmndrs/zustand/discussions/1281
-
+// Consider reading https://docs.pmnd.rs/zustand/guides/typescript
 // Slices are just smaller stores. Technically, they are still stores. So you can call them either.
 // See https://docs.pmnd.rs/zustand/guides/slices-pattern#usage-with-typescript
+// Slices pattern in this file follows the pattern in https://github.com/pmndrs/zustand/issues/508#issuecomment-955722581
+// Also see
+// - https://github.com/pmndrs/zustand/discussions/2195
+// - https://github.com/pmndrs/zustand/discussions/1281
+
+// If we need computed properties, implement custom hooks that use useStore().
+// - Using a nested `computed` object following https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721 doesn't work with immer because `get()` is returns undefined state
+// - 3rd party middleware is quite old, and unclear if it will work: https://github.com/cmlarsen/zustand-middleware-computed-state
 
 export type State = FeatureEditorSlice & ReorderFeatureSlice;
 
 export type GeojsonsStateCreator<T> = StateCreator<State, Mutators, [], T>;
 
-export type Mutators = [["zustand/immer", never], ["zustand/devtools", never]];
+export type Mutators = [
+  ["zustand/devtools", never],
+  ["zustand/subscribeWithSelector", never],
+  ["zustand/persist", unknown],
+  ["zustand/immer", never],
+];
 
 const applicationLocalStorageName = "geojsons.com";
-// reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md
+// reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md. Daishi (the maintainer) suggests following Tests over docs, if they're inconsistent.
 // > because devtools mutates the setState and adds a type parameter on it, which could get lost if other middlewares (like immer) also mutate setState before devtools.
+// Extra: We could add the subscribeWithSelector middleware to subscribe to changes outside of react components. See https://github.com/pmndrs/zustand/issues/930#issuecomment-1991359077
+// The zustand docs would call this useBoundStore/useBoundStoreOriginal, to avoid confusion with useStore exported by zustand.
+// See discord conversation: https://discord.com/channels/740090768164651008/740093228904218657/1215437737491042304
 export const useStoreOriginal = create<State>()(
-  persist(
-    immer(
-      devtools((...a) => ({
-        ...createFeatureEditorSlice(...a),
-        ...createReorderFeatureSlice(...a),
-      })),
-    ),
-    { name: applicationLocalStorageName },
-  ),
+  devtools(
+    subscribeWithSelector(
+      persist(
+        immer((...a) => ({
+          ...createFeatureEditorSlice(...a),
+          ...createReorderFeatureSlice(...a),
+        })),
+        { name: applicationLocalStorageName }
+      )
+    )
+  )
 );
 
 // This follows https://docs.pmnd.rs/zustand/guides/auto-generating-selectors
-// Just allows a slighter shorter way of getting properties and actions (auto generated selectors)
-// You can use it like `const tool = useStore.use.tool()` instead of
+// Just allows a slighter shorter/simpler way of getting properties
+// and actions (auto generated selectors). You can use it like
+// `const tool = useStore.use.tool()` instead of
 // `const tool = useStore((state) => state.tool);`
-// The zustand docs would call this useBoundStore, to avoid confusion with useStore exported by zustand.
-// See discord conversation: https://discord.com/channels/740090768164651008/740093228904218657/1215437737491042304
 export const useStore = createSelectors(useStoreOriginal);
 
 const modesRequiringFeatures = new Set<typeof GeoJsonEditMode>([
@@ -90,7 +102,13 @@ export const useRedoStackSize = () =>
 
 export const resetStateAndReloadPage = (): void => {
   useStore.persist.clearStorage();
-
-  // Reload the page to reload the state
   window.location.reload();
 };
+
+// Example usage of subscribeWithSelector feature:
+// useStore.subscribe(
+//   (state) => state.undoStack,
+//   (undoStack, previousUndoStack) => {
+//     console.log("useStore.subscribe undoStack", undoStack);
+//   }
+// );
