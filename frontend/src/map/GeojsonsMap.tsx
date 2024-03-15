@@ -321,10 +321,9 @@ export const GeojsonsMap = () => {
       setPickable(false);
     },
     onKeyUp: () => {
-      if (tool === Tool.hand) {
-        setIsMapDraggable(false);
-        setPickable(true);
-      }
+      const currentTool = useStore.getState().tool;
+      setIsMapDraggable(currentTool === Tool.hand);
+      setPickable(currentTool !== Tool.hand);
     },
   });
 
