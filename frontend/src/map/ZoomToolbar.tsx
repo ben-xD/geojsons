@@ -1,4 +1,10 @@
 import { useStore } from "@/store/store";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Minus, Plus, Target } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useEffect, useRef } from "react";
@@ -37,33 +43,60 @@ export const ZoomToolbar = () => {
 
   return (
     <div className="flex-col top-4 md:top-auto md:bottom-4 flex-wrap absolute text-slate-700 right-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
-      <button
-        className={cn(
-          "p-2 rounded-lg m-1 transition-all ease-in-out hover:enabled:bg-blue-100 active:enabled:bg-blue-500 disabled:text-slate-300",
-          { "bg-blue-500 text-white hover:bg-blue-600": isUserLocated },
-        )}
-        onClick={onShowUserLocation}
-      >
-        <Target size={iconSizePx} />
-      </button>
-      <button
-        disabled={viewState.zoom >= 20}
-        className={cn(
-          "p-2 rounded-lg m-1 transition-all ease-in-out hover:enabled:bg-blue-100 active:enabled:bg-blue-500 disabled:text-slate-300",
-        )}
-        onClick={zoomIn}
-      >
-        <Plus size={iconSizePx} />
-      </button>
-      <button
-        disabled={viewState.zoom <= 0}
-        onClick={zoomOut}
-        className={cn(
-          "p-2 rounded-lg m-1 transition-all ease-in-out hover:enabled:bg-blue-100 active:enabled:bg-blue-500 disabled:text-slate-300",
-        )}
-      >
-        <Minus size={iconSizePx} />
-      </button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className={cn(
+                "p-2 rounded-lg m-1 transition-all ease-in-out hover:enabled:bg-blue-100 active:enabled:bg-blue-500 disabled:text-slate-300",
+                { "bg-blue-500 text-white hover:bg-blue-600": isUserLocated },
+              )}
+              onClick={onShowUserLocation}
+            >
+              <Target size={iconSizePx} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>Your location</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              disabled={viewState.zoom >= 20}
+              className={cn(
+                "p-2 rounded-lg m-1 transition-all ease-in-out hover:enabled:bg-blue-100 active:enabled:bg-blue-500 disabled:text-slate-300",
+              )}
+              onClick={zoomIn}
+            >
+              <Plus size={iconSizePx} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>Zoom in</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              disabled={viewState.zoom <= 0}
+              onClick={zoomOut}
+              className={cn(
+                "p-2 rounded-lg m-1 transition-all ease-in-out hover:enabled:bg-blue-100 active:enabled:bg-blue-500 disabled:text-slate-300",
+              )}
+            >
+              <Minus size={iconSizePx} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>Zoom out</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
