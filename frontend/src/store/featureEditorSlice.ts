@@ -7,6 +7,13 @@ import { v4 as uuidv4 } from "uuid";
 import { emptyFeatureCollection } from "@/data/featureCollection";
 import { ViewState } from "react-map-gl/dist/esm/types";
 
+export interface UserLocation {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  heading: number | null;
+}
+
 export type UserAction =
   | { type: "featureCollection"; collection: FeatureCollection }
   | { type: "selection"; selectedFeatureIndexes: number[] }
@@ -36,6 +43,10 @@ export interface FeatureEditorSlice {
   redoStack: UserAction[];
   viewState: ViewState;
   setViewState: (viewState: ViewState) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  userLocation: UserLocation | undefined;
+  setUserLocation: (userLocation?: UserLocation) => void;
 }
 
 // TODO prompt redo stack will be cleared when doing an action?
@@ -225,6 +236,31 @@ export const createFeatureEditorSlice: StateCreator<
   setViewState: (viewState: ViewState) =>
     set((state) => {
       state.viewState = viewState;
+    }),
+  zoomIn: () => {
+    set((state) => {
+      state.viewState.zoom = Math.round(state.viewState.zoom) + 1;
+    });
+  },
+  zoomOut: () => {
+    set((state) => {
+      if (state.viewState.zoom > 0) {
+        state.viewState.zoom = Math.round(state.viewState.zoom) - 1;
+      }
+    });
+  },
+  userLocation: undefined,
+  setUserLocation: (userLocation?: UserLocation) =>
+    set((state) => {
+      if (
+        !state.userLocation &&
+        userLocation?.latitude &&
+        userLocation?.longitude
+      ) {
+        state.viewState.latitude = userLocation?.latitude;
+        state.viewState.longitude = userLocation?.longitude;
+      }
+      state.userLocation = userLocation;
     }),
 });
 

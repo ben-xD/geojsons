@@ -47,6 +47,8 @@ export type Mutators = [
   ["zustand/immer", never],
 ];
 
+const unpersistedProperties = ["userLocation"];
+
 const applicationLocalStorageName = "geojsons.com";
 // reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md. Daishi (the maintainer) suggests following Tests over docs, if they're inconsistent.
 // > because devtools mutates the setState and adds a type parameter on it, which could get lost if other middlewares (like immer) also mutate setState before devtools.
@@ -61,10 +63,18 @@ export const useStoreOriginal = create<State>()(
           ...createFeatureEditorSlice(...a),
           ...createReorderFeatureSlice(...a),
         })),
-        { name: applicationLocalStorageName }
-      )
-    )
-  )
+        {
+          name: applicationLocalStorageName,
+          partialize: (state) =>
+            Object.fromEntries(
+              Object.entries(state).filter(
+                ([key]) => !unpersistedProperties.includes(key),
+              ),
+            ),
+        },
+      ),
+    ),
+  ),
 );
 
 // This follows https://docs.pmnd.rs/zustand/guides/auto-generating-selectors

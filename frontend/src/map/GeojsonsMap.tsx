@@ -29,6 +29,8 @@ import { MapAttribution } from "@/map/MapAttribution.tsx";
 import { BenAttribution } from "@/map/BenAttribution.tsx";
 import { env } from "@/env.ts";
 import { toolsWithCrosshairCursor } from "@/editor/tools";
+import { ZoomToolbar } from "./ZoomToolbar.tsx";
+import { useUserLocationLayers } from "@/map/UserLocationLayer";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -379,6 +381,8 @@ export const GeojsonsMap = () => {
     [isMapDraggable, tool],
   );
 
+  const userLocationLayers = useUserLocationLayers();
+
   const onClick = (info: PickingInfo, event: MjolnirGestureEvent) => {
     if (!info.picked && tool === Tool.select) {
       setSelectedFeatureIndexes([]);
@@ -447,6 +451,7 @@ export const GeojsonsMap = () => {
           isSelectionLayerEnabled
             ? (selectionLayer as unknown as Layer)
             : undefined,
+          userLocationLayers,
         ]}
       >
         <Map
@@ -467,6 +472,7 @@ export const GeojsonsMap = () => {
         </Map>
       </DeckGL>
       <MapAttribution />
+      <ZoomToolbar />
       <Toolbar />
       <BenAttribution />
       <ContextMenu
