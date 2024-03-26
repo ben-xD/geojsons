@@ -159,7 +159,9 @@ export const GeojsonsMap = () => {
     },
     pickable,
     modeConfig: {
+      viewport: viewState,
       dragToDraw: true,
+      screenSpace: true,
       // enableSnapping: true,
     },
     getLineWidth: (feature: Feature) => {
