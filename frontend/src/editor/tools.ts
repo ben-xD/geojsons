@@ -31,7 +31,6 @@ export const Tool = {
 export type Tool = keyof typeof Tool;
 
 export const toolsWithCrosshairCursor = new Set<Tool>([
-  Tool.edit,
   Tool.rectangle,
   Tool.circle,
   Tool.ellipse,

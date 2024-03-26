@@ -389,6 +389,15 @@ export const GeojsonsMap = () => {
     if (!info.picked && tool === Tool.select) {
       setSelectedFeatureIndexes([]);
     }
+    if (
+      !info.picked &&
+      tool === Tool.edit &&
+      "tapCount" in event &&
+      event.tapCount === 2
+    ) {
+      setSelectedFeatureIndexes([]);
+      setTool(Tool.select);
+    }
     if (info.picked && event.rightButton) {
       setContextMenuOpen(true);
       const { x, y } = info;
