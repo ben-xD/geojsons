@@ -277,9 +277,8 @@ export const GeojsonsMap = () => {
   };
 
   const editableGeojsonLayer = new EditableGeoJsonLayer(
-    // Workaround for error `TS2554: Expected 0 arguments, but got 1.`,
+    // @ts-expect-error TS2554 Workaround for error `TS2554: Expected 0 arguments, but got 1.`,
     // see https://github.com/uber/nebula.gl/issues/568#issuecomment-1986910461
-    // @ts-expect-error TS2554
     editableGeojsonLayerProps,
   );
 
@@ -292,8 +291,7 @@ export const GeojsonsMap = () => {
     !isMapDraggable &&
     (tool === "select" || tool === Tool.edit);
   const selectionType = tool === "select" ? "rectangle" : "polygon";
-  // workaround nebula.gl types using https://github.com/uber/nebula.gl/issues/568#issuecomment-836324975
-  // @ts-expect-error TS2554
+  // @ts-expect-error TS2554 workaround nebula.gl types using https://github.com/uber/nebula.gl/issues/568#issuecomment-836324975
   const selectionLayer = new SelectionLayer<FeatureCollection>({
     id: "selection",
     selectionType,
