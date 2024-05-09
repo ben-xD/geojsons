@@ -7,13 +7,12 @@ import {
   LineString,
   ModeProps,
   StartDraggingEvent,
-} from "@nebula.gl/edit-modes";
-import { StopDraggingEvent } from "@nebula.gl/edit-modes/dist-types/types";
-import { getPickedEditHandle } from "./nebulaCode";
+  StopDraggingEvent
+} from "@deck.gl-community/editable-layers";
 import { DebouncedFunc } from "lodash";
+import { getPickedEditHandle } from "./nebulaCode";
 
-//
-/* Inspired by nebula.gl's DrawPolygonByDraggingMode */
+/* Inspired by DrawPolygonByDraggingMode */
 type DragHandler = (
   event: DraggingEvent,
   props: ModeProps<FeatureCollection>,

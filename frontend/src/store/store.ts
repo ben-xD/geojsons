@@ -2,7 +2,6 @@ import { immer } from "zustand/middleware/immer";
 import { getNebulaModeForTool } from "../editor/tools";
 import { create, StateCreator } from "zustand";
 import {
-  createJSONStorage,
   devtools,
   persist,
   subscribeWithSelector,
@@ -13,7 +12,7 @@ import {
   ScaleMode,
   TransformMode,
   ViewMode,
-} from "@nebula.gl/edit-modes";
+} from "@deck.gl-community/editable-layers";
 import {
   createReorderFeatureSlice,
   ReorderFeatureSlice,

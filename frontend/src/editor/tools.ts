@@ -10,7 +10,7 @@ import {
   GeoJsonEditMode,
   DrawPointMode,
   ModifyMode,
-} from "@nebula.gl/edit-modes";
+} from "@deck.gl-community/editable-layers";
 import { DrawLineStringByDraggingMode } from "@/editor/CustomNebulaModes/DrawLineStringByDragging";
 
 export const Tool = {

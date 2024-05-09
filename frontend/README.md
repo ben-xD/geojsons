@@ -2,4 +2,4 @@
 
 View, edit and share geojsons.
 
-Uses React, Deck.gl, Nebula.gl and Zustand.
+Uses React, Deck.gl and Zustand.

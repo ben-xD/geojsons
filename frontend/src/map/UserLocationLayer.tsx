@@ -1,6 +1,6 @@
 import { FeatureCollection } from "@/data/validator/geojson";
 import { useStore } from "@/store/store";
-import { GeoJsonLayer } from "deck.gl/typed";
+import { GeoJsonLayer } from "deck.gl";
 
 export const useUserLocationLayers = () => {
   const userLocation = useStore.use.userLocation();

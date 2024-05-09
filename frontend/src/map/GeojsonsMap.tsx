@@ -5,9 +5,9 @@ import DeckGL, {
   DeckProps,
   Layer,
   PickingInfo,
-} from "deck.gl/typed";
+} from "deck.gl";
 import type { Feature, FeatureCollection } from "@/data/validator/geojson.ts";
-import { EditableGeoJsonLayer, SelectionLayer } from "@nebula.gl/layers";
+import { EditableGeoJsonLayer, SelectionLayer } from "@deck.gl-community/editable-layers";
 
 // Following some random github issue to fix styling
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -423,7 +423,7 @@ export const GeojsonsMap = () => {
         //   }
         // }}
         // onWebGLInitialized={setGlContext}
-        // is there a nebula.gl option that will drag first time
+        // is there a deck.gl option that will drag first time
         // onDrag={(info) => {
         //   console.log('onDrag');
         //   // TODO move item immediately
