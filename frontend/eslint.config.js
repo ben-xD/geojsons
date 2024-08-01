@@ -7,6 +7,7 @@ import eslintPluginReactHooks from "eslint-plugin-react-hooks";
 import eslintPluginPrettier from "eslint-plugin-prettier";
 import tseslintParser from "@typescript-eslint/parser";
 import eslintPluginReactRefresh from "eslint-plugin-react-refresh";
+import eslintTailwind from "eslint-plugin-tailwindcss";
 
 const __dirname = import.meta.dirname;
 
@@ -14,6 +15,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
+  ...eslintTailwind.configs["flat/recommended"],
   eslintReactRecommended,
   eslintReactJsxRuntime,
   // This needs to in a separate object to be a "global ignore". See https://github.com/eslint/eslint/discussions/17429
