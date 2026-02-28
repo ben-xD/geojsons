@@ -1,5 +1,5 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { type ViewState } from "react-map-gl/maplibre";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Map, { type MapRef, type ViewState } from "react-map-gl/maplibre";
 import { DeckGL, type DeckGLRef, type Layer, type PickingInfo } from "deck.gl";
 import type { Feature, FeatureCollection } from "@/data/validator/geojson.ts";
 import { EditableGeoJsonLayer, SelectionLayer } from "@deck.gl-community/editable-layers";
@@ -7,6 +7,8 @@ import { EditableGeoJsonLayer, SelectionLayer } from "@deck.gl-community/editabl
 // CSS for maplibre-gl and react-menu are imported in index.css with layer(base)
 // so that Tailwind utilities take precedence over them.
 import { useKeyPressedDown } from "../hooks/useKeyPressedDown.tsx";
+import type { MapLibreEvent } from "maplibre-gl";
+import type maplibregl from "maplibre-gl";
 import { MjolnirGestureEvent } from "mjolnir.js";
 import { ContextMenu } from "../components/Context/ContextMenu.tsx";
 import { useMapHotkeys } from "../editor/useMapHotkeys.tsx";
@@ -21,13 +23,6 @@ import { ZoomToolbar } from "./ZoomToolbar.tsx";
 import { useUserLocationLayers } from "@/map/UserLocationLayer";
 import { getMapStyle } from "@/map/mapStyles";
 import { MapStyleSwitcher } from "@/map/MapStyleSwitcher";
-import { MapLibreBaseMap } from "@/map/MapLibreBaseMap";
-
-// Lazy-load MapboxBaseMap so mapbox-gl JS is only loaded when a Mapbox style is selected,
-// avoiding WebGL conflicts with maplibre-gl when both libraries are loaded simultaneously.
-const MapboxBaseMap = lazy(() =>
-  import("@/map/MapboxBaseMap").then((m) => ({ default: m.MapboxBaseMap })),
-);
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -341,6 +336,45 @@ export const GeojsonsMap = () => {
   // not necessary for now? I just saw it in https://github.com/visgl/deck.gl/discussions/6103
   // const [glContext,setGlContext] = useState<WebGLRenderingContext>();
 
+  const mapRef = useRef<MapRef>(null);
+
+  const applyTerrain = useCallback(
+    (map: maplibregl.Map) => {
+      const terrainSourceId = "terrain";
+      if (map.getSource(terrainSourceId)) return;
+      map.addSource(terrainSourceId, {
+        type: "raster-dem",
+        url: mapStyleConfig.terrainSourceUrl,
+      });
+      map.setTerrain({ source: terrainSourceId });
+    },
+    [mapStyleConfig.terrainSourceUrl],
+  );
+
+  const onMapLoad = useCallback(
+    (e: MapLibreEvent) => {
+      const map = e.target;
+      map.setMaxPitch(85);
+      applyTerrain(map);
+      map.on("contextmenu", () => {
+        console.log("contextmenu clicked");
+      });
+    },
+    [applyTerrain],
+  );
+
+  // Re-apply terrain when map style changes (changing mapStyle prop destroys all sources)
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    const onStyleLoad = () => applyTerrain(map);
+    map.on("style.load", onStyleLoad);
+    return () => {
+      map.off("style.load", onStyleLoad);
+    };
+  }, [mapStyleId, applyTerrain]);
+  // {/*"https://api.maptiler.com/maps/outdoor-v2/style.json?key=LlETYKEJwgxoM6pCNChm",*/}
   // When you use DeckGL as the parent, you are using DeckGL's controller.
   // It has identical implementation as react-map-gl's controller, but different defaults for
   // backward-compatibility reasons.
@@ -432,13 +466,16 @@ export const GeojsonsMap = () => {
           userLocationLayers,
         ]}
       >
-        {mapStyleConfig.provider === "mapbox" ? (
-          <Suspense>
-            <MapboxBaseMap mapStyle={mapStyleConfig.url} terrainSourceUrl={mapStyleConfig.terrainSourceUrl} />
-          </Suspense>
-        ) : (
-          <MapLibreBaseMap mapStyle={mapStyleConfig.url} terrainSourceUrl={mapStyleConfig.terrainSourceUrl} />
-        )}
+        <Map
+          ref={mapRef}
+          onLoad={onMapLoad}
+          onClick={() => console.log("map onclick")}
+          style={{ width: 600, height: 400 }}
+          attributionControl={false}
+          mapStyle={mapStyleConfig.url}
+        >
+          {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
+        </Map>
       </DeckGL>
       <MapAttribution />
       <MapStyleSwitcher />
