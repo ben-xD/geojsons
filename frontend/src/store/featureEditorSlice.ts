@@ -58,7 +58,7 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
 ) => ({
   enabled: true,
   tool: Tool.hand,
-  isMapDraggable: false,
+  isMapDraggable: true,
   setIsMapDraggable: (isMapDraggable: boolean) =>
     set((state) => {
       state.isMapDraggable = isMapDraggable;

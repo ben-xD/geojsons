@@ -280,10 +280,7 @@ export const GeojsonsMap = () => {
   // It is usually better for performance to just use visible:false instead of removing the layer.
   // Remove selectionLayer completely instead of using visible prop because visible: will still prevent
   // dragPan from being set to true.
-  const isSelectionLayerEnabled =
-    selectedFeatureIndexes.length === 0 &&
-    !isMapDraggable &&
-    (tool === "select" || tool === Tool.edit);
+  const isSelectionLayerEnabled = tool === Tool.boxSelect;
   const selectionType = tool === "select" ? "rectangle" : "polygon";
   // @ts-expect-error TS2554 workaround nebula.gl types using https://github.com/uber/nebula.gl/issues/568#issuecomment-836324975
   const selectionLayer = new SelectionLayer<FeatureCollection>({
@@ -309,23 +306,15 @@ export const GeojsonsMap = () => {
     getTentativeLineWidth: 1,
   });
 
-  useKeyPressedDown({
-    key: "space",
-    onKeyDown: () => {
-      setIsMapDraggable(true);
-      setPickable(false);
-    },
-    onKeyUp: () => {
-      const currentTool = useStore.getState().tool;
-      setIsMapDraggable(currentTool === Tool.hand);
-      setPickable(currentTool !== Tool.hand);
-    },
-  });
-
   useEffect(() => {
-    setIsMapDraggable(tool === Tool.hand);
+    const isDrawingTool = toolsWithCrosshairCursor.has(tool);
+    const isHoveringSelectedFeature = hoveredFeatureIndex !== undefined &&
+      selectedFeatureIndexes.includes(hoveredFeatureIndex);
+    const shouldDrag = tool === Tool.hand ||
+      (!isDrawingTool && tool !== Tool.boxSelect && !isHoveringSelectedFeature);
+    setIsMapDraggable(shouldDrag);
     setPickable(tool !== Tool.hand);
-  }, [setIsMapDraggable, setPickable, tool]);
+  }, [setIsMapDraggable, setPickable, tool, selectedFeatureIndexes, hoveredFeatureIndex]);
 
   // Doesn't work nicely because getTooltip is only called when the mouse moves
   // Pressing alt whilst cursor hovers over a feature doesn't show tooltip unless you move the cursor. Even then, it would flicker.

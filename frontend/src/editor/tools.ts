@@ -25,6 +25,7 @@ export const Tool = {
   drawPolygonByDragging: "drawPolygonByDragging",
   pencil: "pencil",
   line: "line",
+  boxSelect: "boxSelect",
 } as const;
 
 export type Tool = keyof typeof Tool;
@@ -95,6 +96,10 @@ export const toolToConfig: Record<Tool, ToolConfig> = {
     tooltipText: "Line · L",
     keys: ["l"],
   },
+  boxSelect: {
+    tooltipText: "Box Select · B",
+    keys: ["b"],
+  },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,6 +128,8 @@ export const getNebulaModeForTool = (tool: Tool): any => {
     case Tool.ellipse:
       return DrawEllipseByBoundingBoxMode;
     case Tool.hand:
+      return ViewMode;
+    case Tool.boxSelect:
       return ViewMode;
     default:
       tool satisfies never;

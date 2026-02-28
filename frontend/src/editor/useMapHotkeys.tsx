@@ -19,6 +19,7 @@ export const useMapHotkeys = () => {
   useKeyboardConfig(Tool.select);
   useKeyboardConfig(Tool.edit);
   useKeyboardConfig(Tool.hand);
+  useKeyboardConfig(Tool.boxSelect);
 
   useKeyboardConfig(Tool.polygon);
   useKeyboardConfig(Tool.drawPolygonByDragging);

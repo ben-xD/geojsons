@@ -11,6 +11,7 @@ import {
   Undo,
   Redo,
   Search,
+  SquareDashed,
 } from "lucide-react";
 import { useStore, useUndoStackSize } from "./store/store";
 import PolygonIcon from "../src/icons/polygon.svg?react";
@@ -44,9 +45,14 @@ const toolButtonPropsByTool: Record<Tool, ToolButtonProps> = {
     tool: Tool.edit,
   },
   [Tool.hand]: {
-    tooltipText: "Hand · H or hold spacebar",
+    tooltipText: "Hand · H",
     icon: <Hand />,
     tool: Tool.hand,
+  },
+  [Tool.boxSelect]: {
+    tooltipText: "Box Select · B",
+    icon: <SquareDashed />,
+    tool: Tool.boxSelect,
   },
   [Tool.rectangle]: {
     tooltipText: "Rectangle",
