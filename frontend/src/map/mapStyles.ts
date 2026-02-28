@@ -1,12 +1,14 @@
 import { env } from "@/env";
 
-export type MapProvider = "maptiler" | "mapbox";
+export type MapProvider = "maptiler" | "mapbox" | "arcgis";
 export type MapVariant = "vector" | "satellite";
 export type MapStyleId =
   | "maptiler-vector"
   | "maptiler-satellite"
   | "mapbox-vector"
-  | "mapbox-satellite";
+  | "mapbox-satellite"
+  | "arcgis-vector"
+  | "arcgis-satellite";
 
 export interface MapStyleConfig {
   id: MapStyleId;
@@ -19,6 +21,7 @@ export interface MapStyleConfig {
 
 const maptilerKey = env.VITE_MAPTILER_API_KEY;
 const mapboxKey = env.VITE_MAPBOX_API_KEY;
+const arcgisKey = env.VITE_ARCGIS_API_KEY;
 
 const mapStyles: Record<MapStyleId, MapStyleConfig> = {
   "maptiler-vector": {
@@ -53,6 +56,22 @@ const mapStyles: Record<MapStyleId, MapStyleConfig> = {
     url: "mapbox://styles/mapbox/satellite-streets-v12",
     terrainSourceUrl: `https://api.mapbox.com/raster/v1/mapbox.mapbox-terrain-dem-v1/tiles.json?access_token=${mapboxKey}`,
   },
+  "arcgis-vector": {
+    id: "arcgis-vector",
+    label: "Vector",
+    provider: "arcgis",
+    variant: "vector",
+    url: `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/streets?token=${arcgisKey}`,
+    terrainSourceUrl: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${maptilerKey}`,
+  },
+  "arcgis-satellite": {
+    id: "arcgis-satellite",
+    label: "Satellite",
+    provider: "arcgis",
+    variant: "satellite",
+    url: `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/imagery/standard?token=${arcgisKey}`,
+    terrainSourceUrl: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${maptilerKey}`,
+  },
 };
 
 export const getMapStyle = (id: MapStyleId): MapStyleConfig => mapStyles[id];
@@ -71,5 +90,10 @@ export const mapStylesByProvider: {
     provider: "maptiler",
     label: "MapTiler",
     styles: [mapStyles["maptiler-vector"], mapStyles["maptiler-satellite"]],
+  },
+  {
+    provider: "arcgis",
+    label: "ArcGIS",
+    styles: [mapStyles["arcgis-vector"], mapStyles["arcgis-satellite"]],
   },
 ];

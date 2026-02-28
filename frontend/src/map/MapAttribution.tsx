@@ -16,6 +16,15 @@ export const MapAttribution = () => {
         >
           &copy; MapTiler
         </a>
+      ) : provider === "arcgis" ? (
+        <a
+          className="hover:underline"
+          href="https://www.esri.com/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          &copy; Esri
+        </a>
       ) : (
         <a
           className="hover:underline"
