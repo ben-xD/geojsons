@@ -24,7 +24,6 @@ import { useUserLocationLayers } from "@/map/UserLocationLayer";
 import { getMapStyle } from "@/map/mapStyles";
 import { MapStyleSwitcher } from "@/map/MapStyleSwitcher";
 import { useHashViewState } from "@/map/useHashViewState";
-import { fetchMapboxStyle } from "@/map/mapboxProtocol";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -475,7 +474,7 @@ export const GeojsonsMap = () => {
           onClick={() => console.log("map onclick")}
           style={{ width: 600, height: 400 }}
           attributionControl={false}
-          mapStyle={resolvedMapStyle as string}
+          mapStyle={mapStyleConfig.url}
         >
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
         </Map>

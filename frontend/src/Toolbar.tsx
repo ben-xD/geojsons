@@ -10,6 +10,7 @@ import {
   Cat,
   Undo,
   Redo,
+  Search,
 } from "lucide-react";
 import { useStore, useUndoStackSize } from "./store/store";
 import PolygonIcon from "../src/icons/polygon.svg?react";
@@ -17,9 +18,10 @@ import LineStringPencilIcon from "../src/icons/lineStringPencil.svg?react";
 import PolygonPencilIcon from "../src/icons/polygonPencil.svg?react";
 import LineStringIcon from "../src/icons/linestring.svg?react";
 import EllipseIcon from "../src/icons/ellipse.svg?react";
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils.ts";
 import { useRedoStackSize } from "@/store/store";
+import { SearchBar } from "@/map/SearchBar";
 
 interface ToolButtonProps {
   tooltipText: string;
@@ -94,14 +96,25 @@ const toolButtonPropsByTool: Record<Tool, ToolButtonProps> = {
 };
 
 export const Toolbar = () => {
+  const [searchOpen, setSearchOpen] = useState(false);
+
   return (
-    <div className="mx-2 flex-wrap absolute text-slate-700 bottom-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-slate-300">
-      {Object.values(toolButtonPropsByTool).map((tool) => (
-        <ToolbarToolButton key={tool.tool} icon={tool.icon} tool={tool.tool} />
-      ))}
-      <div className="bg-slate-500 w-0.5 my-2 mx-2"></div>
-      <UndoButton></UndoButton>
-      <RedoButton></RedoButton>
+    <div className="mx-2 absolute text-slate-700 bottom-4 flex justify-center">
+      <div className="relative flex flex-wrap rounded-xl bg-white drop-shadow-2xl shadow-xl border border-slate-300">
+        <SearchBar open={searchOpen} onClose={() => setSearchOpen(false)} />
+        <ToolbarButton
+          icon={<Search />}
+          tooltipText="Search · /"
+          onClick={() => setSearchOpen((prev) => !prev)}
+        />
+        <div className="bg-slate-500 w-0.5 my-2 mx-2"></div>
+        {Object.values(toolButtonPropsByTool).map((tool) => (
+          <ToolbarToolButton key={tool.tool} icon={tool.icon} tool={tool.tool} />
+        ))}
+        <div className="bg-slate-500 w-0.5 my-2 mx-2"></div>
+        <UndoButton></UndoButton>
+        <RedoButton></RedoButton>
+      </div>
     </div>
   );
 };
