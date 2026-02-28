@@ -23,6 +23,8 @@ import { ZoomToolbar } from "./ZoomToolbar.tsx";
 import { useUserLocationLayers } from "@/map/UserLocationLayer";
 import { getMapStyle } from "@/map/mapStyles";
 import { MapStyleSwitcher } from "@/map/MapStyleSwitcher";
+import { useHashViewState } from "@/map/useHashViewState";
+import { fetchMapboxStyle } from "@/map/mapboxProtocol";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -122,6 +124,7 @@ const DRAG_FINISHED_EDIT_TYPES = new Set([
 ]);
 
 export const GeojsonsMap = () => {
+  useHashViewState();
   useMapHotkeys();
   const editingMode = useEditingMode();
   const tool = useStore.use.tool();
@@ -472,7 +475,7 @@ export const GeojsonsMap = () => {
           onClick={() => console.log("map onclick")}
           style={{ width: 600, height: 400 }}
           attributionControl={false}
-          mapStyle={mapStyleConfig.url}
+          mapStyle={resolvedMapStyle as string}
         >
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
         </Map>

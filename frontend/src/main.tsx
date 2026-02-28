@@ -2,6 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { registerMapboxProtocol } from "./map/mapboxProtocol.ts";
+import { applyHashToStore } from "./map/useHashViewState.ts";
+
+registerMapboxProtocol();
+applyHashToStore();
 
 const rootElement = document.getElementById("root");
 

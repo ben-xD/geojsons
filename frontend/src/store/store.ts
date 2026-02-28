@@ -30,7 +30,7 @@ export type Mutators = [
   ["zustand/immer", never],
 ];
 
-const unpersistedProperties = ["userLocation"];
+const unpersistedProperties = ["userLocation", "viewState"];
 
 const applicationLocalStorageName = "geojsons.com";
 // reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md. Daishi (the maintainer) suggests following Tests over docs, if they're inconsistent.
