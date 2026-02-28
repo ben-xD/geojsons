@@ -1,10 +1,5 @@
 import { useStore } from "@/store/store";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Minus, Plus, Target } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useEffect, useRef } from "react";
@@ -17,17 +12,15 @@ export const ZoomToolbar = () => {
   const setUserLocation = useStore.use.setUserLocation();
   const isUserLocated = !!useStore.use.userLocation();
 
-  const watchPositionIntervalIdRef = useRef<number>();
+  const watchPositionIntervalIdRef = useRef<number | undefined>(undefined);
   const onShowUserLocation = () => {
     setUserLocation(undefined);
     cancelWatch();
-    watchPositionIntervalIdRef.current = navigator.geolocation.watchPosition(
-      (position) => {
-        // More data on position (https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates), but I only want to show the user on the map
-        const { latitude, longitude, accuracy, heading } = position.coords;
-        setUserLocation({ latitude, longitude, accuracy, heading });
-      },
-    );
+    watchPositionIntervalIdRef.current = navigator.geolocation.watchPosition((position) => {
+      // More data on position (https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates), but I only want to show the user on the map
+      const { latitude, longitude, accuracy, heading } = position.coords;
+      setUserLocation({ latitude, longitude, accuracy, heading });
+    });
   };
 
   const cancelWatch = () => {
@@ -42,7 +35,7 @@ export const ZoomToolbar = () => {
   const viewState = useStore.use.viewState();
 
   return (
-    <div className="flex-col top-4 md:top-auto md:bottom-4 flex-wrap absolute text-slate-700 right-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
+    <div className="flex-col top-4 md:top-auto md:bottom-4 flex-wrap absolute text-slate-700 right-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-slate-300">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

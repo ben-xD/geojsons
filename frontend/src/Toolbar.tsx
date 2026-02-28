@@ -1,9 +1,4 @@
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tool, toolToConfig } from "./editor/tools";
 import {
   MousePointer,
@@ -100,7 +95,7 @@ const toolButtonPropsByTool: Record<Tool, ToolButtonProps> = {
 
 export const Toolbar = () => {
   return (
-    <div className="mx-2 flex-wrap absolute text-slate-700 bottom-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-1 border-slate-300">
+    <div className="mx-2 flex-wrap absolute text-slate-700 bottom-4 flex justify-center rounded-xl bg-white drop-shadow-2xl shadow-xl border border-slate-300">
       {Object.values(toolButtonPropsByTool).map((tool) => (
         <ToolbarToolButton key={tool.tool} icon={tool.icon} tool={tool.tool} />
       ))}

@@ -54,14 +54,7 @@ export type MultiPolygon = z.infer<typeof MultiPolygon>;
 export const GeometryCollection = z.object({
   type: z.literal("GeometryCollection"),
   geometries: z.array(
-    z.union([
-      Point,
-      LineString,
-      Polygon,
-      MultiPoint,
-      MultiLineString,
-      MultiPolygon,
-    ]),
+    z.union([Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon]),
   ),
 });
 export type GeometryCollection = z.infer<typeof GeometryCollection>;
@@ -80,7 +73,7 @@ export type Geometry = z.infer<typeof Geometry>;
 export const Feature = z.object({
   type: z.literal("Feature"),
   geometry: Geometry,
-  properties: z.record(z.any()), // Simplified, can be any JSON object
+  properties: z.record(z.string(), z.any()), // Simplified, can be any JSON object
   id: z.union([z.string(), z.number()]).optional(),
 });
 export type Feature = z.infer<typeof Feature>;

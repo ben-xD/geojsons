@@ -29,9 +29,7 @@ export const ClearDataAlertDialog = () => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => resetStateAndReloadPage()}>
-            Continue
-          </AlertDialogAction>
+          <AlertDialogAction onClick={() => resetStateAndReloadPage()}>Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

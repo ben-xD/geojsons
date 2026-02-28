@@ -1,63 +1,50 @@
 import throttle from "lodash.throttle";
 import {
-  ClickEvent,
-  DraggingEvent,
+  type ClickEvent,
+  type DraggingEvent,
   DrawLineStringMode,
-  FeatureCollection,
-  LineString,
-  ModeProps,
-  StartDraggingEvent,
-} from "@nebula.gl/edit-modes";
-import { StopDraggingEvent } from "@nebula.gl/edit-modes/dist-types/types";
-import { getPickedEditHandle } from "./nebulaCode";
+  type LineString,
+  type ModeProps,
+  type StartDraggingEvent,
+  type StopDraggingEvent,
+  getPickedEditHandle,
+} from "@deck.gl-community/editable-layers";
 import { DebouncedFunc } from "lodash";
 
 //
 /* Inspired by nebula.gl's DrawPolygonByDraggingMode */
-type DragHandler = (
-  event: DraggingEvent,
-  props: ModeProps<FeatureCollection>,
-) => void;
+// Using `any` for the FeatureCollection generic because @deck.gl-community/editable-layers
+// has inconsistent types between GeoJsonEditMode (uses FeatureCollection) and
+// DrawLineStringMode (uses SimpleFeatureCollection for some methods).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DragHandler = (event: DraggingEvent, props: ModeProps<any>) => void;
 
 type ThrottledDragHandler = DebouncedFunc<DragHandler>;
 
 export class DrawLineStringByDraggingMode extends DrawLineStringMode {
-  handleDraggingThrottled:
-    | ThrottledDragHandler
-    | DragHandler
-    | null
-    | undefined = null;
+  handleDraggingThrottled: ThrottledDragHandler | DragHandler | null | undefined = null;
 
   // Override the default behavior of DrawLineStringMode to not add a point when the user clicks on the map
-  handleClick(event: ClickEvent, props: ModeProps<FeatureCollection>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  override handleClick(_event: ClickEvent, _props: ModeProps<any>) {
     return;
   }
 
-  handleStartDragging(
-    event: StartDraggingEvent,
-    props: ModeProps<FeatureCollection>,
-  ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  override handleStartDragging(event: StartDraggingEvent, props: ModeProps<any>) {
     event.cancelPan();
     if (props.modeConfig && props.modeConfig.throttleMs) {
-      this.handleDraggingThrottled = throttle(
-        this.handleDraggingAux,
-        props.modeConfig.throttleMs,
-      );
+      this.handleDraggingThrottled = throttle(this.handleDraggingAux, props.modeConfig.throttleMs);
     } else {
       this.handleDraggingThrottled = this.handleDraggingAux;
     }
   }
 
-  handleStopDragging(
-    event: StopDraggingEvent,
-    props: ModeProps<FeatureCollection>,
-  ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  override handleStopDragging(event: StopDraggingEvent, props: ModeProps<any>) {
     this.addClickSequence(event);
     const clickSequence = this.getClickSequence();
-    if (
-      this.handleDraggingThrottled &&
-      "cancel" in this.handleDraggingThrottled
-    ) {
+    if (this.handleDraggingThrottled && "cancel" in this.handleDraggingThrottled) {
       this.handleDraggingThrottled.cancel();
     }
 
@@ -76,7 +63,8 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
     }
   }
 
-  handleDraggingAux(event: DraggingEvent, props: ModeProps<FeatureCollection>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleDraggingAux(event: DraggingEvent, props: ModeProps<any>) {
     const { picks } = event;
     const clickedEditHandle = getPickedEditHandle(picks);
 
@@ -86,7 +74,8 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
     }
   }
 
-  handleDragging(event: DraggingEvent, props: ModeProps<FeatureCollection>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  override handleDragging(event: DraggingEvent, props: ModeProps<any>) {
     if (this.handleDraggingThrottled) {
       this.handleDraggingThrottled(event, props);
     }

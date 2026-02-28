@@ -16,7 +16,7 @@ export const RawGeojsonPanel = () => {
   const fc = useStore.use.featureCollection();
   const setFc = useStore.use.updateFeatureCollection();
   const editorContainerRef = useRef<HTMLDivElement>(null);
-  const editorViewRef = useRef<EditorView>();
+  const editorViewRef = useRef<EditorView | undefined>(undefined);
 
   const [errorMessage, setErrorMessage] = useState<string>();
 

@@ -25,9 +25,7 @@ export interface ReorderFeatureSlice {
 // Forwards is actually the end of the array (because that's how deck.gl arranges them, last on top).
 
 // TODO add to undo stack
-export const createReorderFeatureSlice: GeojsonsStateCreator<
-  ReorderFeatureSlice
-> = (set, get) => ({
+export const createReorderFeatureSlice: GeojsonsStateCreator<ReorderFeatureSlice> = (set, get) => ({
   bringSelectionToFront: () =>
     set((state) => {
       if (state.selectedFeatureIndexes.length !== 1) return;
@@ -36,11 +34,7 @@ export const createReorderFeatureSlice: GeojsonsStateCreator<
       const selectedFeature = features.splice(selectedIndex, 1)[0];
       features.push(selectedFeature);
       state.selectedFeatureIndexes = [features.length - 1];
-      applyReordering(
-        get(),
-        state.featureCollection,
-        state.selectedFeatureIndexes,
-      );
+      applyReordering(get(), state.featureCollection, state.selectedFeatureIndexes);
     }),
   bringSelectionForward: () =>
     set((state) => {
@@ -53,11 +47,7 @@ export const createReorderFeatureSlice: GeojsonsStateCreator<
         features[index] = features[nextIndex];
         features[nextIndex] = selectedFeature;
         state.selectedFeatureIndexes = [nextIndex];
-        applyReordering(
-          get(),
-          state.featureCollection,
-          state.selectedFeatureIndexes,
-        );
+        applyReordering(get(), state.featureCollection, state.selectedFeatureIndexes);
       }
     }),
   sendSelectionToBack: () =>
@@ -68,11 +58,7 @@ export const createReorderFeatureSlice: GeojsonsStateCreator<
       const selectedFeature = features.splice(selectedIndex, 1)[0];
       features.unshift(selectedFeature);
       state.selectedFeatureIndexes = [0];
-      applyReordering(
-        get(),
-        state.featureCollection,
-        state.selectedFeatureIndexes,
-      );
+      applyReordering(get(), state.featureCollection, state.selectedFeatureIndexes);
     }),
   sendSelectionBackward: () =>
     set((state) => {
@@ -85,11 +71,7 @@ export const createReorderFeatureSlice: GeojsonsStateCreator<
         features[index] = features[nextIndex];
         features[nextIndex] = selectedFeature;
         state.selectedFeatureIndexes = [nextIndex];
-        applyReordering(
-          get(),
-          state.featureCollection,
-          state.selectedFeatureIndexes,
-        );
+        applyReordering(get(), state.featureCollection, state.selectedFeatureIndexes);
       }
     }),
 });

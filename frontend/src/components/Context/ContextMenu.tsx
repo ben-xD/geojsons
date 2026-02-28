@@ -8,17 +8,11 @@ import {
 import { useStore } from "../../store/store";
 
 export const ContextMenu = (props: ControlledMenuProps) => {
-  const deleteCurrentSelectedFeatures = useStore(
-    (state) => state.deleteSelectedFeatures,
-  );
-  const bringSelectionForward = useStore(
-    (state) => state.bringSelectionForward,
-  );
+  const deleteCurrentSelectedFeatures = useStore((state) => state.deleteSelectedFeatures);
+  const bringSelectionForward = useStore((state) => state.bringSelectionForward);
   const bringSelectionToFront = useStore.use.bringSelectionToFront();
 
-  const sendSelectionBackward = useStore(
-    (state) => state.sendSelectionBackward,
-  );
+  const sendSelectionBackward = useStore((state) => state.sendSelectionBackward);
   const sendSelectionToBack = useStore((state) => state.sendSelectionToBack);
 
   const onDelete = (event: ClickEvent) => {

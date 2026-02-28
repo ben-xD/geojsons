@@ -1,28 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import Map, { MapRef, ViewState } from "react-map-gl/maplibre";
-import DeckGL, {
-  DeckGLRef,
-  DeckProps,
-  Layer,
-  PickingInfo,
-} from "deck.gl/typed";
+import Map, { type MapRef, type ViewState } from "react-map-gl/maplibre";
+import { DeckGL, type DeckGLRef, type Layer, type PickingInfo } from "deck.gl";
 import type { Feature, FeatureCollection } from "@/data/validator/geojson.ts";
-import { EditableGeoJsonLayer, SelectionLayer } from "@nebula.gl/layers";
+import { EditableGeoJsonLayer, SelectionLayer } from "@deck.gl-community/editable-layers";
 
-// Following some random github issue to fix styling
-import "maplibre-gl/dist/maplibre-gl.css";
-// Following https://szhsin.github.io/react-menu#context-menu
-import "@szhsin/react-menu/dist/index.css";
+// CSS for maplibre-gl and react-menu are imported in index.css with layer(base)
+// so that Tailwind utilities take precedence over them.
 import { useKeyPressedDown } from "../hooks/useKeyPressedDown.tsx";
 import { MapLibreEvent } from "maplibre-gl";
 import { MjolnirGestureEvent } from "mjolnir.js";
 import { ContextMenu } from "../components/Context/ContextMenu.tsx";
 import { useMapHotkeys } from "../editor/useMapHotkeys.tsx";
 import { useStore, useEditingMode } from "../store/store.ts";
-import {
-  primaryTentativeFillRgba,
-  primaryTentativeLineRgba,
-} from "../tokens/colors.ts";
+import { primaryTentativeFillRgba, primaryTentativeLineRgba } from "../tokens/colors.ts";
 import { Tool } from "../editor/tools.ts";
 import { Toolbar } from "../Toolbar.tsx";
 import { MapAttribution } from "@/map/MapAttribution.tsx";
@@ -75,11 +65,8 @@ const defaultCatMarkerIconDescription: IconDescription = {
   anchorY: markerSizeInPx / 2,
 };
 
-// reusable version of Parameters<NonNullable<DeckProps["getCursor"]>>[0]
-// This is because DeckProps["getCursor"] is a function with a parameter `state: CursorState`, but `CursorState` is not exported.
-type DeckPropCallbackParameter1<T extends keyof DeckProps> = Parameters<
-  NonNullable<DeckProps[T]>
->[0];
+// CursorState is not exported from deck.gl, so we define it here.
+type CursorState = { isHovering: boolean; isDragging: boolean };
 
 const editableGeojsonLayerId = "editable-geojson-layer";
 
@@ -132,7 +119,7 @@ export const GeojsonsMap = () => {
 
   const isDraggingRef = useRef(false);
   const [draggedFc, setDraggedFc] = useState<FeatureCollection | undefined>();
-  const featureCollectionRef = useRef<FeatureCollection>();
+  const featureCollectionRef = useRef<FeatureCollection | undefined>(undefined);
 
   const [isContextMenuOpen, setContextMenuOpen] = useState(false);
   const [contextMenuAnchorPoint, setContextMenuAnchorPoint] = useState<{
@@ -184,11 +171,7 @@ export const GeojsonsMap = () => {
       setSelectedFeatureIndexes([pickInfo.index]);
 
       // The types are wrong again... tapCount exists.
-      if (
-        pickInfo.picked &&
-        "tapCount" in hammerInput &&
-        hammerInput.tapCount === 2
-      ) {
+      if (pickInfo.picked && "tapCount" in hammerInput && hammerInput.tapCount === 2) {
         setTool(Tool.edit);
       }
     },
@@ -260,8 +243,7 @@ export const GeojsonsMap = () => {
         // onEdit is called even when there are no changes (clicking on the map for the first time)
         if (updatedData.features.length === fc.features.length) return;
         if (editType === "addFeature" && tool === Tool.catMarker) {
-          const newFeature =
-            updatedData.features[updatedData.features.length - 1];
+          const newFeature = updatedData.features[updatedData.features.length - 1];
           newFeature.properties = { type: "cat" };
         }
         updateFc(updatedData);
@@ -304,9 +286,7 @@ export const GeojsonsMap = () => {
       if (pickingInfos.length === 0) {
         setSelectedFeatureIndexes([]);
       } else {
-        setSelectedFeatureIndexes(
-          Array.from(pickingInfos.map((pi: PickingInfo) => pi.index)),
-        );
+        setSelectedFeatureIndexes(Array.from(pickingInfos.map((pi: PickingInfo) => pi.index)));
       }
     },
     layerIds: [editableGeojsonLayerId],
@@ -353,7 +333,7 @@ export const GeojsonsMap = () => {
     map.setMaxPitch(85); // highest value
     map.addSource(terrainSourceId, {
       type: "raster-dem",
-      url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${env.maptilerApiKey}`,
+      url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${env.VITE_MAPTILER_API_KEY}`,
     });
     map.setTerrain({
       source: terrainSourceId,
@@ -368,7 +348,7 @@ export const GeojsonsMap = () => {
   // backward-compatibility reasons.
   // Disabling browser context menu with an extra div. See https://github.com/visgl/deck.gl/discussions/6103
   const getCursor = useCallback(
-    (state: DeckPropCallbackParameter1<"getCursor">) => {
+    (state: CursorState) => {
       // console.log(`getCursor. ${state.isDragging} ${state.isHovering}`);
       if (state.isHovering) {
         return "pointer";
@@ -387,12 +367,7 @@ export const GeojsonsMap = () => {
     if (!info.picked && tool === Tool.select) {
       setSelectedFeatureIndexes([]);
     }
-    if (
-      !info.picked &&
-      tool === Tool.edit &&
-      "tapCount" in event &&
-      event.tapCount === 2
-    ) {
+    if (!info.picked && tool === Tool.edit && "tapCount" in event && event.tapCount === 2) {
       setSelectedFeatureIndexes([]);
       setTool(Tool.select);
     }
@@ -451,15 +426,11 @@ export const GeojsonsMap = () => {
         // Use Object.assign to create a new object instead of mutating it, to avoid error: `Object is not extensible`
         initialViewState={Object.assign({}, viewState)}
         onViewStateChange={(params) =>
-          setViewState(
-            Object.assign({}, params.viewState as unknown as ViewState),
-          )
+          setViewState(Object.assign({}, params.viewState as unknown as ViewState))
         }
         layers={[
           editableGeojsonLayer as unknown as Layer,
-          isSelectionLayerEnabled
-            ? (selectionLayer as unknown as Layer)
-            : undefined,
+          isSelectionLayerEnabled ? (selectionLayer as unknown as Layer) : undefined,
           userLocationLayers,
         ]}
       >
@@ -475,7 +446,7 @@ export const GeojsonsMap = () => {
           // mapStyle="https://demotiles.maplibre.org/style.json"
           // Using custom map style object
           // mapStyle={mapStyle}
-          mapStyle={`https://api.maptiler.com/maps/landscape/style.json?key=${env.maptilerApiKey}`}
+          mapStyle={`https://api.maptiler.com/maps/landscape/style.json?key=${env.VITE_MAPTILER_API_KEY}`}
         >
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
         </Map>

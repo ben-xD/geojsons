@@ -5,7 +5,7 @@ import { arraysEqual } from "../arrays/areArraysEqual";
 import { Mutators, State } from "./store";
 import { v4 as uuidv4 } from "uuid";
 import { emptyFeatureCollection } from "@/data/featureCollection";
-import { ViewState } from "react-map-gl/dist/esm/types";
+import type { ViewState } from "react-map-gl/maplibre";
 
 export interface UserLocation {
   latitude: number;
@@ -50,12 +50,9 @@ export interface FeatureEditorSlice {
 }
 
 // TODO prompt redo stack will be cleared when doing an action?
-export const createFeatureEditorSlice: StateCreator<
-  State,
-  Mutators,
-  [],
-  FeatureEditorSlice
-> = (set) => ({
+export const createFeatureEditorSlice: StateCreator<State, Mutators, [], FeatureEditorSlice> = (
+  set,
+) => ({
   enabled: true,
   tool: Tool.hand,
   isMapDraggable: false,
@@ -252,11 +249,7 @@ export const createFeatureEditorSlice: StateCreator<
   userLocation: undefined,
   setUserLocation: (userLocation?: UserLocation) =>
     set((state) => {
-      if (
-        !state.userLocation &&
-        userLocation?.latitude &&
-        userLocation?.longitude
-      ) {
+      if (!state.userLocation && userLocation?.latitude && userLocation?.longitude) {
         state.viewState.latitude = userLocation?.latitude;
         state.viewState.longitude = userLocation?.longitude;
       }

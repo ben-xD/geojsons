@@ -7,10 +7,9 @@ import {
   DrawLineStringMode,
   DrawPolygonByDraggingMode,
   DrawPolygonMode,
-  GeoJsonEditMode,
   DrawPointMode,
   ModifyMode,
-} from "@nebula.gl/edit-modes";
+} from "@deck.gl-community/editable-layers";
 import { DrawLineStringByDraggingMode } from "@/editor/CustomNebulaModes/DrawLineStringByDragging";
 
 export const Tool = {
@@ -98,7 +97,8 @@ export const toolToConfig: Record<Tool, ToolConfig> = {
   },
 };
 
-export const getNebulaModeForTool = (tool: Tool): typeof GeoJsonEditMode => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getNebulaModeForTool = (tool: Tool): any => {
   switch (tool) {
     case Tool.select:
       return TransformMode;

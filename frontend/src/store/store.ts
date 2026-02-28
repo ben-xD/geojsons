@@ -1,27 +1,10 @@
 import { immer } from "zustand/middleware/immer";
 import { getNebulaModeForTool } from "../editor/tools";
 import { create, StateCreator } from "zustand";
-import {
-  createJSONStorage,
-  devtools,
-  persist,
-  subscribeWithSelector,
-} from "zustand/middleware";
-import {
-  GeoJsonEditMode,
-  RotateMode,
-  ScaleMode,
-  TransformMode,
-  ViewMode,
-} from "@nebula.gl/edit-modes";
-import {
-  createReorderFeatureSlice,
-  ReorderFeatureSlice,
-} from "./reorderFeatureSlice";
-import {
-  FeatureEditorSlice,
-  createFeatureEditorSlice,
-} from "./featureEditorSlice";
+import { createJSONStorage, devtools, persist, subscribeWithSelector } from "zustand/middleware";
+import { RotateMode, ScaleMode, TransformMode, ViewMode } from "@deck.gl-community/editable-layers";
+import { createReorderFeatureSlice, ReorderFeatureSlice } from "./reorderFeatureSlice";
+import { FeatureEditorSlice, createFeatureEditorSlice } from "./featureEditorSlice";
 import { createSelectors } from "./createSelectors";
 
 // Consider reading https://docs.pmnd.rs/zustand/guides/typescript
@@ -67,9 +50,7 @@ export const useStoreOriginal = create<State>()(
           name: applicationLocalStorageName,
           partialize: (state) =>
             Object.fromEntries(
-              Object.entries(state).filter(
-                ([key]) => !unpersistedProperties.includes(key),
-              ),
+              Object.entries(state).filter(([key]) => !unpersistedProperties.includes(key)),
             ),
         },
       ),
@@ -84,11 +65,8 @@ export const useStoreOriginal = create<State>()(
 // `const tool = useStore((state) => state.tool);`
 export const useStore = createSelectors(useStoreOriginal);
 
-const modesRequiringFeatures = new Set<typeof GeoJsonEditMode>([
-  RotateMode,
-  TransformMode,
-  ScaleMode,
-]);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const modesRequiringFeatures = new Set<any>([RotateMode, TransformMode, ScaleMode]);
 
 export const useEditingMode = () => {
   // If we didn't use `createSelectors`, we'd need to do e.g.:
@@ -100,15 +78,12 @@ export const useEditingMode = () => {
   const selectedFeatureIndexes = useStore.use.selectedFeatureIndexes();
   const nebulaMode = getNebulaModeForTool(tool);
   const preventModeMisuse =
-    selectedFeatureIndexes.length === 0 &&
-    modesRequiringFeatures.has(nebulaMode);
+    selectedFeatureIndexes.length === 0 && modesRequiringFeatures.has(nebulaMode);
   return preventModeMisuse ? ViewMode : nebulaMode;
 };
 
-export const useUndoStackSize = () =>
-  useStore((state) => state.undoStack.length);
-export const useRedoStackSize = () =>
-  useStore((state) => state.redoStack.length);
+export const useUndoStackSize = () => useStore((state) => state.undoStack.length);
+export const useRedoStackSize = () => useStore((state) => state.redoStack.length);
 
 export const resetStateAndReloadPage = (): void => {
   useStore.persist.clearStorage();

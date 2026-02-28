@@ -10,15 +10,11 @@ const useKeyboardConfig = (tool: Tool) => {
 export const useMapHotkeys = () => {
   const undo = useStore((state) => state.undo);
   const fc = useStore((state) => state.featureCollection);
-  const setSelectedFeatureIndexes = useStore(
-    (state) => state.setSelectedFeatureIndexes,
-  );
+  const setSelectedFeatureIndexes = useStore((state) => state.setSelectedFeatureIndexes);
   const undoStackSize = useUndoStackSize();
   const redoStackSize = useRedoStackSize();
   const redo = useStore((state) => state.redo);
-  const deleteSelectedFeatures = useStore(
-    (state) => state.deleteSelectedFeatures,
-  );
+  const deleteSelectedFeatures = useStore((state) => state.deleteSelectedFeatures);
 
   useKeyboardConfig(Tool.select);
   useKeyboardConfig(Tool.edit);
