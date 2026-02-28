@@ -6,6 +6,7 @@ import { Mutators, State } from "./store";
 import { v4 as uuidv4 } from "uuid";
 import { emptyFeatureCollection } from "@/data/featureCollection";
 import type { ViewState } from "react-map-gl/maplibre";
+import type { MapStyleId } from "@/map/mapStyles";
 
 export interface UserLocation {
   latitude: number;
@@ -47,6 +48,8 @@ export interface FeatureEditorSlice {
   zoomOut: () => void;
   userLocation: UserLocation | undefined;
   setUserLocation: (userLocation?: UserLocation) => void;
+  mapStyleId: MapStyleId;
+  setMapStyleId: (mapStyleId: MapStyleId) => void;
 }
 
 // TODO prompt redo stack will be cleared when doing an action?
@@ -255,6 +258,15 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
       }
       state.userLocation = userLocation;
     }),
+  mapStyleId: "mapbox-vector" as MapStyleId,
+  setMapStyleId: (mapStyleId: MapStyleId) =>
+    set(
+      (state) => {
+        state.mapStyleId = mapStyleId;
+      },
+      false,
+      { type: "setMapStyleId" },
+    ),
 });
 
 const createFeatureId = () => `feature-${uuidv4()}`;
