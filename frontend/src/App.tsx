@@ -1,15 +1,9 @@
 import { GeojsonsMap } from "./map/GeojsonsMap.tsx";
-import { Group, Panel, PanelSize, Separator } from "react-resizable-panels";
+import { Group, Panel, Separator } from "react-resizable-panels";
 import { RawGeojsonPanel } from "@/GeojsonPanel/RawGeojsonPanel.tsx";
 import { GripHorizontal } from "lucide-react";
-import { useAtom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
-
-const editorPanelSizeAtom = atomWithStorage("editorPanelSize", 40);
 
 function App() {
-  const [editorPanelSize, setEditorPanelSize] = useAtom(editorPanelSizeAtom);
-
   return (
     <Group orientation="horizontal">
       <Panel>
@@ -23,9 +17,7 @@ function App() {
             </div>
           </Separator>
           <Panel
-            style={{ overflow: "auto" }}
-            defaultSize={`${editorPanelSize}%`}
-            onResize={(size: PanelSize) => setEditorPanelSize(size.asPercentage)}
+            defaultSize="40%"
           >
             <RawGeojsonPanel />
           </Panel>

@@ -1,6 +1,6 @@
 onlyBuiltDependencies:
-  - "@danmarshall/deckgl-typings"
-  - "@swc/core"
+  - '@danmarshall/deckgl-typings'
+  - '@swc/core'
   - esbuild
   - sharp
   - workerd

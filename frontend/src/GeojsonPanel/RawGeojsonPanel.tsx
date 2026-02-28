@@ -22,11 +22,11 @@ export const RawGeojsonPanel = () => {
 
   const extensions = useMemo(
     () => [
-      // EditorView.theme({
-      //   // "&": { maxHeight: "100%" },
-      //   ".cm-scroller": { overflow: "auto" },
-      // }),
       basicSetup,
+      EditorView.theme({
+        "&": { height: "100%" },
+        ".cm-scroller": { overflow: "auto" },
+      }),
       json(),
       EditorView.lineWrapping,
       EditorView.updateListener.of(function (e) {
@@ -102,7 +102,7 @@ export const RawGeojsonPanel = () => {
   }, [extensions, fc]);
 
   return (
-    <div className="flex flex-col gap-2 m-2">
+    <div className="flex flex-col gap-2 p-2 h-full overflow-hidden">
       <div className="flex justify-between items-center flex-wrap text-slate-800">
         <p className="text-2xl">
           Draw like its{" "}
@@ -157,7 +157,7 @@ export const RawGeojsonPanel = () => {
           {errorMessage}
         </p>
       )}
-      <div className="" ref={editorContainerRef}></div>
+      <div className="flex-1 min-h-0" ref={editorContainerRef}></div>
       {/*Previous display without code mirror:*/}
       {/*<pre className="overflow-auto max-h-full whitespace-pre-wrap">{JSON.stringify(fc, null, 2)}</pre>*/}
     </div>
