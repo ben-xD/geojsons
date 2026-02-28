@@ -7,20 +7,22 @@ import { EditableGeoJsonLayer, SelectionLayer } from "@deck.gl-community/editabl
 // CSS for maplibre-gl and react-menu are imported in index.css with layer(base)
 // so that Tailwind utilities take precedence over them.
 import { useKeyPressedDown } from "../hooks/useKeyPressedDown.tsx";
-import { MapLibreEvent } from "maplibre-gl";
+import type { MapLibreEvent } from "maplibre-gl";
+import type maplibregl from "maplibre-gl";
 import { MjolnirGestureEvent } from "mjolnir.js";
 import { ContextMenu } from "../components/Context/ContextMenu.tsx";
 import { useMapHotkeys } from "../editor/useMapHotkeys.tsx";
 import { useStore, useEditingMode } from "../store/store.ts";
-import { primaryTentativeFillRgba, primaryTentativeLineRgba } from "../tokens/colors.ts";
+import { primaryTentativeFillRgba, primaryTentativeLineRgba, featureColors } from "../tokens/colors.ts";
 import { Tool } from "../editor/tools.ts";
 import { Toolbar } from "../Toolbar.tsx";
 import { MapAttribution } from "@/map/MapAttribution.tsx";
 import { BenAttribution } from "@/map/BenAttribution.tsx";
-import { env } from "@/env.ts";
 import { toolsWithCrosshairCursor } from "@/editor/tools";
 import { ZoomToolbar } from "./ZoomToolbar.tsx";
 import { useUserLocationLayers } from "@/map/UserLocationLayer";
+import { getMapStyle } from "@/map/mapStyles";
+import { MapStyleSwitcher } from "@/map/MapStyleSwitcher";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -47,16 +49,28 @@ interface IconDescription {
   anchorY: number;
 }
 
-const markerSvg = createMarkerSvg("rgb(65, 90, 119)");
-// const selectedMarkerSvg = createMarkerSvg("rgb(13, 27, 42)");
-const selectedMarkerSvg = createSelectedMarkerSvg("rgb(65, 90, 119)");
-// const hoveredMarkerSvg = createMarkerSvg("rgb(65, 90, 119)");
-const defaultMarkerIconDescription: IconDescription = {
-  url: markerSvg,
-  width: markerSizeInPx,
-  height: markerSizeInPx,
-  anchorY: markerSizeInPx,
-};
+const markerIconCache = new globalThis.Map<string, { marker: IconDescription; selected: IconDescription }>();
+
+function getMarkerIcons(color: string): { marker: IconDescription; selected: IconDescription } {
+  const cached = markerIconCache.get(color);
+  if (cached) return cached;
+  const result = {
+    marker: {
+      url: createMarkerSvg(color),
+      width: markerSizeInPx,
+      height: markerSizeInPx,
+      anchorY: markerSizeInPx,
+    },
+    selected: {
+      url: createSelectedMarkerSvg(color),
+      width: markerSizeInPx,
+      height: markerSizeInPx,
+      anchorY: markerSizeInPx,
+    },
+  };
+  markerIconCache.set(color, result);
+  return result;
+}
 
 const defaultCatMarkerIconDescription: IconDescription = {
   url: "https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png",
@@ -100,6 +114,13 @@ const editableGeojsonLayerId = "editable-geojson-layer";
 //   }
 // }
 
+const DRAGGING_EDIT_TYPES = new Set([
+  'translating', 'scaling', 'rotating', 'movePosition',
+]);
+const DRAG_FINISHED_EDIT_TYPES = new Set([
+  'translated', 'scaled', 'rotated', 'finishMovePosition',
+]);
+
 export const GeojsonsMap = () => {
   useMapHotkeys();
   const editingMode = useEditingMode();
@@ -116,8 +137,11 @@ export const GeojsonsMap = () => {
   const isDoubleClickZoomEnabled = useStore.use.isDoubleClickZoomEnabled();
   const viewState = useStore.use.viewState();
   const setViewState = useStore.use.setViewState();
+  const mapStyleId = useStore.use.mapStyleId();
+  const mapStyleConfig = getMapStyle(mapStyleId);
+  const colors = featureColors[mapStyleConfig.variant];
+  const icons = getMarkerIcons(colors.marker);
 
-  const isDraggingRef = useRef(false);
   const [draggedFc, setDraggedFc] = useState<FeatureCollection | undefined>();
   const featureCollectionRef = useRef<FeatureCollection | undefined>(undefined);
 
@@ -140,9 +164,9 @@ export const GeojsonsMap = () => {
     data: draggedFc ?? fc,
     getFillColor: (_feature: Feature, isSelected: boolean) => {
       if (isSelected) {
-        return [57, 62, 65, 50];
+        return [...colors.fillSelected];
       }
-      return [57, 62, 65, 25];
+      return [...colors.fill];
     },
     pickable,
     modeConfig: {
@@ -159,9 +183,9 @@ export const GeojsonsMap = () => {
     },
     getEditHandlePointColor: [0, 0, 0, 255],
     getTentativeLineWidth: 1,
-    getLineColor: [57, 62, 65, 200],
+    getLineColor: [...colors.line],
     autoHighlight: true,
-    highlightColor: [57, 62, 65, 50],
+    highlightColor: [...colors.highlight],
     selectedFeatureIndexes,
     mode: editingMode,
     onClick: (pickInfo: PickingInfo, hammerInput: MjolnirGestureEvent) => {
@@ -173,16 +197,6 @@ export const GeojsonsMap = () => {
       // The types are wrong again... tapCount exists.
       if (pickInfo.picked && "tapCount" in hammerInput && hammerInput.tapCount === 2) {
         setTool(Tool.edit);
-      }
-    },
-    onDragStart: () => (isDraggingRef.current = true),
-    onDragEnd: () => {
-      console.log("onDragEnd");
-      isDraggingRef.current = false;
-      if (featureCollectionRef.current) {
-        setDraggedFc(undefined);
-        updateFc(featureCollectionRef.current);
-        featureCollectionRef.current = undefined;
       }
     },
     onHover: (info: PickingInfo) => {
@@ -198,23 +212,17 @@ export const GeojsonsMap = () => {
       geojson: {
         pointType: "icon",
         updateTriggers: {
-          getIcon: [selectedFeatureIndexes, hoveredFeatureIndex],
+          getIcon: [selectedFeatureIndexes, hoveredFeatureIndex, mapStyleConfig.variant],
         },
         getIcon: (feature: Feature) => {
           const index = fc.features.indexOf(feature);
-          // const hovered = hoveredFeatureIndex === index;
           if (feature.properties?.type === "cat") {
             return defaultCatMarkerIconDescription;
           } else {
             if (selectedFeatureIndexes.includes(index)) {
-              return {
-                ...defaultMarkerIconDescription,
-                url: selectedMarkerSvg,
-              };
-              // } else if (hovered) {
-              //   return { ...defaultMarkerIconDescription, url: hoveredMarkerSvg };
+              return icons.selected;
             }
-            return defaultMarkerIconDescription;
+            return icons.marker;
           }
         },
 
@@ -234,27 +242,29 @@ export const GeojsonsMap = () => {
       featureIndexes: number[];
       editContext: Feature;
     }) => {
-      if (isDraggingRef.current) {
+      if (!updatedData?.features) {
+        console.error("onEdit called with no features", { updatedData, editType, featureIndexes, editContext });
+        return;
+      }
+      if (editType === 'updateTentativeFeature' || editType === 'cancelFeature') return;
+
+      if (DRAGGING_EDIT_TYPES.has(editType)) {
         featureCollectionRef.current = updatedData;
         setDraggedFc(updatedData);
         return;
       }
-      if (updatedData && updatedData.features) {
-        // onEdit is called even when there are no changes (clicking on the map for the first time)
-        if (updatedData.features.length === fc.features.length) return;
-        if (editType === "addFeature" && tool === Tool.catMarker) {
-          const newFeature = updatedData.features[updatedData.features.length - 1];
-          newFeature.properties = { type: "cat" };
-        }
+      if (DRAG_FINISHED_EDIT_TYPES.has(editType)) {
+        setDraggedFc(undefined);
+        featureCollectionRef.current = undefined;
         updateFc(updatedData);
-      } else {
-        console.error("onEdit called with no features", {
-          updatedData,
-          editType,
-          featureIndexes,
-          editContext,
-        });
+        return;
       }
+
+      // Non-drag edits: addFeature, addPosition, removePosition, etc.
+      if (editType === "addFeature" && tool === Tool.catMarker) {
+        updatedData.features[updatedData.features.length - 1].properties = { type: "cat" };
+      }
+      updateFc(updatedData);
     },
   };
 
@@ -326,22 +336,44 @@ export const GeojsonsMap = () => {
   // not necessary for now? I just saw it in https://github.com/visgl/deck.gl/discussions/6103
   // const [glContext,setGlContext] = useState<WebGLRenderingContext>();
 
-  const onMapLoad = useCallback((e: MapLibreEvent) => {
-    const map = e.target;
-    // Setting up terrain like this is easier than having my own styles.json file/configuration
-    const terrainSourceId = "terrain";
-    map.setMaxPitch(85); // highest value
-    map.addSource(terrainSourceId, {
-      type: "raster-dem",
-      url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${env.VITE_MAPTILER_API_KEY}`,
-    });
-    map.setTerrain({
-      source: terrainSourceId,
-    });
-    map.on("contextmenu", () => {
-      console.log("contextmenu clicked");
-    });
-  }, []);
+  const mapRef = useRef<MapRef>(null);
+
+  const applyTerrain = useCallback(
+    (map: maplibregl.Map) => {
+      const terrainSourceId = "terrain";
+      if (map.getSource(terrainSourceId)) return;
+      map.addSource(terrainSourceId, {
+        type: "raster-dem",
+        url: mapStyleConfig.terrainSourceUrl,
+      });
+      map.setTerrain({ source: terrainSourceId });
+    },
+    [mapStyleConfig.terrainSourceUrl],
+  );
+
+  const onMapLoad = useCallback(
+    (e: MapLibreEvent) => {
+      const map = e.target;
+      map.setMaxPitch(85);
+      applyTerrain(map);
+      map.on("contextmenu", () => {
+        console.log("contextmenu clicked");
+      });
+    },
+    [applyTerrain],
+  );
+
+  // Re-apply terrain when map style changes (changing mapStyle prop destroys all sources)
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    const onStyleLoad = () => applyTerrain(map);
+    map.on("style.load", onStyleLoad);
+    return () => {
+      map.off("style.load", onStyleLoad);
+    };
+  }, [mapStyleId, applyTerrain]);
   // {/*"https://api.maptiler.com/maps/outdoor-v2/style.json?key=LlETYKEJwgxoM6pCNChm",*/}
   // When you use DeckGL as the parent, you are using DeckGL's controller.
   // It has identical implementation as react-map-gl's controller, but different defaults for
@@ -435,23 +467,18 @@ export const GeojsonsMap = () => {
         ]}
       >
         <Map
+          ref={mapRef}
           onLoad={onMapLoad}
           onClick={() => console.log("map onclick")}
-          // I don't use the map from the ref because the map isn't loaded yet, so it's not useful
-          // ref={(map) => setMap(map)}
           style={{ width: 600, height: 400 }}
-          // We render could a separate component for it to allow it to be clicked. Otherwise, deck.gl prevents clicks. See https://github.com/visgl/deck.gl/issues/4165
           attributionControl={false}
-          // Maplibre demo basemap style
-          // mapStyle="https://demotiles.maplibre.org/style.json"
-          // Using custom map style object
-          // mapStyle={mapStyle}
-          mapStyle={`https://api.maptiler.com/maps/landscape/style.json?key=${env.VITE_MAPTILER_API_KEY}`}
+          mapStyle={mapStyleConfig.url}
         >
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
         </Map>
       </DeckGL>
       <MapAttribution />
+      <MapStyleSwitcher />
       <ZoomToolbar />
       <Toolbar />
       <BenAttribution />
