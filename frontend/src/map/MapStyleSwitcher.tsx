@@ -16,11 +16,21 @@ export const MapStyleSwitcher = () => {
 
   return (
     <div className="absolute top-16 md:top-10 left-2 flex flex-col gap-1 rounded-xl bg-white drop-shadow-2xl shadow-xl border border-slate-300 px-2 pt-1.5 pb-2 text-slate-700">
-      {mapStylesByProvider.map(({ provider, label, styles }) => (
+      {mapStylesByProvider.map(({ provider, label, styles, notRecommended }) => (
         <div key={provider}>
-          <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider px-1">
-            {label}
-          </span>
+          <div className="flex items-center gap-1 px-1">
+            <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">
+              {label}
+            </span>
+            {notRecommended && (
+              <span
+                title={notRecommended}
+                className="text-[9px] font-medium text-amber-600 bg-amber-50 rounded px-1 cursor-help"
+              >
+                Not recommended
+              </span>
+            )}
+          </div>
           <div className="flex gap-1">
             {styles.map((style) => {
               const Icon = variantIcon[style.variant];

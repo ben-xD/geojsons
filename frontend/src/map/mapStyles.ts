@@ -80,6 +80,7 @@ export const mapStylesByProvider: {
   provider: MapProvider;
   label: string;
   styles: MapStyleConfig[];
+  notRecommended?: string;
 }[] = [
   {
     provider: "mapbox",
@@ -90,6 +91,7 @@ export const mapStylesByProvider: {
     provider: "maptiler",
     label: "MapTiler",
     styles: [mapStyles["maptiler-vector"], mapStyles["maptiler-satellite"]],
+    notRecommended: "Low resolution satellite imagery, bad customer support",
   },
   {
     provider: "arcgis",
