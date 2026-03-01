@@ -23,7 +23,7 @@ export interface MapStyleConfig {
 
 const maptilerKey = env.VITE_MAPTILER_API_KEY;
 const mapboxKey = env.VITE_MAPBOX_API_KEY;
-const arcgisKey = env.VITE_ARCGIS_API_KEY;
+const _arcgisKey = env.VITE_ARCGIS_API_KEY;
 
 const mapStyles: Record<MapStyleId, MapStyleConfig> = {
   "maptiler-vector": {

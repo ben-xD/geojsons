@@ -1,7 +1,7 @@
 import { useStore } from "@/store/store.ts";
 import { EditorState } from "@codemirror/state";
 import { basicSetup } from "codemirror";
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView } from "@codemirror/view";
 import { json } from "@codemirror/lang-json";
 import { emptyFeatureCollection } from "@/data/featureCollection.ts";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -39,7 +39,7 @@ export const RawGeojsonPanel = () => {
             const data = FeatureCollection.parse(parsedJsonString);
             setErrorMessage(undefined);
             setFc(data);
-          } catch (error) {
+          } catch (_error) {
             // TODO get the zod error or JSON parse error
             setErrorMessage("Invalid FeatureCollection");
           }

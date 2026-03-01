@@ -30,7 +30,7 @@ export const useUserLocationLayers = () => {
     lineWidthScale: 1,
     lineWidthMinPixels: 2,
     getFillColor: [59, 130, 246, 255],
-    getLineColor: (d) => [255, 255, 255, 255],
+    getLineColor: (_d) => [255, 255, 255, 255],
     getLineWidth: 0,
     getPointRadius: 0,
   });

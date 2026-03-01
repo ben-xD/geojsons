@@ -63,7 +63,7 @@ export class DrawLineStringByDraggingMode extends DrawLineStringMode {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleDraggingAux(event: DraggingEvent, props: ModeProps<any>) {
+  handleDraggingAux(event: DraggingEvent, _props: ModeProps<any>) {
     const { picks } = event;
     const clickedEditHandle = getPickedEditHandle(picks);
 
