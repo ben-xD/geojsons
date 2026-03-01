@@ -27,6 +27,7 @@ export class ImmediateDragTransformMode extends TransformMode {
   }
 
   handleClick(event: ClickEvent, props: ModeProps<FeatureCollection>) {
+    if (props.modeConfig?.isSpacePressed) return;
     const nonGuidePicks = event.picks.filter(
       (p: Record<string, unknown>) => !p.isGuide,
     );
@@ -54,6 +55,7 @@ export class ImmediateDragTransformMode extends TransformMode {
   }
 
   handleStartDragging(event: StartDraggingEvent, props: ModeProps<FeatureCollection>) {
+    if (props.modeConfig?.isSpacePressed) return;
     const nonGuidePicks = event.picks.filter(
       (p: Record<string, unknown>) => !p.isGuide,
     );

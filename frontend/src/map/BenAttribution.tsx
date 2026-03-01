@@ -1,10 +1,10 @@
 export const BenAttribution = () => {
   return (
-    <div className=" flex gap-2 absolute top-0 left-0 md:left-auto md:right-0 bg-white/80 text-slate-900 backdrop-blur-sm rounded-full px-3 py-1 m-2 text-xs">
+    <div className="flex gap-2 absolute top-0 left-0 md:left-auto md:right-0 bg-card text-foreground border border-border rounded-full px-3 py-1 m-2 text-xs">
       <p>
         a free,{" "}
         <a
-          className="underline hover:text-slate-700"
+          className="underline hover:text-muted-foreground"
           target="_blank"
           rel="noreferrer"
           href="https://github.com/ben-xD/geojsons"
@@ -13,7 +13,7 @@ export const BenAttribution = () => {
         </a>{" "}
         app, by{" "}
         <a
-          className="underline hover:text-slate-700"
+          className="underline hover:text-muted-foreground"
           target="_blank"
           rel="noreferrer"
           href="https://orth.uk/"

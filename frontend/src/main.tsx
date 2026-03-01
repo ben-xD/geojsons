@@ -1,9 +1,9 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { registerMapboxProtocol } from "./map/mapboxProtocol.ts";
 import { applyHashToStore } from "./map/useHashViewState.ts";
+import { ThemeProvider } from "./components/theme-provider.tsx";
 
 registerMapboxProtocol();
 applyHashToStore();
@@ -23,4 +23,8 @@ if (rootElement === null) {
 //     at WebGLCanvasContext.getMaxDrawingBufferSize
 //     at WebGLCanvasContext._handleResize
 //     at ResizeObserver.<anonymous>
-ReactDOM.createRoot(rootElement).render(<App />);
+ReactDOM.createRoot(rootElement).render(
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>,
+);

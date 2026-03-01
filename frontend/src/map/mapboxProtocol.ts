@@ -20,9 +20,13 @@ function transformMapboxUrl(url: string, accessToken: string): string {
   }
 
   // mapbox://sprites/mapbox/streets-v12 → sprite sheet
+  // MapLibre appends suffixes like @2x.json or .png to the sprite base URL
   if (url.startsWith("mapbox://sprites/")) {
     const path = url.replace("mapbox://sprites/", "");
-    return `https://api.mapbox.com/styles/v1/${path}/sprite?${tokenParam}`;
+    const match = path.match(/^([^@.]+)(.*)?$/);
+    const basePath = match?.[1] ?? path;
+    const suffix = match?.[2] ?? "";
+    return `https://api.mapbox.com/styles/v1/${basePath}/sprite${suffix}?${tokenParam}`;
   }
 
   // mapbox://fonts/mapbox/{fontstack}/{range}.pbf → glyphs

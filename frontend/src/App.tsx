@@ -11,9 +11,9 @@ function App() {
           <Panel>
             <GeojsonsMap />
           </Panel>
-          <Separator className="w-full h-px bg-slate-300 flex items-center justify-center">
-            <div className="h-4 drop-shadow w-5 z-10 bg-slate-200 rounded-md px-0.5 flex items-center justify-center">
-              <GripHorizontal className="text-slate-600" height={24} width={24} />
+          <Separator className="w-full h-px bg-border flex items-center justify-center">
+            <div className="h-4 drop-shadow w-5 z-10 bg-muted rounded-md px-0.5 flex items-center justify-center">
+              <GripHorizontal className="text-muted-foreground" height={24} width={24} />
             </div>
           </Separator>
           <Panel

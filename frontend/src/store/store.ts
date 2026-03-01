@@ -1,11 +1,12 @@
 import { immer } from "zustand/middleware/immer";
-import { getNebulaModeForTool } from "../editor/tools";
+import { getEditModeForTool } from "../editor/tools";
 import { create, StateCreator } from "zustand";
 import { createJSONStorage, devtools, persist, subscribeWithSelector } from "zustand/middleware";
 import { RotateMode, ScaleMode, TransformMode, ViewMode } from "@deck.gl-community/editable-layers";
 import { createReorderFeatureSlice, ReorderFeatureSlice } from "./reorderFeatureSlice";
 import { FeatureEditorSlice, createFeatureEditorSlice } from "./featureEditorSlice";
 import { createSelectors } from "./createSelectors";
+
 
 // Consider reading https://docs.pmnd.rs/zustand/guides/typescript
 // Slices are just smaller stores. Technically, they are still stores. So you can call them either.
@@ -30,7 +31,7 @@ export type Mutators = [
   ["zustand/immer", never],
 ];
 
-const unpersistedProperties = ["userLocation", "viewState"];
+const unpersistedProperties = ["userLocation", "viewState", "pickable", "isMapDraggable", "locate"];
 
 const applicationLocalStorageName = "geojsons.com";
 // reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md. Daishi (the maintainer) suggests following Tests over docs, if they're inconsistent.
@@ -76,10 +77,10 @@ export const useEditingMode = () => {
   // );
   const tool = useStore.use.tool();
   const selectedFeatureIndexes = useStore.use.selectedFeatureIndexes();
-  const nebulaMode = getNebulaModeForTool(tool);
+  const editMode = getEditModeForTool(tool);
   const preventModeMisuse =
-    selectedFeatureIndexes.length === 0 && modesRequiringFeatures.has(nebulaMode);
-  return preventModeMisuse ? ViewMode : nebulaMode;
+    selectedFeatureIndexes.length === 0 && modesRequiringFeatures.has(editMode);
+  return preventModeMisuse ? ViewMode : editMode;
 };
 
 export const useUndoStackSize = () => useStore((state) => state.undoStack.length);

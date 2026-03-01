@@ -12,7 +12,6 @@ import {
 import { DebouncedFunc } from "lodash";
 
 //
-/* Inspired by nebula.gl's DrawPolygonByDraggingMode */
 // Using `any` for the FeatureCollection generic because @deck.gl-community/editable-layers
 // has inconsistent types between GeoJsonEditMode (uses FeatureCollection) and
 // DrawLineStringMode (uses SimpleFeatureCollection for some methods).

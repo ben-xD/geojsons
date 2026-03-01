@@ -4,7 +4,8 @@ import { Tool, toolToConfig } from "./tools";
 
 const useKeyboardConfig = (tool: Tool) => {
   const setTool = useStore((state) => state.setTool);
-  useHotkeys(toolToConfig[tool].keys, () => setTool(tool));
+  const keys = toolToConfig[tool]?.keys;
+  useHotkeys(keys ?? [], () => setTool(tool), { enabled: !!keys });
 };
 
 export const useMapHotkeys = () => {
@@ -17,8 +18,6 @@ export const useMapHotkeys = () => {
   const deleteSelectedFeatures = useStore((state) => state.deleteSelectedFeatures);
 
   useKeyboardConfig(Tool.select);
-  useKeyboardConfig(Tool.edit);
-  useKeyboardConfig(Tool.hand);
   useKeyboardConfig(Tool.boxSelect);
 
   useKeyboardConfig(Tool.polygon);

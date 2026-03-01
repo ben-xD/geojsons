@@ -8,9 +8,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import "@codemirror/lang-json";
 import { FeatureCollection } from "@/data/validator/geojson.ts";
-import { Bomb, Trash2 } from "lucide-react";
-import { resetStateAndReloadPage } from "@/store/store";
+import { Trash2 } from "lucide-react";
 import { ClearDataAlertDialog } from "@/GeojsonPanel/ClearDataAlertDialog";
+import { starryNightTheme } from "@/editor/codemirrorTheme";
 
 export const RawGeojsonPanel = () => {
   const fc = useStore.use.featureCollection();
@@ -23,10 +23,7 @@ export const RawGeojsonPanel = () => {
   const extensions = useMemo(
     () => [
       basicSetup,
-      EditorView.theme({
-        "&": { height: "100%" },
-        ".cm-scroller": { overflow: "auto" },
-      }),
+      ...starryNightTheme,
       json(),
       EditorView.lineWrapping,
       EditorView.updateListener.of(function (e) {
@@ -34,7 +31,7 @@ export const RawGeojsonPanel = () => {
           const unparsedJsonString = e.state.doc.toString();
           const fc = useStore.getState().featureCollection;
           const stringifiedFc = JSON.stringify(fc, null, 2);
-          // This is important for undo/redo. Why?: it prevents changes via the map/nebula from causing a change in the editor which will cause a change in the map.
+          // This is important for undo/redo. Why?: it prevents changes via the map from causing a change in the editor which will cause a change in the map.
           // It will make the undo/stack larger.
           if (stringifiedFc === unparsedJsonString) return;
           try {
@@ -102,12 +99,12 @@ export const RawGeojsonPanel = () => {
   }, [extensions, fc]);
 
   return (
-    <div className="flex flex-col gap-2 p-2 h-full overflow-hidden">
-      <div className="flex justify-between items-center flex-wrap text-slate-800">
+    <div className="flex flex-col gap-2 p-2 h-full overflow-hidden bg-background">
+      <div className="flex justify-between items-center flex-wrap text-foreground">
         <p className="text-2xl">
           Draw like its{" "}
           <a
-            className="underline text-slate-600"
+            className="underline text-muted-foreground hover:text-foreground"
             target="_blank"
             href="https://excalidraw.com"
             rel="noreferrer"
@@ -116,7 +113,7 @@ export const RawGeojsonPanel = () => {
           </a>{" "}
           or{" "}
           <a
-            className="underline text-slate-600"
+            className="underline text-muted-foreground hover:text-foreground"
             target="_blank"
             href="https://tldraw.com"
             rel="noreferrer"
@@ -126,14 +123,14 @@ export const RawGeojsonPanel = () => {
           , but on a map.
         </p>
         <div className="flex gap-4">
-          <Trash2 onClick={() => setFc(emptyFeatureCollection)} />
+          <Trash2 className="cursor-pointer hover:text-destructive transition-colors" onClick={() => setFc(emptyFeatureCollection)} />
           <ClearDataAlertDialog />
         </div>
       </div>
       <p>
         To learn more, see{" "}
         <a
-          className="underline text-slate-600"
+          className="underline text-muted-foreground hover:text-foreground"
           target="_blank"
           href="https://macwright.com/2015/03/23/geojson-second-bite"
           rel="noreferrer"
@@ -142,7 +139,7 @@ export const RawGeojsonPanel = () => {
         </a>{" "}
         or{" "}
         <a
-          className="underline text-slate-600"
+          className="underline text-muted-foreground hover:text-foreground"
           target="_blank"
           rel="noreferrer"
           href="https://www.rfc-editor.org/rfc/rfc7946"

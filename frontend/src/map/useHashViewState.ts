@@ -9,6 +9,7 @@ import { useStoreOriginal } from "../store/store";
 interface HashState {
   viewState: Partial<ViewState>;
   mapStyleId?: MapStyleId;
+  locate?: boolean;
 }
 
 const validMapStyleIds = new Set<string>([
@@ -52,6 +53,8 @@ export function parseHash(hash: string): HashState | null {
     ? (styleValue as MapStyleId)
     : undefined;
 
+  const locate = params.has("locate") ? params.get("locate") !== "0" : undefined;
+
   return {
     viewState: {
       zoom: Math.max(0, Math.min(24, zoom)),
@@ -61,10 +64,11 @@ export function parseHash(hash: string): HashState | null {
       pitch: Math.max(0, Math.min(85, pitch)),
     },
     mapStyleId,
+    locate,
   };
 }
 
-export function formatHash(vs: ViewState, mapStyleId: MapStyleId): string {
+export function formatHash(vs: ViewState, mapStyleId: MapStyleId, locate: boolean): string {
   const z = vs.zoom.toFixed(2);
   const lat = vs.latitude.toFixed(5);
   const lng = vs.longitude.toFixed(5);
@@ -72,7 +76,8 @@ export function formatHash(vs: ViewState, mapStyleId: MapStyleId): string {
   const mapPart = hasBearingOrPitch
     ? `map=${z}/${lat}/${lng}/${Math.round(vs.bearing)}/${Math.round(vs.pitch)}`
     : `map=${z}/${lat}/${lng}`;
-  return `#${mapPart}&style=${mapStyleId}`;
+  const locatePart = locate ? "&locate=1" : "";
+  return `#${mapPart}&style=${mapStyleId}${locatePart}`;
 }
 
 // --- Pre-render bootstrap ---
@@ -84,6 +89,7 @@ export function applyHashToStore(): void {
   useStoreOriginal.setState({
     viewState: { ...state.viewState, ...parsed.viewState },
     ...(parsed.mapStyleId && { mapStyleId: parsed.mapStyleId }),
+    ...(parsed.locate !== undefined && { locate: parsed.locate }),
   });
 }
 
@@ -91,41 +97,43 @@ export function applyHashToStore(): void {
 
 export function useHashViewState(): void {
   useEffect(() => {
-    // Write initial hash if there is none
-    if (!parseHashParams(window.location.hash).has("map")) {
-      const { viewState, mapStyleId } = useStoreOriginal.getState();
-      history.replaceState(null, "", formatHash(viewState, mapStyleId));
-    }
+    const getHash = () => {
+      const { viewState, mapStyleId, locate } = useStoreOriginal.getState();
+      return formatHash(viewState, mapStyleId, locate);
+    };
 
-    let lastHash = window.location.hash;
-
-    const debouncedUpdateHash = debounce((vs: ViewState, styleId: MapStyleId) => {
-      const newHash = formatHash(vs, styleId);
+    const updateHash = (newHash: string) => {
       if (newHash !== window.location.hash) {
         lastHash = newHash;
         history.replaceState(null, "", newHash);
       }
+    };
+
+    // Write initial hash if there is none
+    if (!parseHashParams(window.location.hash).has("map")) {
+      history.replaceState(null, "", getHash());
+    }
+
+    let lastHash = window.location.hash;
+
+    const debouncedUpdateHash = debounce(() => {
+      updateHash(getHash());
     }, 300);
 
     // Subscribe to store changes (outside React render cycle)
     const unsubViewState = useStoreOriginal.subscribe(
       (state) => state.viewState,
-      (viewState) => {
-        debouncedUpdateHash(viewState, useStoreOriginal.getState().mapStyleId);
-      },
+      () => debouncedUpdateHash(),
     );
 
     const unsubMapStyle = useStoreOriginal.subscribe(
       (state) => state.mapStyleId,
-      (mapStyleId) => {
-        // Update hash immediately when style changes (no need to debounce)
-        const vs = useStoreOriginal.getState().viewState;
-        const newHash = formatHash(vs, mapStyleId);
-        if (newHash !== window.location.hash) {
-          lastHash = newHash;
-          history.replaceState(null, "", newHash);
-        }
-      },
+      () => updateHash(getHash()),
+    );
+
+    const unsubLocate = useStoreOriginal.subscribe(
+      (state) => state.locate,
+      () => updateHash(getHash()),
     );
 
     // Listen for manual URL edits
@@ -140,6 +148,7 @@ export function useHashViewState(): void {
       useStoreOriginal.setState({
         viewState: { ...state.viewState, ...parsed.viewState },
         ...(parsed.mapStyleId && { mapStyleId: parsed.mapStyleId }),
+        ...(parsed.locate !== undefined && { locate: parsed.locate }),
       });
     };
 
@@ -148,6 +157,7 @@ export function useHashViewState(): void {
     return () => {
       unsubViewState();
       unsubMapStyle();
+      unsubLocate();
       debouncedUpdateHash.cancel();
       window.removeEventListener("hashchange", onHashChange);
     };

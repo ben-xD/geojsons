@@ -48,6 +48,8 @@ export interface FeatureEditorSlice {
   zoomOut: () => void;
   userLocation: UserLocation | undefined;
   setUserLocation: (userLocation?: UserLocation) => void;
+  locate: boolean;
+  setLocate: (locate: boolean) => void;
   mapStyleId: MapStyleId;
   setMapStyleId: (mapStyleId: MapStyleId) => void;
 }
@@ -57,7 +59,7 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
   set,
 ) => ({
   enabled: true,
-  tool: Tool.hand,
+  tool: Tool.select,
   isMapDraggable: true,
   setIsMapDraggable: (isMapDraggable: boolean) =>
     set((state) => {
@@ -68,7 +70,7 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
     set(
       (state) => {
         state.tool = tool;
-        state.isDoubleClickZoomEnabled = tool === Tool.hand;
+        state.isDoubleClickZoomEnabled = false;
       },
       false,
       { type: "setTool" },
@@ -89,7 +91,6 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
         const features = state.featureCollection.features.filter(
           (_f, i) => !state.selectedFeatureIndexes.includes(i),
         );
-        console.log(`final features`, features.length);
         applyFeatureCollectionUpdate(state, {
           ...state.featureCollection,
           features,
@@ -252,11 +253,12 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
   userLocation: undefined,
   setUserLocation: (userLocation?: UserLocation) =>
     set((state) => {
-      if (!state.userLocation && userLocation?.latitude && userLocation?.longitude) {
-        state.viewState.latitude = userLocation?.latitude;
-        state.viewState.longitude = userLocation?.longitude;
-      }
       state.userLocation = userLocation;
+    }),
+  locate: false,
+  setLocate: (locate: boolean) =>
+    set((state) => {
+      state.locate = locate;
     }),
   mapStyleId: "mapbox-vector" as MapStyleId,
   setMapStyleId: (mapStyleId: MapStyleId) =>

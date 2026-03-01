@@ -109,7 +109,7 @@ export const Toolbar = () => {
 				<ToolbarButton
 					icon={<Search />}
 					tooltipText="Search · /"
-					onClick={() => { console.log("onClick: search toggle"); setSearchOpen((prev) => !prev); }}
+					onClick={() => setSearchOpen((prev) => !prev)}
 				/>
 				<div className="bg-border w-0.5 my-2"></div>
 				{Object.values(toolButtonPropsByTool).map((tool) => (
@@ -141,7 +141,7 @@ const UndoButton = () => {
 			disabled={!canUndo}
 			icon={<Undo />}
 			tooltipText={`Undo · ${metaKey} + Z`}
-			onClick={() => { console.log("onClick: undo"); undo(); }}
+			onClick={() => undo()}
 		/>
 	);
 };
@@ -153,14 +153,14 @@ const RedoButton = () => {
 			disabled={!canRedo}
 			icon={<Redo />}
 			tooltipText={`Redo · ${metaKey} + Shift + Z`}
-			onClick={() => { console.log("onClick: redo"); redo(); }}
+			onClick={() => redo()}
 		/>
 	);
 };
 
 const ToolbarToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
 	const setTool = useStore.use.setTool();
-	const onClick = () => { console.log("onClick: tool button", props.tool); setTool(props.tool); };
+	const onClick = () => setTool(props.tool);
 	const tooltipText = toolToConfig[props.tool]?.tooltipText ?? props.tool;
 	const currentTool = useStore.use.tool();
 	const isSelected = currentTool === props.tool;
@@ -189,7 +189,7 @@ const ThemeToggleButton = () => {
 		<ToolbarButton
 			icon={themeIcon[theme]}
 			tooltipText={`${themeLabel[theme]} · Switch to ${themeLabel[next]}`}
-			onClick={() => { console.log("onClick: theme toggle", next); setTheme(next); }}
+			onClick={() => setTheme(next)}
 		/>
 	);
 };

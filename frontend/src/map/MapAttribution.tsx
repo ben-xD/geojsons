@@ -6,7 +6,7 @@ export const MapAttribution = () => {
   const { provider } = getMapStyle(mapStyleId);
 
   return (
-    <div className="flex gap-2 absolute top-8 md:top-0 left-0 bg-white/80 text-slate-900 backdrop-blur-sm rounded-full px-3 py-1 m-2 text-xs">
+    <div className="flex gap-2 absolute top-8 md:top-0 left-0 bg-card text-foreground border border-border rounded-full px-3 py-1 m-2 text-xs">
       {provider === "maptiler" ? (
         <a
           className="hover:underline"

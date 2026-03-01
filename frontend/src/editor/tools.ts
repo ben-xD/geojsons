@@ -1,5 +1,4 @@
 import {
-  TransformMode,
   DrawRectangleMode,
   DrawCircleByDiameterMode,
   ViewMode,
@@ -10,12 +9,12 @@ import {
   DrawPointMode,
   ModifyMode,
 } from "@deck.gl-community/editable-layers";
-import { DrawLineStringByDraggingMode } from "@/editor/CustomNebulaModes/DrawLineStringByDragging";
+import { DrawLineStringByDraggingMode } from "@/editor/CustomEditModes/DrawLineStringByDragging";
+import { ImmediateDragTransformMode } from "@/editor/CustomEditModes/ImmediateDragTransformMode";
 
 export const Tool = {
   select: "select",
   edit: "edit",
-  hand: "hand",
   rectangle: "rectangle",
   circle: "circle",
   ellipse: "ellipse",
@@ -47,20 +46,12 @@ export interface ToolConfig {
   keys: string[];
 }
 
-export const toolToConfig: Record<Tool, ToolConfig> = {
+export const toolToConfig: Partial<Record<Tool, ToolConfig>> = {
   select: {
     tooltipText: "Select · V",
     keys: ["v"],
   },
-  edit: {
-    tooltipText: "Edit · E",
-    keys: ["e"],
-  },
-  hand: {
-    tooltipText: "Hand · H",
-    keys: ["h"],
-  },
-  rectangle: {
+rectangle: {
     tooltipText: "Rectangle · R",
     keys: ["r"],
   },
@@ -103,10 +94,10 @@ export const toolToConfig: Record<Tool, ToolConfig> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getNebulaModeForTool = (tool: Tool): any => {
+export const getEditModeForTool = (tool: Tool): any => {
   switch (tool) {
     case Tool.select:
-      return TransformMode;
+      return ImmediateDragTransformMode;
     case Tool.edit:
       return ModifyMode;
     case Tool.rectangle:
@@ -127,8 +118,6 @@ export const getNebulaModeForTool = (tool: Tool): any => {
       return DrawPointMode;
     case Tool.ellipse:
       return DrawEllipseByBoundingBoxMode;
-    case Tool.hand:
-      return ViewMode;
     case Tool.boxSelect:
       return ViewMode;
     default:

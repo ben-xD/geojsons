@@ -26,6 +26,12 @@ importers:
       '@deck.gl-community/editable-layers':
         specifier: ^9.2.5
         version: 9.2.5(8d47347d1272f55ced4099b802bed9ed)
+      '@esri/maplibre-arcgis':
+        specifier: ^1.1.0
+        version: 1.1.0(maplibre-gl@5.19.0)
+      '@lezer/highlight':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@lezer/json':
         specifier: ^1.0.3
         version: 1.0.3
@@ -599,12 +605,46 @@ packages:
     resolution: {integrity: sha512-einEveDJ/k1180NOp78PB/4Hje9eBy3dyOGLLtLn6bSkizpUfCwuYBIXOA7Y3F/k/BsTQXgKqUVwQ0eiscWMdA==}
     engines: {node: '>=18.0.0'}
 
+  '@esri/arcgis-rest-basemap-sessions@1.1.0':
+    resolution: {integrity: sha512-ZcjdDkGmzSBhRgkkX3cyBZKJe16BN1xIXZRXtAoD75+TE7sTLN2Hgdhafv6DTrHDWWRj6lzS4LiSjVtXrsgFuA==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@esri/arcgis-rest-request': ^4.0.0
+
+  '@esri/arcgis-rest-feature-service@4.9.1':
+    resolution: {integrity: sha512-j8mtzaaiSNhQQ7KAQ7gzhBf9i36/dQLkDUKTJyJ3/piRrpO0uIyTARLXdv3Z1khIgqyxyQgxibXlbVz+boRroA==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@esri/arcgis-rest-portal': ^4.0.0
+      '@esri/arcgis-rest-request': ^4.0.0
+
+  '@esri/arcgis-rest-fetch@4.9.1':
+    resolution: {integrity: sha512-vBnE9vZfoy4z7C2YqOO6kiJeQfYB+2LPTNX2oUNMFF+3cUkStgJWm0D9nbsfbXhwid7hKThz2NP/HF0Un5sjwA==}
+
+  '@esri/arcgis-rest-form-data@4.9.1':
+    resolution: {integrity: sha512-G7bw+RZ2QhCzXP/4PAgBzuT4l7jiqxIJzaoVMMSySGtbOJVwesQAjXC68IMSxVB14NiHF07daNMnLZoc+Zj2SA==}
+
+  '@esri/arcgis-rest-portal@4.9.1':
+    resolution: {integrity: sha512-2h5fD08in4+wsccYJs7EPPF89ug8DLl0335e/2jy+JDttmsbOLaSv3EGKJGUQFyfpnuLebR0vzOueFCfnT4I4Q==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@esri/arcgis-rest-request': ^4.0.0
+
+  '@esri/arcgis-rest-request@4.9.1':
+    resolution: {integrity: sha512-3PcKary49A2OGemkn4XM1GSBQmT8cyDwreyWCvIs//OkEdP53k2Q00WQSzuarn6gWKsOwNvNW+9cbhLTarxbjQ==}
+    engines: {node: '>=12.20.0'}
+
   '@esri/calcite-components@3.3.3':
     resolution: {integrity: sha512-tw+EfJ3pb+Odj71W6E9GUkm8rMbNxfW1KeiI8GgsKDzhr39hMKwY+zYYFFYuO0FONxWGvAB+B8yqB0NvH7WeHw==}
 
   '@esri/calcite-ui-icons@4.3.0':
     resolution: {integrity: sha512-iOOuRurpjFxFVw6+aXW2JpSkRBrdOpBcbdibfPOmSPqMd1aoHBtYmYXetKoH9vfrXoBiPyO2PkDnczhsu/N9IA==}
     hasBin: true
+
+  '@esri/maplibre-arcgis@1.1.0':
+    resolution: {integrity: sha512-ax88nM/0ni4Duni2Pcpc/lzrPITiAX9cy4/y4N7VISM1/cuFOB+nsDrBoIqkbF8HFRxvM4R1DnOhpIHjAsSt5g==}
+    peerDependencies:
+      maplibre-gl: '>=5.11.0'
 
   '@floating-ui/core@1.7.4':
     resolution: {integrity: sha512-C3HlIdsBxszvm5McXlB8PeOEWfBhcGBTZGkGlWc2U0KFY5IwG5OQEuQ8rq52DZmcHDlPLd+YFBK+cZcytwIFWg==}
@@ -2730,6 +2770,10 @@ packages:
     resolution: {integrity: sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA==}
     engines: {node: '>=12'}
 
+  data-uri-to-buffer@4.0.1:
+    resolution: {integrity: sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==}
+    engines: {node: '>= 12'}
+
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
@@ -2887,6 +2931,10 @@ packages:
       picomatch:
         optional: true
 
+  fetch-blob@3.2.0:
+    resolution: {integrity: sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==}
+    engines: {node: ^12.20 || >= 14.13}
+
   fflate@0.7.4:
     resolution: {integrity: sha512-5u2V/CDW15QM1XbbgS+0DfPxVB+jUKhWEKuuFuHncbk3tEEqzmoXL+2KyOFuKGqOnmdIy0/davWF1CkuwtibCw==}
 
@@ -2895,6 +2943,14 @@ packages:
 
   focus-trap@7.8.0:
     resolution: {integrity: sha512-/yNdlIkpWbM0ptxno3ONTuf+2g318kh2ez3KSeZN5dZ8YC6AAmgeWz+GasYYiBJPFaYcSAPeu4GfhUaChzIJXA==}
+
+  formdata-node@4.4.1:
+    resolution: {integrity: sha512-0iirZp3uVDjVGt9p49aTaqjk84TrglENEDuqfdlZQ1roC9CWlPk6Avf8EEnZNcAqPonwkG35x4n3ww/1THYAeQ==}
+    engines: {node: '>= 12.20'}
+
+  formdata-polyfill@4.0.10:
+    resolution: {integrity: sha512-buewHzMvYL29jdeQTVILecSaZKnt/RJWjoZCF5OW60Z67/GmSLBkOFM7qh1PI3zFNtJbaZL5eQu1vLfazOwj4g==}
+    engines: {node: '>=12.20.0'}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -3291,6 +3347,9 @@ packages:
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
+  mitt@3.0.1:
+    resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
+
   mjolnir.js@3.0.0:
     resolution: {integrity: sha512-siX3YCG7N2HnmN1xMH3cK4JkUZJhbkhRFJL+G5N1vH0mh1t5088rJknIoqDFWDIU6NPGvRRgLnYW3ZHjSMEBLA==}
 
@@ -3313,6 +3372,15 @@ packages:
 
   no-case@3.0.4:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
+
+  node-domexception@1.0.0:
+    resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
+    engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
+
+  node-fetch@3.3.2:
+    resolution: {integrity: sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
@@ -3810,6 +3878,14 @@ packages:
 
   w3c-keyname@2.2.8:
     resolution: {integrity: sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==}
+
+  web-streams-polyfill@3.3.3:
+    resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
+    engines: {node: '>= 8'}
+
+  web-streams-polyfill@4.0.0-beta.3:
+    resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
+    engines: {node: '>= 14'}
 
   wgsl_reflect@1.2.3:
     resolution: {integrity: sha512-BQWBIsOn411M+ffBxmA6QRLvAOVbuz3Uk4NusxnqC1H7aeQcVLhdA3k2k/EFFFtqVjhz3z7JOOZF1a9hj2tv4Q==}
@@ -4456,6 +4532,39 @@ snapshots:
     dependencies:
       xss: 1.0.13
 
+  '@esri/arcgis-rest-basemap-sessions@1.1.0(@esri/arcgis-rest-request@4.9.1)':
+    dependencies:
+      '@esri/arcgis-rest-request': 4.9.1
+      mitt: 3.0.1
+      tslib: 2.8.1
+
+  '@esri/arcgis-rest-feature-service@4.9.1(@esri/arcgis-rest-portal@4.9.1(@esri/arcgis-rest-request@4.9.1))(@esri/arcgis-rest-request@4.9.1)':
+    dependencies:
+      '@esri/arcgis-rest-portal': 4.9.1(@esri/arcgis-rest-request@4.9.1)
+      '@esri/arcgis-rest-request': 4.9.1
+      pbf: 4.0.1
+      tslib: 2.8.1
+
+  '@esri/arcgis-rest-fetch@4.9.1':
+    dependencies:
+      node-fetch: 3.3.2
+
+  '@esri/arcgis-rest-form-data@4.9.1':
+    dependencies:
+      formdata-node: 4.4.1
+
+  '@esri/arcgis-rest-portal@4.9.1(@esri/arcgis-rest-request@4.9.1)':
+    dependencies:
+      '@esri/arcgis-rest-request': 4.9.1
+      tslib: 2.8.1
+
+  '@esri/arcgis-rest-request@4.9.1':
+    dependencies:
+      '@esri/arcgis-rest-fetch': 4.9.1
+      '@esri/arcgis-rest-form-data': 4.9.1
+      mitt: 3.0.1
+      tslib: 2.8.1
+
   '@esri/calcite-components@3.3.3':
     dependencies:
       '@arcgis/lumina': 4.34.9(lit@3.3.2)
@@ -4477,6 +4586,15 @@ snapshots:
       - '@lit/context'
 
   '@esri/calcite-ui-icons@4.3.0': {}
+
+  '@esri/maplibre-arcgis@1.1.0(maplibre-gl@5.19.0)':
+    dependencies:
+      '@esri/arcgis-rest-basemap-sessions': 1.1.0(@esri/arcgis-rest-request@4.9.1)
+      '@esri/arcgis-rest-feature-service': 4.9.1(@esri/arcgis-rest-portal@4.9.1(@esri/arcgis-rest-request@4.9.1))(@esri/arcgis-rest-request@4.9.1)
+      '@esri/arcgis-rest-portal': 4.9.1(@esri/arcgis-rest-request@4.9.1)
+      '@esri/arcgis-rest-request': 4.9.1
+      maplibre-gl: 5.19.0
+      mitt: 3.0.1
 
   '@floating-ui/core@1.7.4':
     dependencies:
@@ -6730,6 +6848,8 @@ snapshots:
       d3-transition: 3.0.1(d3-selection@3.0.0)
       d3-zoom: 3.0.0
 
+  data-uri-to-buffer@4.0.1: {}
+
   debug@4.4.3:
     dependencies:
       ms: 2.1.3
@@ -6914,6 +7034,11 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.3
 
+  fetch-blob@3.2.0:
+    dependencies:
+      node-domexception: 1.0.0
+      web-streams-polyfill: 3.3.3
+
   fflate@0.7.4: {}
 
   flatpickr@4.6.13: {}
@@ -6921,6 +7046,15 @@ snapshots:
   focus-trap@7.8.0:
     dependencies:
       tabbable: 6.4.0
+
+  formdata-node@4.4.1:
+    dependencies:
+      node-domexception: 1.0.0
+      web-streams-polyfill: 4.0.0-beta.3
+
+  formdata-polyfill@4.0.10:
+    dependencies:
+      fetch-blob: 3.2.0
 
   fsevents@2.3.3:
     optional: true
@@ -7292,6 +7426,8 @@ snapshots:
 
   minimist@1.2.8: {}
 
+  mitt@3.0.1: {}
+
   mjolnir.js@3.0.0: {}
 
   moment-timezone@0.6.0:
@@ -7310,6 +7446,14 @@ snapshots:
     dependencies:
       lower-case: 2.0.2
       tslib: 2.8.1
+
+  node-domexception@1.0.0: {}
+
+  node-fetch@3.3.2:
+    dependencies:
+      data-uri-to-buffer: 4.0.1
+      fetch-blob: 3.2.0
+      formdata-polyfill: 4.0.10
 
   node-releases@2.0.27: {}
 
@@ -7840,6 +7984,10 @@ snapshots:
       lightningcss: 1.31.1
 
   w3c-keyname@2.2.8: {}
+
+  web-streams-polyfill@3.3.3: {}
+
+  web-streams-polyfill@4.0.0-beta.3: {}
 
   wgsl_reflect@1.2.3: {}
 

@@ -7,7 +7,7 @@ import { EditableGeoJsonLayer, SelectionLayer } from "@deck.gl-community/editabl
 // CSS for maplibre-gl and react-menu are imported in index.css with layer(base)
 // so that Tailwind utilities take precedence over them.
 import { useKeyPressedDown } from "../hooks/useKeyPressedDown.tsx";
-import type { MapLibreEvent } from "maplibre-gl";
+import type { MapLibreEvent, StyleSpecification } from "maplibre-gl";
 import type maplibregl from "maplibre-gl";
 import { MjolnirGestureEvent } from "mjolnir.js";
 import { ContextMenu } from "../components/Context/ContextMenu.tsx";
@@ -24,6 +24,7 @@ import { useUserLocationLayers } from "@/map/UserLocationLayer";
 import { getMapStyle } from "@/map/mapStyles";
 import { MapStyleSwitcher } from "@/map/MapStyleSwitcher";
 import { useHashViewState } from "@/map/useHashViewState";
+import { useArcgisStyle } from "@/map/useArcgisStyle";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -94,26 +95,6 @@ const editableGeojsonLayerId = "editable-geojson-layer";
 // deck.log.enable();
 // deck.log.level = 3; // or 1 or 2
 
-// declaration merge to override contructor for EditableGeoJsonLayer. Unfortunately the types say
-// EditableGeoJsonLayer constructor takes 0 args.
-// This didn't help fix error for SelectionLayer: `error TS2554: Expected 0 arguments, but got 1.`
-// declare module "@nebula.gl/layers" {
-//   interface EditableGeoJsonLayer {
-//     new: (
-//       props: EditableGeojsonLayerProps<FeatureCollection>
-//     ) => EditableGeoJsonLayer;
-//   }
-
-//   interface SelectionLayerProps extends CompositeLayerProps {
-//     layerIds: string[];
-//     onSelect: (info: PickingInfo[]) => boolean;
-//     selectionType: string | null;
-//   }
-
-//   interface SelectionLayer<D> {
-//     new: (props: SelectionLayerProps) => SelectionLayer<D>;
-//   }
-// }
 
 const DRAGGING_EDIT_TYPES = new Set([
   'translating', 'scaling', 'rotating', 'movePosition',
@@ -141,6 +122,14 @@ export const GeojsonsMap = () => {
   const setViewState = useStore.use.setViewState();
   const mapStyleId = useStore.use.mapStyleId();
   const mapStyleConfig = getMapStyle(mapStyleId);
+  const arcgisStyle = useArcgisStyle(mapStyleConfig);
+  // For ArcGIS, use the loaded style object; for others, use the URL.
+  // While ArcGIS is loading, fall back to a blank style (Map is keyed by mapStyleId
+  // so it remounts fresh — no broken diff transitions).
+  const EMPTY_STYLE: StyleSpecification = { version: 8, sources: {}, layers: [] };
+  const mapStyle = mapStyleConfig.provider === "arcgis"
+    ? (arcgisStyle ?? EMPTY_STYLE)
+    : mapStyleConfig.url;
   const colors = featureColors[mapStyleConfig.variant];
   const icons = getMarkerIcons(colors.marker);
 
@@ -156,10 +145,14 @@ export const GeojsonsMap = () => {
   // const hoveredFeature = useRef<Feature>();
 
   const [hoveredFeatureIndex, setHoveredFeatureIndex] = useState<number>();
-  // The types for nebula aren't very good yet. Using EditableGeojsonLayerProps<FeatureCollection> here
-  // will throw error: error TS2353: Object literal may only specify known properties, and 'opacity' does not exist
-  // in type 'EditableGeojsonLayerProps<FeatureCollection<Geometry, GeoJsonProperties>>'.
-  // TODO type our own EditableGeojsonLayerProps correctly, because we can't use EditableGeojsonLayerProps<FeatureCollection>
+
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  useKeyPressedDown({
+    key: "space",
+    onKeyDown: () => setIsSpacePressed(true),
+    onKeyUp: () => setIsSpacePressed(false),
+  });
+
   const editableGeojsonLayerProps = {
     opacity: 1,
     id: editableGeojsonLayerId,
@@ -175,6 +168,7 @@ export const GeojsonsMap = () => {
       viewport: viewState,
       dragToDraw: true,
       screenSpace: true,
+      isSpacePressed,
       // enableSnapping: true,
     },
     getLineWidth: (feature: Feature) => {
@@ -191,13 +185,15 @@ export const GeojsonsMap = () => {
     selectedFeatureIndexes,
     mode: editingMode,
     onClick: (pickInfo: PickingInfo, hammerInput: MjolnirGestureEvent) => {
-      console.log("click", { pickInfo, hammerInput, fc });
-      // onClick is called even when user clicks on guide features
       if ("isGuide" in pickInfo && pickInfo.isGuide) return;
+      if (!pickInfo.picked) {
+        setSelectedFeatureIndexes([]);
+        if (tool === Tool.edit) setTool(Tool.select);
+        return;
+      }
       setSelectedFeatureIndexes([pickInfo.index]);
 
-      // The types are wrong again... tapCount exists.
-      if (pickInfo.picked && "tapCount" in hammerInput && hammerInput.tapCount === 2) {
+      if ("tapCount" in hammerInput && hammerInput.tapCount === 2) {
         setTool(Tool.edit);
       }
     },
@@ -244,6 +240,11 @@ export const GeojsonsMap = () => {
       featureIndexes: number[];
       editContext: Feature;
     }) => {
+      if (editType === 'autoSelect') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setSelectedFeatureIndexes((editContext as any)?.featureIndexes ?? []);
+        return;
+      }
       if (!updatedData?.features) {
         console.error("onEdit called with no features", { updatedData, editType, featureIndexes, editContext });
         return;
@@ -270,11 +271,8 @@ export const GeojsonsMap = () => {
     },
   };
 
-  const editableGeojsonLayer = new EditableGeoJsonLayer(
-    // @ts-expect-error TS2554 Workaround for error `TS2554: Expected 0 arguments, but got 1.`,
-    // see https://github.com/uber/nebula.gl/issues/568#issuecomment-1986910461
-    editableGeojsonLayerProps,
-  );
+  // @ts-expect-error TS2554 EditableGeoJsonLayer types say 0 args but constructor takes props
+  const editableGeojsonLayer = new EditableGeoJsonLayer(editableGeojsonLayerProps);
 
   // TODO only use selection layer if "select tool" is active (to prevent drawing selection when moving features)
   // It is usually better for performance to just use visible:false instead of removing the layer.
@@ -282,16 +280,12 @@ export const GeojsonsMap = () => {
   // dragPan from being set to true.
   const isSelectionLayerEnabled = tool === Tool.boxSelect;
   const selectionType = tool === "select" ? "rectangle" : "polygon";
-  // @ts-expect-error TS2554 workaround nebula.gl types using https://github.com/uber/nebula.gl/issues/568#issuecomment-836324975
+  // @ts-expect-error TS2554 SelectionLayer types say 0 args but constructor takes props
   const selectionLayer = new SelectionLayer<FeatureCollection>({
     id: "selection",
     selectionType,
     // selectionType: "polygon",
     onSelect: ({ pickingInfos }: { pickingInfos: PickingInfo[] }) => {
-      console.log(`onSelect`, { pickingInfos });
-      // Even though layer is invisible, onSelect will still be called if the layer is added. However, since we remove the layer, this is not necessary. It would be necessary if we use visible: instead of removing it.
-      // if (!isSelectionLayerVisible) return;
-      console.log(`onSelect`, { pickingInfos });
       if (pickingInfos.length === 0) {
         setSelectedFeatureIndexes([]);
       } else {
@@ -307,21 +301,25 @@ export const GeojsonsMap = () => {
   });
 
   useEffect(() => {
+    if (isSpacePressed) {
+      setIsMapDraggable(true);
+      setPickable(false);
+      return;
+    }
     const isDrawingTool = toolsWithCrosshairCursor.has(tool);
-    const isHoveringSelectedFeature = hoveredFeatureIndex !== undefined &&
-      selectedFeatureIndexes.includes(hoveredFeatureIndex);
-    const shouldDrag = tool === Tool.hand ||
-      (!isDrawingTool && tool !== Tool.boxSelect && !isHoveringSelectedFeature);
+    const isHoveringFeature = hoveredFeatureIndex !== undefined;
+    const shouldBlockForDrag = tool === Tool.select && isHoveringFeature;
+    const shouldDrag = !isDrawingTool && tool !== Tool.boxSelect && !shouldBlockForDrag;
     setIsMapDraggable(shouldDrag);
-    setPickable(tool !== Tool.hand);
-  }, [setIsMapDraggable, setPickable, tool, selectedFeatureIndexes, hoveredFeatureIndex]);
+    setPickable(true);
+  }, [setIsMapDraggable, setPickable, tool, hoveredFeatureIndex, isSpacePressed]);
 
   // Doesn't work nicely because getTooltip is only called when the mouse moves
   // Pressing alt whilst cursor hovers over a feature doesn't show tooltip unless you move the cursor. Even then, it would flicker.
   const isAltPressedRef = useKeyPressedDown({
     key: "Alt",
-    onKeyUp: () => console.log("Alt up"),
-    onKeyDown: () => console.log("Alt down"),
+    onKeyUp: () => {},
+    onKeyDown: () => {},
   });
 
   // not necessary for now? I just saw it in https://github.com/visgl/deck.gl/discussions/6103
@@ -347,9 +345,7 @@ export const GeojsonsMap = () => {
       const map = e.target;
       map.setMaxPitch(85);
       applyTerrain(map);
-      map.on("contextmenu", () => {
-        console.log("contextmenu clicked");
-      });
+      map.on("contextmenu", () => {});
     },
     [applyTerrain],
   );
@@ -372,16 +368,12 @@ export const GeojsonsMap = () => {
   // Disabling browser context menu with an extra div. See https://github.com/visgl/deck.gl/discussions/6103
   const getCursor = useCallback(
     (state: CursorState) => {
-      // console.log(`getCursor. ${state.isDragging} ${state.isHovering}`);
-      if (state.isHovering) {
-        return "pointer";
-      } else if (toolsWithCrosshairCursor.has(tool)) {
-        return "crosshair";
-      } else {
-        return isMapDraggable ? "grab" : "default";
-      }
+      if (isSpacePressed) return state.isDragging ? "grabbing" : "grab";
+      if (state.isHovering) return "pointer";
+      if (toolsWithCrosshairCursor.has(tool)) return "crosshair";
+      return isMapDraggable ? "grab" : "default";
     },
-    [isMapDraggable, tool],
+    [isMapDraggable, isSpacePressed, tool],
   );
 
   const userLocationLayers = useUserLocationLayers();
@@ -390,7 +382,7 @@ export const GeojsonsMap = () => {
     if (!info.picked && tool === Tool.select) {
       setSelectedFeatureIndexes([]);
     }
-    if (!info.picked && tool === Tool.edit && "tapCount" in event && event.tapCount === 2) {
+    if (!info.picked && tool === Tool.edit) {
       setSelectedFeatureIndexes([]);
       setTool(Tool.select);
     }
@@ -421,7 +413,6 @@ export const GeojsonsMap = () => {
         //   }
         // }}
         // onWebGLInitialized={setGlContext}
-        // is there a nebula.gl option that will drag first time
         // onDrag={(info) => {
         //   console.log('onDrag');
         //   // TODO move item immediately
@@ -442,7 +433,7 @@ export const GeojsonsMap = () => {
         }}
         getCursor={getCursor}
         controller={{
-          dragPan: isMapDraggable,
+          dragPan: isSpacePressed || isMapDraggable,
           doubleClickZoom: isDoubleClickZoomEnabled,
         }}
         ref={deckGlRef}
@@ -458,12 +449,14 @@ export const GeojsonsMap = () => {
         ]}
       >
         <Map
+          key={mapStyleId}
           ref={mapRef}
           onLoad={onMapLoad}
-          onClick={() => console.log("map onclick")}
+          onClick={() => {}}
           style={{ width: 600, height: 400 }}
           attributionControl={false}
-          mapStyle={mapStyleConfig.url}
+          styleDiffing={false}
+          mapStyle={mapStyle}
         >
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
         </Map>

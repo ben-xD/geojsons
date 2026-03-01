@@ -77,7 +77,7 @@ export const SearchBar = ({ open, onClose }: SearchBarProps) => {
 
   return (
     <div className="absolute bottom-full mb-2 left-0 right-0 z-10">
-      <div className="bg-white rounded-xl shadow-xl border border-slate-300 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-xl border border-border overflow-hidden">
         <input
           ref={inputRef}
           type="text"
@@ -88,14 +88,14 @@ export const SearchBar = ({ open, onClose }: SearchBarProps) => {
           }}
           onKeyDown={handleKeyDown}
           placeholder="Search for a place..."
-          className="w-full px-4 py-2.5 text-sm text-slate-700 outline-none"
+          className="w-full px-4 py-2.5 text-sm text-foreground bg-card outline-none"
         />
         {results.length > 0 && (
-          <ul className="border-t border-slate-200 max-h-60 overflow-y-auto">
+          <ul className="border-t border-border max-h-60 overflow-y-auto">
             {results.map((result, i) => (
               <li key={i}>
                 <button
-                  className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 transition-colors"
+                  className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-primary/5 transition-colors"
                   onClick={() => handleSelect(result)}
                 >
                   {result.name}

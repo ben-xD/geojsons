@@ -20,6 +20,8 @@
 		"@codemirror/state": "^6.5.4",
 		"@codemirror/view": "^6.39.15",
 		"@deck.gl-community/editable-layers": "^9.2.5",
+		"@esri/maplibre-arcgis": "^1.1.0",
+		"@lezer/highlight": "^1.2.3",
 		"@lezer/json": "^1.0.3",
 		"@radix-ui/react-alert-dialog": "^1.1.15",
 		"@radix-ui/react-slot": "^1.2.4",
