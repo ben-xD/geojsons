@@ -583,7 +583,7 @@ export const OfflineMapsPanel = () => {
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {progress.downloaded.toLocaleString()} / {progress.total.toLocaleString()} tiles
-                        {progress.sizeBytes > 0 && ` · ${formatSize(progress.sizeBytes)}`}
+                        {` · ${formatSize(progress.sizeBytes)} / ~${formatSize(progress.total * AVG_TILE_SIZE_KB * 1024)}`}
                       </span>
                     </div>
                   )}
