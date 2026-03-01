@@ -1,16 +1,19 @@
 import { useRef, useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/store/store";
 import { cn } from "@/lib/utils";
-import { Download, Trash2, Loader2, ShieldCheck, RefreshCw } from "lucide-react";
+import { Download, Trash2, Loader2, ShieldCheck, RefreshCw, X } from "lucide-react";
 import { bboxFromPolygon, estimateTileCount, getTilesForBbox, polygonAreaKm2 } from "./tileCoords";
 import { flyToBbox } from "@/map/flyTo";
 import { downloadTiles, verifyTiles, type VerifyResult } from "./downloadManager";
 import { indexedDbBackend } from "./indexedDbBackend";
-import { nodeBackend } from "./nodeBackend";
-import { startNodeDownload, pollNodeRegion } from "./nodeBackend";
-import type { OfflineRegion, StorageStats } from "./tileBackend";
+import { nodeBackend, checkNodeHealth } from "./nodeBackend";
+import { startNodeDownload } from "./nodeBackend";
+import type { OfflineRegion } from "./tileBackend";
 import { reverseGeocode } from "@/map/geocode";
 import { getMapStyle } from "@/map/mapStyles";
+import { useStorageStats } from "./useStorageStats";
+import { useNodeRegionPoll } from "./useNodeRegionPoll";
 
 const ZOOM_RANGE: [number, number] = [10, 16];
 const AVG_TILE_SIZE_KB = 15;
@@ -39,22 +42,33 @@ export const OfflineMapsPanel = () => {
   const mapStyleId = useStore.use.mapStyleId();
   const maxDownloadBytes = useStore.use.maxDownloadBytes();
 
+  const queryClient = useQueryClient();
   const abortControllers = useRef<Record<string, AbortController>>({});
   const [geocodedNames, setGeocodedNames] = useState<Record<string, string>>({});
   const [verifying, setVerifying] = useState<Record<string, { checked: number; total: number }>>({});
   const [verifyResults, setVerifyResults] = useState<Record<string, VerifyResult>>({});
-  const [storageStats, setStorageStats] = useState<StorageStats | null>(null);
   const [downloadingIndexes, setDownloadingIndexes] = useState<Set<number>>(new Set());
+  const [nodeConnected, setNodeConnected] = useState<boolean | null>(null);
 
-  // Fetch storage stats on mount, backend change, and after regions change
+  const { data: storageStats } = useStorageStats();
+  useNodeRegionPoll();
+
+  // Check node server health when node backend is selected
   useEffect(() => {
+    if (offlineTileBackend !== "node") {
+      setNodeConnected(null);
+      return;
+    }
     let cancelled = false;
-    const backend = offlineTileBackend === "node" ? nodeBackend : indexedDbBackend;
-    backend.getStorageStats().then((stats) => {
-      if (!cancelled) setStorageStats(stats);
-    }).catch(() => {});
-    return () => { cancelled = true; };
-  }, [offlineTileBackend, offlineRegions]);
+    const check = () => {
+      checkNodeHealth().then((ok) => {
+        if (!cancelled) setNodeConnected(ok);
+      });
+    };
+    check();
+    const interval = setInterval(check, 10_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [offlineTileBackend]);
 
   const polygons = fc.features
     .map((f, i) => ({ feature: f, index: i }))
@@ -129,26 +143,7 @@ export const OfflineMapsPanel = () => {
       const regionId = await startNodeDownload(geometry, name, ZOOM_RANGE);
       addOfflineRegion({ ...region, id: regionId });
       setDownloadProgress(regionId, 0, tiles.length);
-
-      const poll = setInterval(async () => {
-        try {
-          const updated = await pollNodeRegion(regionId);
-          setDownloadProgress(regionId, updated.downloadedCount, updated.tileCount);
-          updateOfflineRegion(regionId, {
-            downloadedCount: updated.downloadedCount,
-            sizeBytes: updated.sizeBytes,
-            status: updated.status,
-          });
-          if (updated.status === "complete" || updated.status === "error") {
-            clearInterval(poll);
-            removeDownload(regionId);
-            setDownloadingIndexes((prev) => { const next = new Set(prev); next.delete(featureIndex); return next; });
-          }
-        } catch {
-          clearInterval(poll);
-          setDownloadingIndexes((prev) => { const next = new Set(prev); next.delete(featureIndex); return next; });
-        }
-      }, 1000);
+      // Polling is handled by useNodeRegionPoll hook
     } else {
       const regionId = await backend.createRegion(region);
       addOfflineRegion({ ...region, id: regionId });
@@ -172,15 +167,26 @@ export const OfflineMapsPanel = () => {
         );
         updateOfflineRegion(regionId, { status: "complete" });
         await backend.updateRegion(regionId, { status: "complete", downloadedCount: tiles.length });
-      } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          updateOfflineRegion(regionId, { status: "error" });
-        }
+      } catch {
+        updateOfflineRegion(regionId, { status: "error" });
       } finally {
         removeDownload(regionId);
         delete abortControllers.current[regionId];
         setDownloadingIndexes((prev) => { const next = new Set(prev); next.delete(featureIndex); return next; });
+        queryClient.invalidateQueries({ queryKey: ["storage-stats"] });
       }
+    }
+  };
+
+  const handleCancel = (regionId: string) => {
+    const controller = abortControllers.current[regionId];
+    if (controller) {
+      controller.abort();
+    }
+    // For node downloads, mark as error — polling hook will stop automatically
+    if (offlineTileBackend === "node") {
+      updateOfflineRegion(regionId, { status: "error" });
+      removeDownload(regionId);
     }
   };
 
@@ -191,6 +197,7 @@ export const OfflineMapsPanel = () => {
     await backend.deleteRegion(regionId);
     removeOfflineRegion(regionId);
     removeDownload(regionId);
+    queryClient.invalidateQueries({ queryKey: ["storage-stats"] });
   };
 
   const handleDeleteAll = async () => {
@@ -199,12 +206,13 @@ export const OfflineMapsPanel = () => {
       abortControllers.current[key].abort();
     }
     const backend = offlineTileBackend === "node" ? nodeBackend : indexedDbBackend;
+    await backend.deleteAllRegions();
     for (const region of offlineRegions) {
-      try { await backend.deleteRegion(region.id); } catch { /* ignore */ }
       removeDownload(region.id);
     }
     setOfflineRegions([]);
     setVerifyResults({});
+    queryClient.invalidateQueries({ queryKey: ["storage-stats"] });
   };
 
   const handleVerify = async (region: OfflineRegion) => {
@@ -234,6 +242,61 @@ export const OfflineMapsPanel = () => {
     } finally {
       setVerifying((prev) => { const next = { ...prev }; delete next[region.id]; return next; });
       delete abortControllers.current[verifyKey];
+    }
+  };
+
+  const handleRetry = async (region: OfflineRegion) => {
+    const backend = offlineTileBackend === "node" ? nodeBackend : indexedDbBackend;
+    const bbox = bboxFromPolygon(region.polygon);
+    const tiles = getTilesForBbox(bbox, [region.zoomMin, region.zoomMax]);
+    const controller = new AbortController();
+    abortControllers.current[region.id] = controller;
+
+    updateOfflineRegion(region.id, { status: "downloading" });
+    setVerifying((prev) => ({ ...prev, [region.id]: { checked: 0, total: tiles.length } }));
+
+    try {
+      const result = await verifyTiles(
+        backend,
+        tiles,
+        (checked, total) => {
+          setVerifying((prev) => ({ ...prev, [region.id]: { checked, total } }));
+        },
+        controller.signal,
+      );
+      setVerifying((prev) => { const next = { ...prev }; delete next[region.id]; return next; });
+
+      if (result.missing.length === 0) {
+        updateOfflineRegion(region.id, { status: "complete", downloadedCount: region.tileCount });
+        await backend.updateRegion(region.id, { status: "complete", downloadedCount: region.tileCount });
+        return;
+      }
+
+      const missingCount = result.missing.length;
+      setDownloadProgress(region.id, 0, missingCount);
+
+      await downloadTiles(
+        backend,
+        result.missing,
+        (progress) => {
+          setDownloadProgress(region.id, progress.downloaded, progress.total);
+          updateOfflineRegion(region.id, {
+            downloadedCount: region.tileCount - missingCount + progress.downloaded,
+            sizeBytes: region.sizeBytes + progress.sizeBytes,
+          });
+        },
+        controller.signal,
+      );
+      updateOfflineRegion(region.id, { status: "complete", downloadedCount: region.tileCount });
+      await backend.updateRegion(region.id, { status: "complete", downloadedCount: region.tileCount });
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        updateOfflineRegion(region.id, { status: "error" });
+      }
+    } finally {
+      setVerifying((prev) => { const next = { ...prev }; delete next[region.id]; return next; });
+      removeDownload(region.id);
+      delete abortControllers.current[region.id];
     }
   };
 
@@ -279,7 +342,7 @@ export const OfflineMapsPanel = () => {
       {/* Header controls — full width */}
       <div className="shrink-0 p-2 pb-0 flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex gap-1">
+          <div className="flex gap-1 items-center">
             {(["indexeddb", "node"] as const).map((b) => (
               <button
                 key={b}
@@ -294,6 +357,18 @@ export const OfflineMapsPanel = () => {
                 {b === "indexeddb" ? "IndexedDB" : "Node server"}
               </button>
             ))}
+            {offlineTileBackend === "node" && nodeConnected !== null && (
+              <span className={cn(
+                "flex items-center gap-1 text-xs ml-1",
+                nodeConnected ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400",
+              )}>
+                <span className={cn(
+                  "inline-block w-1.5 h-1.5 rounded-full",
+                  nodeConnected ? "bg-green-500" : "bg-red-500",
+                )} />
+                {nodeConnected ? "Connected" : "Disconnected"}
+              </span>
+            )}
           </div>
           <label className="flex items-center gap-1.5 cursor-pointer text-xs">
             <input
@@ -313,10 +388,16 @@ export const OfflineMapsPanel = () => {
           cover large areas; higher zooms show detail at street level.
         </p>
 
-        {offlineTileBackend === "node" && (
+        {offlineTileBackend === "node" && nodeConnected === false && (
+          <p className="text-xs text-red-600 dark:text-red-400 leading-relaxed">
+            Could not connect to the tile server at localhost:3456.
+            Run <code className="bg-muted px-1 rounded">cd server && npm run dev</code> to
+            start it. Only IndexedDB works out of the box.
+          </p>
+        )}
+        {offlineTileBackend === "node" && nodeConnected === true && (
           <p className="text-xs text-muted-foreground leading-relaxed">
             The Node server backend stores tiles in a local SQLite database.
-            Run the server script locally before downloading.
           </p>
         )}
 
@@ -325,8 +406,11 @@ export const OfflineMapsPanel = () => {
             <span>
               {offlineTileBackend === "indexeddb" ? "IndexedDB" : "Node server"}: {formatSize(storageStats.used)} used
             </span>
-            {storageStats.quota && (
-              <span>of {formatSize(storageStats.quota)}</span>
+            {offlineTileBackend === "indexeddb" && (
+              <span>
+                {formatSize(maxDownloadBytes)}/polygon limit
+                {storageStats.quota && ` · browser quota ${formatSize(storageStats.quota)}`}
+              </span>
             )}
           </div>
         )}
@@ -357,7 +441,8 @@ export const OfflineMapsPanel = () => {
                   : `${areaKm2.toFixed(0)} km²`;
               const tooLarge = estSize > maxDownloadBytes;
               const isDownloading = downloadingIndexes.has(index);
-              const disableDownload = tooLarge || isDownloading;
+              const nodeDisconnected = offlineTileBackend === "node" && nodeConnected === false;
+              const disableDownload = tooLarge || isDownloading || nodeDisconnected;
               return (
                 <div
                   key={index}
@@ -382,7 +467,7 @@ export const OfflineMapsPanel = () => {
                         ? "opacity-30 cursor-not-allowed"
                         : "hover:bg-muted",
                     )}
-                    title={tooLarge ? "Area too large to download" : isDownloading ? "Download in progress" : `Download z${ZOOM_RANGE[0]}–${ZOOM_RANGE[1]}`}
+                    title={tooLarge ? "Area too large to download" : nodeDisconnected ? "Node server disconnected" : isDownloading ? "Download in progress" : `Download z${ZOOM_RANGE[0]}–${ZOOM_RANGE[1]}`}
                     disabled={disableDownload}
                     onClick={(e) => { e.stopPropagation(); handleDownload(feature, index); }}
                   >
@@ -424,6 +509,12 @@ export const OfflineMapsPanel = () => {
               const vResult = verifyResults[region.id];
               const isIdle = !isDownloading && !vProgress;
               const regionBbox = bboxFromPolygon(region.polygon);
+              const regionAreaKm2 = polygonAreaKm2(region.polygon);
+              const regionAreaLabel = regionAreaKm2 < 1
+                ? `${(regionAreaKm2 * 1e6).toFixed(0)} m²`
+                : regionAreaKm2 < 100
+                  ? `${regionAreaKm2.toFixed(1)} km²`
+                  : `${regionAreaKm2.toFixed(0)} km²`;
               return (
                 <div
                   key={region.id}
@@ -434,12 +525,30 @@ export const OfflineMapsPanel = () => {
                     <div className="flex flex-col min-w-0">
                       <span className="truncate">{region.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {region.tileCount.toLocaleString()} tiles
+                        {regionAreaLabel} · {region.tileCount.toLocaleString()} tiles
                         {region.sizeBytes > 0 && ` · ${formatSize(region.sizeBytes)}`}
                         {region.status === "error" && " · Failed"}
                       </span>
                     </div>
                     <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                      {isDownloading && (
+                        <button
+                          className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-red-600 dark:text-red-400"
+                          title="Cancel download"
+                          onClick={(e) => { e.stopPropagation(); handleCancel(region.id); }}
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                      {isIdle && region.status === "error" && (
+                        <button
+                          className="p-1.5 rounded-md hover:bg-muted transition-colors"
+                          title="Retry download"
+                          onClick={(e) => { e.stopPropagation(); handleRetry(region); }}
+                        >
+                          <RefreshCw size={14} />
+                        </button>
+                      )}
                       {isIdle && region.status === "complete" && (
                         <button
                           className="p-1.5 rounded-md hover:bg-muted transition-colors"
@@ -449,13 +558,15 @@ export const OfflineMapsPanel = () => {
                           <ShieldCheck size={14} />
                         </button>
                       )}
-                      <button
-                        className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-red-600 dark:text-red-400"
-                        title="Delete region"
-                        onClick={(e) => { e.stopPropagation(); handleDeleteRegion(region.id); }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {isIdle && (
+                        <button
+                          className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-red-600 dark:text-red-400"
+                          title="Delete region"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteRegion(region.id); }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                   {isDownloading && (

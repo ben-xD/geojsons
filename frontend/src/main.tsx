@@ -1,10 +1,13 @@
 import ReactDOM from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App.tsx";
 import "./index.css";
 import { registerMapboxProtocol } from "./map/mapboxProtocol.ts";
 import { registerOfflineProtocol } from "./offline/offlineProtocol.ts";
 import { applyHashToStore } from "./map/useHashViewState.ts";
 import { ThemeProvider } from "./components/theme-provider.tsx";
+
+const queryClient = new QueryClient();
 
 registerMapboxProtocol();
 registerOfflineProtocol();
@@ -26,7 +29,9 @@ if (rootElement === null) {
 //     at WebGLCanvasContext._handleResize
 //     at ResizeObserver.<anonymous>
 ReactDOM.createRoot(rootElement).render(
-  <ThemeProvider>
-    <App />
-  </ThemeProvider>,
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  </QueryClientProvider>,
 );

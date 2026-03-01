@@ -50,12 +50,31 @@ export const nodeBackend: TileBackend = {
     if (!res.ok) throw new Error(`Failed to delete region: ${res.status}`);
   },
 
+  async deleteAllRegions() {
+    const regions = await this.getRegions();
+    for (const region of regions) {
+      await this.deleteRegion(region.id);
+    }
+  },
+
   async getStorageStats(): Promise<StorageStats> {
     const regions = await this.getRegions();
     const used = regions.reduce((sum, r) => sum + r.sizeBytes, 0);
     return { used };
   },
 };
+
+export async function checkNodeHealth(): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch(`${serverUrl}/health`, { signal: controller.signal });
+    clearTimeout(timeout);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 export async function startNodeDownload(
   polygon: GeoJSON.Polygon | GeoJSON.MultiPolygon,

@@ -138,6 +138,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
+});
+
 // Serve tile
 app.get("/:z/:x/:y", (req, res) => {
   const z = parseInt(req.params.z, 10);

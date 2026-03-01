@@ -1,6 +1,7 @@
 import { useStore } from "@/store/store";
 import { cn } from "@/lib/utils";
 import { flyToFeature } from "@/map/flyTo";
+import { useGeocodeAllFeatures } from "./useGeocodeAllFeatures";
 
 const geometryLabel = (type: string) => {
   switch (type) {
@@ -27,6 +28,8 @@ export const FeaturesPanel = () => {
   const animateToFeature = useStore.use.animateToFeature();
   const setAnimateToFeature = useStore.use.setAnimateToFeature();
   const features = featureCollection.features;
+  const { unnamedCount, isGeocoding, completed, total, startGeocoding, cancel } =
+    useGeocodeAllFeatures();
 
   if (features.length === 0) {
     return (
@@ -38,14 +41,33 @@ export const FeaturesPanel = () => {
 
   return (
     <div className="flex flex-col h-full overflow-auto scrollbar-themed p-2 gap-1">
-      <label className="flex items-center gap-2 px-3 py-1 text-sm text-muted-foreground">
-        <input
-          type="checkbox"
-          checked={animateToFeature}
-          onChange={(e) => setAnimateToFeature(e.target.checked)}
-        />
-        Animate to feature
-      </label>
+      <div className="flex items-center gap-2 px-3 py-1 flex-wrap">
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={animateToFeature}
+            onChange={(e) => setAnimateToFeature(e.target.checked)}
+          />
+          Animate to feature
+        </label>
+        {isGeocoding ? (
+          <button
+            className="ml-auto text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+            onClick={cancel}
+          >
+            Cancel ({completed}/{total})
+          </button>
+        ) : (
+          unnamedCount > 0 && (
+            <button
+              className="ml-auto text-xs px-2 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              onClick={startGeocoding}
+            >
+              Geocode unnamed ({unnamedCount})
+            </button>
+          )
+        )}
+      </div>
       {features.map((feature, index) => {
         const isSelected = selectedFeatureIndexes.includes(index);
         const name =

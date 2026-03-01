@@ -24,5 +24,6 @@ export interface TileBackend {
   createRegion(region: Omit<OfflineRegion, "id">): Promise<string>;
   updateRegion(id: string, updates: Partial<OfflineRegion>): Promise<void>;
   deleteRegion(id: string): Promise<void>;
+  deleteAllRegions(): Promise<void>;
   getStorageStats(): Promise<StorageStats>;
 }

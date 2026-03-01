@@ -26,22 +26,7 @@ import { MapStyleSwitcher } from "@/map/MapStyleSwitcher";
 import { useHashViewState } from "@/map/useHashViewState";
 import { useArcgisStyle } from "@/map/useArcgisStyle";
 import { reverseGeocode } from "@/map/geocode";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function flattenCoordinates(coords: any): [number, number][] {
-  if (typeof coords[0] === "number") return [coords as [number, number]];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return coords.flatMap((c: any) => flattenCoordinates(c));
-}
-
-function getFeatureCenter(feature: Feature): [number, number] | null {
-  if (!("coordinates" in feature.geometry)) return null;
-  const coords = flattenCoordinates(feature.geometry.coordinates);
-  if (coords.length === 0) return null;
-  const lng = coords.reduce((s, c) => s + c[0], 0) / coords.length;
-  const lat = coords.reduce((s, c) => s + c[1], 0) / coords.length;
-  return [lng, lat];
-}
+import { getFeatureCenter } from "@/geo/featureCenter";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 

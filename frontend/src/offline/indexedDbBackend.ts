@@ -1,6 +1,7 @@
 import { openDB, type IDBPDatabase } from "idb";
 import type { TileBackend, OfflineRegion, StorageStats } from "./tileBackend";
 import { v4 as uuidv4 } from "uuid";
+import { bboxFromPolygon, getTilesForBbox } from "./tileCoords";
 
 const DB_NAME = "offline-tiles";
 const DB_VERSION = 1;
@@ -72,7 +73,25 @@ export const indexedDbBackend: TileBackend = {
 
   async deleteRegion(id) {
     const db = await getDb();
+    const region = await db.get("regions", id);
+    if (region) {
+      const bbox = bboxFromPolygon(region.polygon);
+      const tiles = getTilesForBbox(bbox, [region.zoomMin, region.zoomMax]);
+      const tx = db.transaction("tiles", "readwrite");
+      for (const tile of tiles) {
+        tx.store.delete(tileKey(tile.z, tile.x, tile.y));
+      }
+      await tx.done;
+    }
     await db.delete("regions", id);
+  },
+
+  async deleteAllRegions() {
+    const db = await getDb();
+    const tx = db.transaction(["tiles", "regions"], "readwrite");
+    tx.objectStore("tiles").clear();
+    tx.objectStore("regions").clear();
+    await tx.done;
   },
 
   async getStorageStats(): Promise<StorageStats> {
