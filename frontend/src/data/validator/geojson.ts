@@ -1,12 +1,12 @@
-import { z } from "zod";
+import * as v from "valibot";
 
 // We could've gotten types from @types/geojson, but this doesn't provide validators, to check data is valid at runtime.
 
-export const Position = z.union([
-  z.tuple([z.number(), z.number()]),
-  z.tuple([z.number(), z.number(), z.number()]),
+export const Position = v.union([
+  v.tuple([v.number(), v.number()]),
+  v.tuple([v.number(), v.number(), v.number()]),
 ]);
-export type Position = z.infer<typeof Position>;
+export type Position = v.InferOutput<typeof Position>;
 
 // Geojson actual Position type is less specific: export type Position = number[]; // [number, number] | [number, number, number];
 // You can compare them with:
@@ -15,51 +15,51 @@ export type Position = z.infer<typeof Position>;
 // const compare2: FeatureCollection = {} as unknown as GeojsonFeatureCollection;
 
 // Allow the user to choose between coordinates having Position2D or Position3D here
-export const Point = z.object({
-  type: z.literal("Point"),
+export const Point = v.object({
+  type: v.literal("Point"),
   coordinates: Position,
 });
-export type Point = z.infer<typeof Point>;
+export type Point = v.InferOutput<typeof Point>;
 
-export const LineString = z.object({
-  type: z.literal("LineString"),
-  coordinates: z.array(Position),
+export const LineString = v.object({
+  type: v.literal("LineString"),
+  coordinates: v.array(Position),
 });
-export type LineString = z.infer<typeof LineString>;
+export type LineString = v.InferOutput<typeof LineString>;
 
-export const Polygon = z.object({
-  type: z.literal("Polygon"),
-  coordinates: z.array(z.array(Position)), // Array of LinearRings
+export const Polygon = v.object({
+  type: v.literal("Polygon"),
+  coordinates: v.array(v.array(Position)), // Array of LinearRings
 });
-export type Polygon = z.infer<typeof Polygon>;
+export type Polygon = v.InferOutput<typeof Polygon>;
 
-export const MultiPoint = z.object({
-  type: z.literal("MultiPoint"),
-  coordinates: z.array(Position),
+export const MultiPoint = v.object({
+  type: v.literal("MultiPoint"),
+  coordinates: v.array(Position),
 });
-export type MultiPoint = z.infer<typeof MultiPoint>;
+export type MultiPoint = v.InferOutput<typeof MultiPoint>;
 
-export const MultiLineString = z.object({
-  type: z.literal("MultiLineString"),
-  coordinates: z.array(z.array(Position)),
+export const MultiLineString = v.object({
+  type: v.literal("MultiLineString"),
+  coordinates: v.array(v.array(Position)),
 });
-export type MultiLineString = z.infer<typeof MultiLineString>;
+export type MultiLineString = v.InferOutput<typeof MultiLineString>;
 
-export const MultiPolygon = z.object({
-  type: z.literal("MultiPolygon"),
-  coordinates: z.array(z.array(z.array(Position))), // Array of Arrays of LinearRings
+export const MultiPolygon = v.object({
+  type: v.literal("MultiPolygon"),
+  coordinates: v.array(v.array(v.array(Position))), // Array of Arrays of LinearRings
 });
-export type MultiPolygon = z.infer<typeof MultiPolygon>;
+export type MultiPolygon = v.InferOutput<typeof MultiPolygon>;
 
-export const GeometryCollection = z.object({
-  type: z.literal("GeometryCollection"),
-  geometries: z.array(
-    z.union([Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon]),
+export const GeometryCollection = v.object({
+  type: v.literal("GeometryCollection"),
+  geometries: v.array(
+    v.union([Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon]),
   ),
 });
-export type GeometryCollection = z.infer<typeof GeometryCollection>;
+export type GeometryCollection = v.InferOutput<typeof GeometryCollection>;
 
-const Geometry = z.union([
+const Geometry = v.union([
   Point,
   LineString,
   Polygon,
@@ -68,18 +68,18 @@ const Geometry = z.union([
   MultiPolygon,
   GeometryCollection,
 ]);
-export type Geometry = z.infer<typeof Geometry>;
+export type Geometry = v.InferOutput<typeof Geometry>;
 
-export const Feature = z.object({
-  type: z.literal("Feature"),
+export const Feature = v.object({
+  type: v.literal("Feature"),
   geometry: Geometry,
-  properties: z.record(z.string(), z.any()), // Simplified, can be any JSON object
-  id: z.union([z.string(), z.number()]).optional(),
+  properties: v.record(v.string(), v.any()), // Simplified, can be any JSON object
+  id: v.optional(v.union([v.string(), v.number()])),
 });
-export type Feature = z.infer<typeof Feature>;
+export type Feature = v.InferOutput<typeof Feature>;
 
-export const FeatureCollection = z.object({
-  type: z.literal("FeatureCollection"),
-  features: Feature.array(),
+export const FeatureCollection = v.object({
+  type: v.literal("FeatureCollection"),
+  features: v.array(Feature),
 });
-export type FeatureCollection = z.infer<typeof FeatureCollection>;
+export type FeatureCollection = v.InferOutput<typeof FeatureCollection>;

@@ -7,6 +7,7 @@ import { emptyFeatureCollection } from "@/data/featureCollection.ts";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import "@codemirror/lang-json";
+import * as v from "valibot";
 import { FeatureCollection } from "@/data/validator/geojson.ts";
 import { Trash2 } from "lucide-react";
 import { ClearDataAlertDialog } from "@/GeojsonPanel/ClearDataAlertDialog";
@@ -36,7 +37,7 @@ export const RawGeojsonPanel = () => {
           if (stringifiedFc === unparsedJsonString) return;
           try {
             const parsedJsonString = JSON.parse(unparsedJsonString);
-            const data = FeatureCollection.parse(parsedJsonString);
+            const data = v.parse(FeatureCollection, parsedJsonString);
             setErrorMessage(undefined);
             setFc(data);
           } catch (_error) {
