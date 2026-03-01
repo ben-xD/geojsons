@@ -2,10 +2,12 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { registerMapboxProtocol } from "./map/mapboxProtocol.ts";
+import { registerOfflineProtocol } from "./offline/offlineProtocol.ts";
 import { applyHashToStore } from "./map/useHashViewState.ts";
 import { ThemeProvider } from "./components/theme-provider.tsx";
 
 registerMapboxProtocol();
+registerOfflineProtocol();
 applyHashToStore();
 
 const rootElement = document.getElementById("root");

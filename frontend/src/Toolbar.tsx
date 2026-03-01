@@ -102,8 +102,8 @@ export const Toolbar = () => {
 	const [searchOpen, setSearchOpen] = useState(false);
 
 	return (
-		<div className="left-0 right-0 mx-2 absolute text-foreground bottom-4 flex justify-center">
-			<div className="relative max-w-full">
+		<div className="left-0 right-0 mx-2 absolute text-foreground bottom-2 flex justify-center pointer-events-none">
+			<div className="relative max-w-full pointer-events-auto">
 				<SearchBar open={searchOpen} onClose={() => setSearchOpen(false)} />
 			<div className="flex flex-nowrap overflow-x-auto scrollbar-hide md:flex-wrap md:overflow-x-visible rounded-xl bg-card drop-shadow-2xl shadow-xl border border-border max-w-full [&>*]:shrink-0">
 				<ToolbarButton

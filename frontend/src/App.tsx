@@ -1,6 +1,6 @@
 import { GeojsonsMap } from "./map/GeojsonsMap.tsx";
 import { Group, Panel, Separator } from "react-resizable-panels";
-import { RawGeojsonPanel } from "@/GeojsonPanel/RawGeojsonPanel.tsx";
+import { BottomPanel } from "@/GeojsonPanel/BottomPanel";
 import { GripHorizontal } from "lucide-react";
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
           <Panel
             defaultSize="40%"
           >
-            <RawGeojsonPanel />
+            <BottomPanel />
           </Panel>
         </Group>
       </Panel>

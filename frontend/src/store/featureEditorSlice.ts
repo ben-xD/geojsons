@@ -24,9 +24,13 @@ export type UserAction =
       selectedFeatureIndexes: number[];
     };
 
+export type BottomPanelTab = "Features" | "Offline Maps" | "JSON" | "Settings";
+
 export interface FeatureEditorSlice {
   enabled: boolean;
   tool: Tool;
+  activeTab: BottomPanelTab;
+  setActiveTab: (tab: BottomPanelTab) => void;
   selectedFeatureIndexes: number[];
   featureCollection: FeatureCollection;
   pickable: boolean;
@@ -52,6 +56,9 @@ export interface FeatureEditorSlice {
   setLocate: (locate: boolean) => void;
   mapStyleId: MapStyleId;
   setMapStyleId: (mapStyleId: MapStyleId) => void;
+  animateToFeature: boolean;
+  setAnimateToFeature: (animateToFeature: boolean) => void;
+  geocodeFeature: (featureId: string, name: string) => void;
 }
 
 // TODO prompt redo stack will be cleared when doing an action?
@@ -60,6 +67,11 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
 ) => ({
   enabled: true,
   tool: Tool.select,
+  activeTab: "JSON",
+  setActiveTab: (tab) =>
+    set((state) => {
+      state.activeTab = tab;
+    }),
   isMapDraggable: true,
   setIsMapDraggable: (isMapDraggable: boolean) =>
     set((state) => {
@@ -269,6 +281,19 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
       false,
       { type: "setMapStyleId" },
     ),
+  animateToFeature: true,
+  setAnimateToFeature: (animateToFeature: boolean) =>
+    set((state) => {
+      state.animateToFeature = animateToFeature;
+    }),
+  geocodeFeature: (featureId: string, name: string) =>
+    set((state) => {
+      const feature = state.featureCollection.features.find((f) => f.id === featureId);
+      if (feature) {
+        if (!feature.properties) feature.properties = {};
+        feature.properties.name = name;
+      }
+    }),
 });
 
 const createFeatureId = () => `feature-${uuidv4()}`;

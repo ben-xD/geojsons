@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Map, { type MapRef, type ViewState } from "react-map-gl/maplibre";
-import { DeckGL, type DeckGLRef, type Layer, type PickingInfo } from "deck.gl";
+import { DeckGL, GeoJsonLayer, type DeckGLRef, type Layer, type PickingInfo } from "deck.gl";
 import type { Feature, FeatureCollection } from "@/data/validator/geojson.ts";
 import { EditableGeoJsonLayer, SelectionLayer } from "@deck.gl-community/editable-layers";
 
@@ -25,6 +25,23 @@ import { getMapStyle } from "@/map/mapStyles";
 import { MapStyleSwitcher } from "@/map/MapStyleSwitcher";
 import { useHashViewState } from "@/map/useHashViewState";
 import { useArcgisStyle } from "@/map/useArcgisStyle";
+import { reverseGeocode } from "@/map/geocode";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function flattenCoordinates(coords: any): [number, number][] {
+  if (typeof coords[0] === "number") return [coords as [number, number]];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return coords.flatMap((c: any) => flattenCoordinates(c));
+}
+
+function getFeatureCenter(feature: Feature): [number, number] | null {
+  if (!("coordinates" in feature.geometry)) return null;
+  const coords = flattenCoordinates(feature.geometry.coordinates);
+  if (coords.length === 0) return null;
+  const lng = coords.reduce((s, c) => s + c[0], 0) / coords.length;
+  const lat = coords.reduce((s, c) => s + c[1], 0) / coords.length;
+  return [lng, lat];
+}
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -121,6 +138,7 @@ export const GeojsonsMap = () => {
   const viewState = useStore.use.viewState();
   const setViewState = useStore.use.setViewState();
   const mapStyleId = useStore.use.mapStyleId();
+  const geocodeFeature = useStore.use.geocodeFeature();
   const mapStyleConfig = getMapStyle(mapStyleId);
   const arcgisStyle = useArcgisStyle(mapStyleConfig);
   // For ArcGIS, use the loaded style object; for others, use the URL.
@@ -268,6 +286,18 @@ export const GeojsonsMap = () => {
         updatedData.features[updatedData.features.length - 1].properties = { type: "cat" };
       }
       updateFc(updatedData);
+
+      if (editType === "addFeature") {
+        const newFeature = updatedData.features[updatedData.features.length - 1];
+        const center = getFeatureCenter(newFeature);
+        if (center && newFeature.id) {
+          const featureId = String(newFeature.id);
+          const provider = mapStyleConfig.provider;
+          reverseGeocode(center[1], center[0], provider).then((name) => {
+            geocodeFeature(featureId, name);
+          });
+        }
+      }
     },
   };
 
@@ -325,7 +355,49 @@ export const GeojsonsMap = () => {
   // not necessary for now? I just saw it in https://github.com/visgl/deck.gl/discussions/6103
   // const [glContext,setGlContext] = useState<WebGLRenderingContext>();
 
+  const showOfflineTiles = useStore.use.showOfflineTiles();
+  const offlineRegions = useStore.use.offlineRegions();
+
+  const offlineRegionsLayer = new GeoJsonLayer({
+    id: "offline-regions",
+    data: {
+      type: "FeatureCollection" as const,
+      features: offlineRegions.map((r) => ({
+        type: "Feature" as const,
+        geometry: r.polygon,
+        properties: { name: r.name, status: r.status },
+      })),
+    },
+    pickable: false,
+    filled: true,
+    stroked: true,
+    getFillColor: [59, 130, 246, 30],   // blue-500 at ~12% opacity
+    getLineColor: [59, 130, 246, 180],  // blue-500 at ~70% opacity
+    getLineWidth: 2,
+    lineWidthUnits: "pixels",
+  });
+
   const mapRef = useRef<MapRef>(null);
+
+  const applyOfflineTiles = useCallback(
+    (map: maplibregl.Map) => {
+      if (!showOfflineTiles) {
+        if (map.getLayer("offline-tiles-layer")) map.removeLayer("offline-tiles-layer");
+        if (map.getSource("offline-tiles")) map.removeSource("offline-tiles");
+        return;
+      }
+      if (map.getSource("offline-tiles")) return;
+      map.addSource("offline-tiles", {
+        type: "raster",
+        tiles: ["offline://{z}/{x}/{y}"],
+        tileSize: 256,
+        minzoom: 10,
+        maxzoom: 16,
+      });
+      map.addLayer({ id: "offline-tiles-layer", type: "raster", source: "offline-tiles" });
+    },
+    [showOfflineTiles],
+  );
 
   const applyTerrain = useCallback(
     (map: maplibregl.Map) => {
@@ -345,22 +417,33 @@ export const GeojsonsMap = () => {
       const map = e.target;
       map.setMaxPitch(85);
       applyTerrain(map);
+      applyOfflineTiles(map);
       map.on("contextmenu", () => {});
     },
-    [applyTerrain],
+    [applyTerrain, applyOfflineTiles],
   );
 
-  // Re-apply terrain when map style changes (changing mapStyle prop destroys all sources)
+  // Re-apply terrain and offline tiles when map style changes (changing mapStyle prop destroys all sources)
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;
 
-    const onStyleLoad = () => applyTerrain(map);
+    const onStyleLoad = () => {
+      applyTerrain(map);
+      applyOfflineTiles(map);
+    };
     map.on("style.load", onStyleLoad);
     return () => {
       map.off("style.load", onStyleLoad);
     };
-  }, [mapStyleId, applyTerrain]);
+  }, [mapStyleId, applyTerrain, applyOfflineTiles]);
+
+  // Toggle offline tile layer when showOfflineTiles changes
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !map.isStyleLoaded()) return;
+    applyOfflineTiles(map);
+  }, [showOfflineTiles, applyOfflineTiles]);
   // {/*"https://api.maptiler.com/maps/outdoor-v2/style.json?key=LlETYKEJwgxoM6pCNChm",*/}
   // When you use DeckGL as the parent, you are using DeckGL's controller.
   // It has identical implementation as react-map-gl's controller, but different defaults for
@@ -440,9 +523,15 @@ export const GeojsonsMap = () => {
         // Use Object.assign to create a new object instead of mutating it, to avoid error: `Object is not extensible`
         initialViewState={Object.assign({}, viewState)}
         onViewStateChange={(params) =>
-          setViewState(Object.assign({}, params.viewState as unknown as ViewState))
+          // Defer to avoid setState-during-render warning: DeckGL fires
+          // this callback inside its own useMemo, so a synchronous store
+          // update would re-render subscribers (e.g. ZoomToolbar) mid-render.
+          queueMicrotask(() =>
+            setViewState(Object.assign({}, params.viewState as unknown as ViewState)),
+          )
         }
         layers={[
+          offlineRegions.length > 0 ? offlineRegionsLayer : undefined,
           editableGeojsonLayer as unknown as Layer,
           isSelectionLayerEnabled ? (selectionLayer as unknown as Layer) : undefined,
           userLocationLayers,

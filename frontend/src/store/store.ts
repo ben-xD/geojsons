@@ -1,10 +1,12 @@
 import { immer } from "zustand/middleware/immer";
 import { getEditModeForTool } from "../editor/tools";
 import { create, StateCreator } from "zustand";
-import { createJSONStorage, devtools, persist, subscribeWithSelector } from "zustand/middleware";
+import { devtools, persist, subscribeWithSelector } from "zustand/middleware";
 import { RotateMode, ScaleMode, TransformMode, ViewMode } from "@deck.gl-community/editable-layers";
 import { createReorderFeatureSlice, ReorderFeatureSlice } from "./reorderFeatureSlice";
 import { FeatureEditorSlice, createFeatureEditorSlice } from "./featureEditorSlice";
+import { createSavedLocationsSlice, SavedLocationsSlice } from "./savedLocationsSlice";
+import { createOfflineTileSlice, OfflineTileSlice } from "./offlineTileSlice";
 import { createSelectors } from "./createSelectors";
 
 
@@ -20,7 +22,7 @@ import { createSelectors } from "./createSelectors";
 // - Using a nested `computed` object following https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721 doesn't work with immer because `get()` is returns undefined state
 // - 3rd party middleware is quite old, and unclear if it will work: https://github.com/cmlarsen/zustand-middleware-computed-state
 
-export type State = FeatureEditorSlice & ReorderFeatureSlice;
+export type State = FeatureEditorSlice & ReorderFeatureSlice & SavedLocationsSlice & OfflineTileSlice;
 
 export type GeojsonsStateCreator<T> = StateCreator<State, Mutators, [], T>;
 
@@ -31,7 +33,7 @@ export type Mutators = [
   ["zustand/immer", never],
 ];
 
-const unpersistedProperties = ["userLocation", "viewState", "pickable", "isMapDraggable", "locate"];
+const unpersistedProperties = ["userLocation", "viewState", "pickable", "isMapDraggable", "locate", "activeDownloads", "activeTab"];
 
 const applicationLocalStorageName = "geojsons.com";
 // reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md. Daishi (the maintainer) suggests following Tests over docs, if they're inconsistent.
@@ -46,6 +48,8 @@ export const useStoreOriginal = create<State>()(
         immer((...a) => ({
           ...createFeatureEditorSlice(...a),
           ...createReorderFeatureSlice(...a),
+          ...createSavedLocationsSlice(...a),
+          ...createOfflineTileSlice(...a),
         })),
         {
           name: applicationLocalStorageName,

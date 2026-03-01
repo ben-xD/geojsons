@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Minus, Plus, Target } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useCallback, useEffect, useRef } from "react";
-import { FlyToInterpolator } from "deck.gl";
+import { flyToPoint } from "./flyTo";
 
 const iconSizePx = 16;
 
@@ -14,25 +14,9 @@ export const ZoomToolbar = () => {
   const isUserLocated = !!useStore.use.userLocation();
   const locate = useStore.use.locate();
   const setLocate = useStore.use.setLocate();
-  const setViewState = useStore.use.setViewState();
 
   const watchPositionIdRef = useRef<number | undefined>(undefined);
   const hasFlownToRef = useRef(false);
-
-  const flyToLocation = useCallback(
-    (latitude: number, longitude: number) => {
-      const viewState = useStore.getState().viewState;
-      setViewState({
-        ...viewState,
-        latitude,
-        longitude,
-        zoom: 14,
-        transitionDuration: 1500,
-        transitionInterpolator: new FlyToInterpolator(),
-      } as typeof viewState);
-    },
-    [setViewState],
-  );
 
   const cancelWatch = useCallback(() => {
     if (watchPositionIdRef.current === undefined) return;
@@ -48,10 +32,10 @@ export const ZoomToolbar = () => {
       setUserLocation({ latitude, longitude, accuracy, heading });
       if (!hasFlownToRef.current) {
         hasFlownToRef.current = true;
-        flyToLocation(latitude, longitude);
+        flyToPoint(latitude, longitude);
       }
     });
-  }, [cancelWatch, setUserLocation, flyToLocation]);
+  }, [cancelWatch, setUserLocation]);
 
   const onToggleLocation = () => {
     if (isUserLocated) {
@@ -77,7 +61,7 @@ export const ZoomToolbar = () => {
   const viewState = useStore.use.viewState();
 
   return (
-    <div className="flex-col top-2 md:top-auto md:bottom-4 flex-wrap absolute text-foreground right-2 flex justify-center rounded-xl bg-card drop-shadow-2xl shadow-xl border border-border">
+    <div className="flex-col top-2 md:top-auto md:bottom-2 flex-wrap absolute text-foreground right-2 flex justify-center rounded-xl bg-card drop-shadow-2xl shadow-xl border border-border">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
