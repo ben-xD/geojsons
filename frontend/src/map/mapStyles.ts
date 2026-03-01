@@ -17,6 +17,8 @@ export interface MapStyleConfig {
   variant: MapVariant;
   url: string;
   terrainSourceUrl: string;
+  /** ArcGIS basemap style path used by @esri/maplibre-arcgis (e.g. "arcgis/streets") */
+  arcgisStylePath?: string;
 }
 
 const maptilerKey = env.VITE_MAPTILER_API_KEY;
@@ -61,7 +63,8 @@ const mapStyles: Record<MapStyleId, MapStyleConfig> = {
     label: "Vector",
     provider: "arcgis",
     variant: "vector",
-    url: `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/streets?token=${arcgisKey}`,
+    url: "", // style is loaded via @esri/maplibre-arcgis plugin
+    arcgisStylePath: "arcgis/streets",
     terrainSourceUrl: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${maptilerKey}`,
   },
   "arcgis-satellite": {
@@ -69,7 +72,8 @@ const mapStyles: Record<MapStyleId, MapStyleConfig> = {
     label: "Satellite",
     provider: "arcgis",
     variant: "satellite",
-    url: `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/imagery/standard?token=${arcgisKey}`,
+    url: "", // style is loaded via @esri/maplibre-arcgis plugin
+    arcgisStylePath: "arcgis/imagery",
     terrainSourceUrl: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${maptilerKey}`,
   },
 };
@@ -83,6 +87,11 @@ export const mapStylesByProvider: {
   notRecommended?: string;
 }[] = [
   {
+    provider: "arcgis",
+    label: "ArcGIS",
+    styles: [mapStyles["arcgis-vector"], mapStyles["arcgis-satellite"]],
+  },
+  {
     provider: "mapbox",
     label: "Mapbox",
     styles: [mapStyles["mapbox-vector"], mapStyles["mapbox-satellite"]],
@@ -91,11 +100,6 @@ export const mapStylesByProvider: {
     provider: "maptiler",
     label: "MapTiler",
     styles: [mapStyles["maptiler-vector"], mapStyles["maptiler-satellite"]],
-    notRecommended: "Low resolution satellite imagery, bad customer support",
-  },
-  {
-    provider: "arcgis",
-    label: "ArcGIS",
-    styles: [mapStyles["arcgis-vector"], mapStyles["arcgis-satellite"]],
+    notRecommended: "Worst quality satellite imagery, bad customer support",
   },
 ];
