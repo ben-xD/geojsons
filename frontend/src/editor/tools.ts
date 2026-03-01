@@ -1,6 +1,5 @@
 import {
   DrawRectangleMode,
-  DrawCircleByDiameterMode,
   ViewMode,
   DrawEllipseByBoundingBoxMode,
   DrawLineStringMode,
@@ -10,6 +9,7 @@ import {
   ModifyMode,
 } from "@deck.gl-community/editable-layers";
 import { DrawLineStringByDraggingMode } from "@/editor/CustomEditModes/DrawLineStringByDragging";
+import { DrawCircleByDiameterNoTooltips } from "@/editor/CustomEditModes/DrawCircleByDiameterNoTooltips";
 import { ImmediateDragTransformMode } from "@/editor/CustomEditModes/ImmediateDragTransformMode";
 
 export const Tool = {
@@ -103,7 +103,7 @@ export const getEditModeForTool = (tool: Tool): any => {
     case Tool.rectangle:
       return DrawRectangleMode;
     case Tool.circle:
-      return DrawCircleByDiameterMode;
+      return DrawCircleByDiameterNoTooltips;
     case Tool.polygon:
       return DrawPolygonMode;
     case Tool.drawPolygonByDragging:
