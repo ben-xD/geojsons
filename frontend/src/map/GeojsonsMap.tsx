@@ -27,6 +27,7 @@ import { useHashViewState } from "@/map/useHashViewState";
 import { useArcgisStyle } from "@/map/useArcgisStyle";
 import { reverseGeocode } from "@/map/geocode";
 import { getFeatureCenter } from "@/geo/featureCenter";
+import { WebGLErrorBoundary } from "@/components/WebGLErrorBoundary";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -472,6 +473,7 @@ export const GeojsonsMap = () => {
       className="relative size-full flex flex-col items-center"
       onContextMenu={(e) => e.preventDefault()}
     >
+      <WebGLErrorBoundary>
       <DeckGL
         onClick={onClick}
         // onHover={(info) => {
@@ -535,6 +537,7 @@ export const GeojsonsMap = () => {
           {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
         </Map>
       </DeckGL>
+      </WebGLErrorBoundary>
       <MapAttribution />
       <MapStyleSwitcher />
       <ZoomToolbar />
