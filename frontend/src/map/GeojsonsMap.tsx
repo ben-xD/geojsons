@@ -13,7 +13,11 @@ import { MjolnirGestureEvent } from "mjolnir.js";
 import { ContextMenu } from "../components/Context/ContextMenu.tsx";
 import { useMapHotkeys } from "../editor/useMapHotkeys.tsx";
 import { useStore, useEditingMode } from "../store/store.ts";
-import { primaryTentativeFillRgba, primaryTentativeLineRgba, featureColors } from "../tokens/colors.ts";
+import {
+  primaryTentativeFillRgba,
+  primaryTentativeLineRgba,
+  featureColors,
+} from "../tokens/colors.ts";
 import { Tool } from "../editor/tools.ts";
 import { Toolbar } from "../Toolbar.tsx";
 import { MapAttribution } from "@/map/MapAttribution.tsx";
@@ -28,7 +32,6 @@ import { useArcgisStyle } from "@/map/useArcgisStyle";
 import { reverseGeocode } from "@/map/geocode";
 import { getFeatureCenter } from "@/geo/featureCenter";
 import { WebGLErrorBoundary } from "@/components/WebGLErrorBoundary";
-import { useIsOnline } from "@/hooks/useIsOnline";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -55,7 +58,10 @@ interface IconDescription {
   anchorY: number;
 }
 
-const markerIconCache = new globalThis.Map<string, { marker: IconDescription; selected: IconDescription }>();
+const markerIconCache = new globalThis.Map<
+  string,
+  { marker: IconDescription; selected: IconDescription }
+>();
 
 function getMarkerIcons(color: string): { marker: IconDescription; selected: IconDescription } {
   const cached = markerIconCache.get(color);
@@ -99,39 +105,8 @@ const editableGeojsonLayerId = "editable-geojson-layer";
 // deck.log.enable();
 // deck.log.level = 3; // or 1 or 2
 
-
-// Minimal style for offline mode — dark background + cached satellite tiles
-const OFFLINE_TILES_STYLE: StyleSpecification = {
-  version: 8,
-  sources: {
-    "offline-tiles": {
-      type: "raster",
-      tiles: ["offline://{z}/{x}/{y}"],
-      tileSize: 256,
-      minzoom: 10,
-      maxzoom: 16,
-    },
-  },
-  layers: [
-    { id: "background", type: "background", paint: { "background-color": "#191a1a" } },
-    { id: "offline-tiles-layer", type: "raster", source: "offline-tiles" },
-  ],
-};
-
-const OFFLINE_EMPTY_STYLE: StyleSpecification = {
-  version: 8,
-  sources: {},
-  layers: [
-    { id: "background", type: "background", paint: { "background-color": "#191a1a" } },
-  ],
-};
-
-const DRAGGING_EDIT_TYPES = new Set([
-  'translating', 'scaling', 'rotating', 'movePosition',
-]);
-const DRAG_FINISHED_EDIT_TYPES = new Set([
-  'translated', 'scaled', 'rotated', 'finishMovePosition',
-]);
+const DRAGGING_EDIT_TYPES = new Set(["translating", "scaling", "rotating", "movePosition"]);
+const DRAG_FINISHED_EDIT_TYPES = new Set(["translated", "scaled", "rotated", "finishMovePosition"]);
 
 export const GeojsonsMap = () => {
   useHashViewState();
@@ -152,24 +127,18 @@ export const GeojsonsMap = () => {
   const setViewState = useStore.use.setViewState();
   const mapStyleId = useStore.use.mapStyleId();
   const geocodeFeature = useStore.use.geocodeFeature();
-  const showOfflineTiles = useStore.use.showOfflineTiles();
+  const offlineTileBackend = useStore.use.offlineTileBackend();
+  const preferOffline = useStore.use.preferOffline();
   const mapStyleConfig = getMapStyle(mapStyleId);
-  const isOnline = useIsOnline();
   const arcgisStyle = useArcgisStyle(mapStyleConfig);
   // For ArcGIS, use the loaded style object; for others, use the URL.
   // While ArcGIS is loading, fall back to a blank style (Map is keyed by mapStyleId
   // so it remounts fresh — no broken diff transitions).
   const EMPTY_STYLE: StyleSpecification = { version: 8, sources: {}, layers: [] };
-  const onlineMapStyle = mapStyleConfig.provider === "arcgis"
-    ? (arcgisStyle ?? EMPTY_STYLE)
-    : mapStyleConfig.url;
-
-  // When offline, the style URL can't be fetched, so use a minimal inline style.
-  // If showOfflineTiles is on, bake the offline tile source into the style directly.
-  const mapStyle = isOnline
-    ? onlineMapStyle
-    : showOfflineTiles ? OFFLINE_TILES_STYLE : OFFLINE_EMPTY_STYLE;
-  const mapKey = isOnline ? mapStyleId : showOfflineTiles ? "offline-tiles" : "offline-empty";
+  const onlineMapStyle =
+    mapStyleConfig.provider === "arcgis" ? (arcgisStyle ?? EMPTY_STYLE) : mapStyleConfig.url;
+  const mapStyle = onlineMapStyle;
+  const mapKey = `${mapStyleId}-${offlineTileBackend}`;
   const colors = featureColors[mapStyleConfig.variant];
   const icons = getMarkerIcons(colors.marker);
 
@@ -280,16 +249,21 @@ export const GeojsonsMap = () => {
       featureIndexes: number[];
       editContext: Feature;
     }) => {
-      if (editType === 'autoSelect') {
+      if (editType === "autoSelect") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setSelectedFeatureIndexes((editContext as any)?.featureIndexes ?? []);
         return;
       }
       if (!updatedData?.features) {
-        console.error("onEdit called with no features", { updatedData, editType, featureIndexes, editContext });
+        console.error("onEdit called with no features", {
+          updatedData,
+          editType,
+          featureIndexes,
+          editContext,
+        });
         return;
       }
-      if (editType === 'updateTentativeFeature' || editType === 'cancelFeature') return;
+      if (editType === "updateTentativeFeature" || editType === "cancelFeature") return;
 
       if (DRAGGING_EDIT_TYPES.has(editType)) {
         featureCollectionRef.current = updatedData;
@@ -377,7 +351,8 @@ export const GeojsonsMap = () => {
   // not necessary for now? I just saw it in https://github.com/visgl/deck.gl/discussions/6103
   // const [glContext,setGlContext] = useState<WebGLRenderingContext>();
 
-  const offlineRegions = useStore.use.offlineRegions();
+  const offlineRegionsByBackend = useStore.use.offlineRegionsByBackend();
+  const offlineRegions = offlineRegionsByBackend[offlineTileBackend];
 
   const offlineRegionsLayer = new GeoJsonLayer({
     id: "offline-regions",
@@ -392,45 +367,43 @@ export const GeojsonsMap = () => {
     pickable: false,
     filled: true,
     stroked: true,
-    getFillColor: [59, 130, 246, 30],   // blue-500 at ~12% opacity
-    getLineColor: [59, 130, 246, 180],  // blue-500 at ~70% opacity
+    getFillColor: [59, 130, 246, 30], // blue-500 at ~12% opacity
+    getLineColor: [59, 130, 246, 180], // blue-500 at ~70% opacity
     getLineWidth: 2,
     lineWidthUnits: "pixels",
   });
 
   const mapRef = useRef<MapRef>(null);
 
-  const applyOfflineTiles = useCallback(
-    (map: maplibregl.Map) => {
-      if (!showOfflineTiles) {
-        if (map.getLayer("offline-tiles-layer")) map.removeLayer("offline-tiles-layer");
-        if (map.getSource("offline-tiles")) map.removeSource("offline-tiles");
-        return;
-      }
-      if (map.getSource("offline-tiles")) return;
-      map.addSource("offline-tiles", {
-        type: "raster",
-        tiles: ["offline://{z}/{x}/{y}"],
-        tileSize: 256,
-        minzoom: 10,
-        maxzoom: 16,
-      });
-      map.addLayer({ id: "offline-tiles-layer", type: "raster", source: "offline-tiles" });
-    },
-    [showOfflineTiles],
-  );
+  const clearTerrain = useCallback((map: maplibregl.Map) => {
+    map.setTerrain(null);
+    const terrainSourceId = "terrain";
+    if (map.getSource(terrainSourceId)) {
+      map.removeSource(terrainSourceId);
+    }
+  }, []);
 
   const applyTerrain = useCallback(
     (map: maplibregl.Map) => {
+      if (preferOffline || !navigator.onLine) {
+        clearTerrain(map);
+        return;
+      }
+
       const terrainSourceId = "terrain";
       if (map.getSource(terrainSourceId)) return;
-      map.addSource(terrainSourceId, {
-        type: "raster-dem",
-        url: mapStyleConfig.terrainSourceUrl,
-      });
-      map.setTerrain({ source: terrainSourceId });
+
+      try {
+        map.addSource(terrainSourceId, {
+          type: "raster-dem",
+          url: mapStyleConfig.terrainSourceUrl,
+        });
+        map.setTerrain({ source: terrainSourceId });
+      } catch (error) {
+        console.warn("[GeojsonsMap] Failed to apply terrain source", error);
+      }
     },
-    [mapStyleConfig.terrainSourceUrl],
+    [clearTerrain, mapStyleConfig.terrainSourceUrl, preferOffline],
   );
 
   const onMapLoad = useCallback(
@@ -438,33 +411,28 @@ export const GeojsonsMap = () => {
       const map = e.target;
       map.setMaxPitch(85);
       applyTerrain(map);
-      applyOfflineTiles(map);
       map.on("contextmenu", () => {});
     },
-    [applyTerrain, applyOfflineTiles],
+    [applyTerrain],
   );
 
-  // Re-apply terrain and offline tiles when map style changes (changing mapStyle prop destroys all sources)
+  // Re-apply terrain when map style changes (changing mapStyle prop destroys sources)
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;
 
+    if (map.isStyleLoaded()) {
+      applyTerrain(map);
+    }
+
     const onStyleLoad = () => {
       applyTerrain(map);
-      applyOfflineTiles(map);
     };
     map.on("style.load", onStyleLoad);
     return () => {
       map.off("style.load", onStyleLoad);
     };
-  }, [mapStyleId, applyTerrain, applyOfflineTiles]);
-
-  // Toggle offline tile layer when showOfflineTiles changes
-  useEffect(() => {
-    const map = mapRef.current?.getMap();
-    if (!map || !map.isStyleLoaded()) return;
-    applyOfflineTiles(map);
-  }, [showOfflineTiles, applyOfflineTiles]);
+  }, [mapStyleId, applyTerrain]);
   // {/*"https://api.maptiler.com/maps/outdoor-v2/style.json?key=LlETYKEJwgxoM6pCNChm",*/}
   // When you use DeckGL as the parent, you are using DeckGL's controller.
   // It has identical implementation as react-map-gl's controller, but different defaults for
@@ -509,75 +477,78 @@ export const GeojsonsMap = () => {
       onContextMenu={(e) => e.preventDefault()}
     >
       <WebGLErrorBoundary>
-      <DeckGL
-        onClick={onClick}
-        // onHover={(info) => {
-        //   if (info.picked) {
-        //     console.log('hover', {info});
-        //     hoveredFeature.current = info.object;
-        //   }
-        // }}
-        // onWebGLInitialized={setGlContext}
-        // onDrag={(info) => {
-        //   console.log('onDrag');
-        //   // TODO move item immediately
-        //   // if (info.picked){
-        //   //   console.log('dragging', {info});
-        //   // }
-        // }}
-        // onHover={}
-        getTooltip={(info) => {
-          // if hovering over a feature
-          if (info.picked && isAltPressedRef.current) {
-            return {
-              text: `feature ${info.index} from ${info.layer}`,
-              style: { top: "10px" },
-            };
-          }
-          return null;
-        }}
-        getCursor={getCursor}
-        controller={{
-          dragPan: isSpacePressed || isMapDraggable,
-          doubleClickZoom: isDoubleClickZoomEnabled,
-        }}
-        ref={deckGlRef}
-        // Use Object.assign to create a new object instead of mutating it, to avoid error: `Object is not extensible`
-        initialViewState={Object.assign({}, viewState)}
-        onViewStateChange={(params) => {
-          // During programmatic transitions (flyTo), DeckGL manages the
-          // animation internally. Feeding intermediate values back through
-          // initialViewState can cause the transition to cancel on slower
-          // devices (mobile) due to render-cycle lag.
-          if ((params as Record<string, unknown>).interactionState &&
-              (params.interactionState as Record<string, unknown>).inTransition) return;
-          // Defer to avoid setState-during-render warning: DeckGL fires
-          // this callback inside its own useMemo, so a synchronous store
-          // update would re-render subscribers (e.g. ZoomToolbar) mid-render.
-          queueMicrotask(() =>
-            setViewState(Object.assign({}, params.viewState as unknown as ViewState)),
-          );
-        }}
-        layers={[
-          offlineRegions.length > 0 ? offlineRegionsLayer : undefined,
-          editableGeojsonLayer as unknown as Layer,
-          isSelectionLayerEnabled ? (selectionLayer as unknown as Layer) : undefined,
-          userLocationLayers,
-        ]}
-      >
-        <Map
-          key={mapKey}
-          ref={mapRef}
-          onLoad={onMapLoad}
-          onClick={() => {}}
-          style={{ width: 600, height: 400 }}
-          attributionControl={false}
-          styleDiffing={false}
-          mapStyle={mapStyle}
+        <DeckGL
+          onClick={onClick}
+          // onHover={(info) => {
+          //   if (info.picked) {
+          //     console.log('hover', {info});
+          //     hoveredFeature.current = info.object;
+          //   }
+          // }}
+          // onWebGLInitialized={setGlContext}
+          // onDrag={(info) => {
+          //   console.log('onDrag');
+          //   // TODO move item immediately
+          //   // if (info.picked){
+          //   //   console.log('dragging', {info});
+          //   // }
+          // }}
+          // onHover={}
+          getTooltip={(info) => {
+            // if hovering over a feature
+            if (info.picked && isAltPressedRef.current) {
+              return {
+                text: `feature ${info.index} from ${info.layer}`,
+                style: { top: "10px" },
+              };
+            }
+            return null;
+          }}
+          getCursor={getCursor}
+          controller={{
+            dragPan: isSpacePressed || isMapDraggable,
+            doubleClickZoom: isDoubleClickZoomEnabled,
+          }}
+          ref={deckGlRef}
+          // Use Object.assign to create a new object instead of mutating it, to avoid error: `Object is not extensible`
+          initialViewState={Object.assign({}, viewState)}
+          onViewStateChange={(params) => {
+            // During programmatic transitions (flyTo), DeckGL manages the
+            // animation internally. Feeding intermediate values back through
+            // initialViewState can cause the transition to cancel on slower
+            // devices (mobile) due to render-cycle lag.
+            if (
+              (params as Record<string, unknown>).interactionState &&
+              (params.interactionState as Record<string, unknown>).inTransition
+            )
+              return;
+            // Defer to avoid setState-during-render warning: DeckGL fires
+            // this callback inside its own useMemo, so a synchronous store
+            // update would re-render subscribers (e.g. ZoomToolbar) mid-render.
+            queueMicrotask(() =>
+              setViewState(Object.assign({}, params.viewState as unknown as ViewState)),
+            );
+          }}
+          layers={[
+            offlineRegions.length > 0 ? offlineRegionsLayer : undefined,
+            editableGeojsonLayer as unknown as Layer,
+            isSelectionLayerEnabled ? (selectionLayer as unknown as Layer) : undefined,
+            userLocationLayers,
+          ]}
         >
-          {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
-        </Map>
-      </DeckGL>
+          <Map
+            key={mapKey}
+            ref={mapRef}
+            onLoad={onMapLoad}
+            onClick={() => {}}
+            style={{ width: 600, height: 400 }}
+            attributionControl={false}
+            styleDiffing={false}
+            mapStyle={mapStyle}
+          >
+            {/* https://visgl.github.io/react-map-gl/docs/api-reference/attribution-control#source */}
+          </Map>
+        </DeckGL>
       </WebGLErrorBoundary>
       <MapAttribution />
       <MapStyleSwitcher />

@@ -30,6 +30,8 @@ const validMapStyleIds = new Set<string>([
   "maptiler-satellite",
   "mapbox-vector",
   "mapbox-satellite",
+  "arcgis-vector",
+  "arcgis-satellite",
 ]);
 
 function parseHashParams(hash: string): Map<string, string> {

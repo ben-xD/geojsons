@@ -43,7 +43,7 @@ export const MapStyleSwitcher = () => {
               {notRecommended && (
                 <span
                   title={notRecommended}
-                  className="text-[9px] font-medium text-red-700 bg-red-100 dark:text-red-200 dark:bg-red-900 rounded px-1 cursor-help"
+                  className="text-[9px] font-medium text-yellow-800 bg-yellow-100 dark:text-yellow-200 dark:bg-yellow-900 rounded px-1 cursor-help"
                 >
                   Not recommended
                 </span>

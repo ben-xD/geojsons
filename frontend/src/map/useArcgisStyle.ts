@@ -6,8 +6,15 @@ import type { MapStyleConfig } from "@/map/mapStyles";
 import type { StyleSpecification } from "maplibre-gl";
 
 const MAPLIBRE_SUPPORTED_LAYER_TYPES = new Set([
-  "background", "fill", "line", "symbol", "raster",
-  "circle", "fill-extrusion", "heatmap", "hillshade",
+  "background",
+  "fill",
+  "line",
+  "symbol",
+  "raster",
+  "circle",
+  "fill-extrusion",
+  "heatmap",
+  "hillshade",
 ]);
 
 /**
@@ -35,22 +42,32 @@ export function useArcgisStyle(config: MapStyleConfig): StyleSpecification | und
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    bs.loadStyle().then((loaded: any) => {
-      if (cancelled || !loaded) return;
-      // Strip layer types MapLibre doesn't support (e.g. "model" from Mapbox GL v2+)
-      const removed = loaded.layers.filter(
-        (layer: { type: string }) => !MAPLIBRE_SUPPORTED_LAYER_TYPES.has(layer.type),
-      );
-      if (removed.length > 0) {
-        console.warn("[useArcgisStyle] Stripped unsupported layer types:", removed.map((l: { id: string; type: string }) => `${l.id} (${l.type})`));
-      }
-      loaded.layers = loaded.layers.filter(
-        (layer: { type: string }) => MAPLIBRE_SUPPORTED_LAYER_TYPES.has(layer.type),
-      );
-      setStyle(loaded as StyleSpecification);
-    });
+    bs.loadStyle()
+      .then((loaded: any) => {
+        if (cancelled || !loaded) return;
+        // Strip layer types MapLibre doesn't support (e.g. "model" from Mapbox GL v2+)
+        const removed = loaded.layers.filter(
+          (layer: { type: string }) => !MAPLIBRE_SUPPORTED_LAYER_TYPES.has(layer.type),
+        );
+        if (removed.length > 0) {
+          console.warn(
+            "[useArcgisStyle] Stripped unsupported layer types:",
+            removed.map((l: { id: string; type: string }) => `${l.id} (${l.type})`),
+          );
+        }
+        loaded.layers = loaded.layers.filter((layer: { type: string }) =>
+          MAPLIBRE_SUPPORTED_LAYER_TYPES.has(layer.type),
+        );
+        setStyle(loaded as StyleSpecification);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        console.warn("[useArcgisStyle] Failed to load ArcGIS style", error);
+      });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [config.id, config.provider, config.arcgisStylePath]);
 
   return style;

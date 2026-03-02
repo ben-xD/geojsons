@@ -100,6 +100,6 @@ export const mapStylesByProvider: {
     provider: "maptiler",
     label: "MapTiler",
     styles: [mapStyles["maptiler-vector"], mapStyles["maptiler-satellite"]],
-    notRecommended: "Worst quality satellite imagery, bad customer support",
+    notRecommended: "low quality satellite imagery at high zoom levels",
   },
 ];
