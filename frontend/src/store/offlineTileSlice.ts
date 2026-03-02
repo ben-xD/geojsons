@@ -1,21 +1,37 @@
 import type { OfflineRegion } from "@/offline/tileBackend";
 import type { GeojsonsStateCreator } from "./store";
 
+export type OfflineTileBackendType = "indexeddb" | "node";
+
+export interface DownloadProgress {
+  downloaded: number;
+  total: number;
+  sizeBytes: number;
+}
+
 export interface OfflineTileSlice {
-  offlineTileBackend: "indexeddb" | "node";
-  setOfflineTileBackend: (backend: "indexeddb" | "node") => void;
-  showOfflineTiles: boolean;
-  setShowOfflineTiles: (show: boolean) => void;
-  maxDownloadBytes: number;
-  setMaxDownloadBytes: (bytes: number) => void;
-  offlineRegions: OfflineRegion[];
-  setOfflineRegions: (regions: OfflineRegion[]) => void;
-  addOfflineRegion: (region: OfflineRegion) => void;
-  updateOfflineRegion: (id: string, updates: Partial<OfflineRegion>) => void;
-  removeOfflineRegion: (id: string) => void;
-  activeDownloads: Record<string, { downloaded: number; total: number; sizeBytes: number }>;
-  setDownloadProgress: (id: string, downloaded: number, total: number, sizeBytes?: number) => void;
-  removeDownload: (id: string) => void;
+  offlineTileBackend: OfflineTileBackendType;
+  setOfflineTileBackend: (backend: OfflineTileBackendType) => void;
+  preferOffline: boolean;
+  setPreferOffline: (prefer: boolean) => void;
+  offlineRegionsByBackend: Record<OfflineTileBackendType, OfflineRegion[]>;
+  setOfflineRegions: (backend: OfflineTileBackendType, regions: OfflineRegion[]) => void;
+  addOfflineRegion: (backend: OfflineTileBackendType, region: OfflineRegion) => void;
+  updateOfflineRegion: (
+    backend: OfflineTileBackendType,
+    id: string,
+    updates: Partial<OfflineRegion>,
+  ) => void;
+  removeOfflineRegion: (backend: OfflineTileBackendType, id: string) => void;
+  activeDownloadsByBackend: Record<OfflineTileBackendType, Record<string, DownloadProgress>>;
+  setDownloadProgress: (
+    backend: OfflineTileBackendType,
+    id: string,
+    downloaded: number,
+    total: number,
+    sizeBytes?: number,
+  ) => void;
+  removeDownload: (backend: OfflineTileBackendType, id: string) => void;
 }
 
 export const createOfflineTileSlice: GeojsonsStateCreator<OfflineTileSlice> = (set) => ({
@@ -24,43 +40,44 @@ export const createOfflineTileSlice: GeojsonsStateCreator<OfflineTileSlice> = (s
     set((state) => {
       state.offlineTileBackend = backend;
     }),
-  showOfflineTiles: false,
-  setShowOfflineTiles: (show) =>
+  preferOffline: false,
+  setPreferOffline: (prefer) =>
     set((state) => {
-      state.showOfflineTiles = show;
+      state.preferOffline = prefer;
     }),
-  maxDownloadBytes: 500 * 1024 * 1024, // 500 MB
-  setMaxDownloadBytes: (bytes) =>
+  offlineRegionsByBackend: { indexeddb: [], node: [] },
+  setOfflineRegions: (backend, regions) =>
     set((state) => {
-      state.maxDownloadBytes = bytes;
+      state.offlineRegionsByBackend[backend] = regions;
     }),
-  offlineRegions: [],
-  setOfflineRegions: (regions) =>
+  addOfflineRegion: (backend, region) =>
     set((state) => {
-      state.offlineRegions = regions;
+      state.offlineRegionsByBackend[backend].push(region);
     }),
-  addOfflineRegion: (region) =>
+  updateOfflineRegion: (backend, id, updates) =>
     set((state) => {
-      state.offlineRegions.push(region);
-    }),
-  updateOfflineRegion: (id, updates) =>
-    set((state) => {
-      const idx = state.offlineRegions.findIndex((r) => r.id === id);
+      const idx = state.offlineRegionsByBackend[backend].findIndex((r) => r.id === id);
       if (idx !== -1) {
-        Object.assign(state.offlineRegions[idx], updates);
+        Object.assign(state.offlineRegionsByBackend[backend][idx], updates);
       }
     }),
-  removeOfflineRegion: (id) =>
+  removeOfflineRegion: (backend, id) =>
     set((state) => {
-      state.offlineRegions = state.offlineRegions.filter((r) => r.id !== id);
+      state.offlineRegionsByBackend[backend] = state.offlineRegionsByBackend[backend].filter(
+        (r) => r.id !== id,
+      );
     }),
-  activeDownloads: {},
-  setDownloadProgress: (id, downloaded, total, sizeBytes) =>
+  activeDownloadsByBackend: { indexeddb: {}, node: {} },
+  setDownloadProgress: (backend, id, downloaded, total, sizeBytes) =>
     set((state) => {
-      state.activeDownloads[id] = { downloaded, total, sizeBytes: sizeBytes ?? state.activeDownloads[id]?.sizeBytes ?? 0 };
+      state.activeDownloadsByBackend[backend][id] = {
+        downloaded,
+        total,
+        sizeBytes: sizeBytes ?? state.activeDownloadsByBackend[backend][id]?.sizeBytes ?? 0,
+      };
     }),
-  removeDownload: (id) =>
+  removeDownload: (backend, id) =>
     set((state) => {
-      delete state.activeDownloads[id];
+      delete state.activeDownloadsByBackend[backend][id];
     }),
 });

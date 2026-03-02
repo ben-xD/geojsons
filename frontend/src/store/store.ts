@@ -9,7 +9,6 @@ import { createSavedLocationsSlice, SavedLocationsSlice } from "./savedLocations
 import { createOfflineTileSlice, OfflineTileSlice } from "./offlineTileSlice";
 import { createSelectors } from "./createSelectors";
 
-
 // Consider reading https://docs.pmnd.rs/zustand/guides/typescript
 // Slices are just smaller stores. Technically, they are still stores. So you can call them either.
 // See https://docs.pmnd.rs/zustand/guides/slices-pattern#usage-with-typescript
@@ -22,7 +21,10 @@ import { createSelectors } from "./createSelectors";
 // - Using a nested `computed` object following https://github.com/pmndrs/zustand/issues/132#issuecomment-1120467721 doesn't work with immer because `get()` is returns undefined state
 // - 3rd party middleware is quite old, and unclear if it will work: https://github.com/cmlarsen/zustand-middleware-computed-state
 
-export type State = FeatureEditorSlice & ReorderFeatureSlice & SavedLocationsSlice & OfflineTileSlice;
+export type State = FeatureEditorSlice &
+  ReorderFeatureSlice &
+  SavedLocationsSlice &
+  OfflineTileSlice;
 
 export type GeojsonsStateCreator<T> = StateCreator<State, Mutators, [], T>;
 
@@ -33,7 +35,16 @@ export type Mutators = [
   ["zustand/immer", never],
 ];
 
-const unpersistedProperties = ["userLocation", "viewState", "pickable", "isMapDraggable", "locate", "activeDownloads", "activeTab", "searchQuery"];
+const unpersistedProperties = [
+  "userLocation",
+  "viewState",
+  "pickable",
+  "isMapDraggable",
+  "locate",
+  "activeDownloadsByBackend",
+  "activeTab",
+  "searchQuery",
+];
 
 const applicationLocalStorageName = "geojsons.com";
 // reminder: use devtools as the last middleware as suggested on https://github.com/pmndrs/zustand/blob/HEAD/docs/guides/typescript.md. Daishi (the maintainer) suggests following Tests over docs, if they're inconsistent.

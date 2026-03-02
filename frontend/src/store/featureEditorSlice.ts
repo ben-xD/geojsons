@@ -274,7 +274,7 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
     set((state) => {
       state.locate = locate;
     }),
-  mapStyleId: "mapbox-vector" as MapStyleId,
+  mapStyleId: "arcgis-vector" as MapStyleId,
   setMapStyleId: (mapStyleId: MapStyleId) =>
     set(
       (state) => {
