@@ -1,16 +1,18 @@
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
 import { registerMapboxProtocol } from "./map/mapboxProtocol.ts";
-import { registerOfflineProtocol } from "./offline/offlineProtocol.ts";
 import { applyHashToStore } from "./map/useHashViewState.ts";
 import { ThemeProvider } from "./components/theme-provider.tsx";
+import { initServiceWorkerPreferenceSync } from "./offline/syncServiceWorkerPreferences.ts";
 
 const queryClient = new QueryClient();
 
+registerSW({ immediate: true });
 registerMapboxProtocol();
-registerOfflineProtocol();
+initServiceWorkerPreferenceSync();
 applyHashToStore();
 
 const rootElement = document.getElementById("root");
