@@ -24,7 +24,7 @@ export type UserAction =
       selectedFeatureIndexes: number[];
     };
 
-export type BottomPanelTab = "Features" | "Offline Maps" | "JSON" | "Settings";
+export type BottomPanelTab = "Features" | "GeoJSON" | "Offline Maps" | "Settings";
 
 export interface FeatureEditorSlice {
   enabled: boolean;
@@ -67,7 +67,7 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
 ) => ({
   enabled: true,
   tool: Tool.select,
-  activeTab: "JSON",
+  activeTab: "GeoJSON",
   setActiveTab: (tab) =>
     set((state) => {
       state.activeTab = tab;

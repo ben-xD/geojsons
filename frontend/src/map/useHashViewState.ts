@@ -17,7 +17,7 @@ interface HashState {
 const tabToSlug: Record<BottomPanelTab, string> = {
   "Features": "features",
   "Offline Maps": "offline",
-  "JSON": "json",
+  "GeoJSON": "geojson",
   "Settings": "settings",
 };
 const slugToTab: Record<string, BottomPanelTab> = Object.fromEntries(
@@ -84,7 +84,7 @@ export function parseHash(hash: string): HashState | null {
   };
 }
 
-export function formatHash(vs: ViewState, mapStyleId: MapStyleId, locate: boolean, activeTab: BottomPanelTab = "JSON"): string {
+export function formatHash(vs: ViewState, mapStyleId: MapStyleId, locate: boolean, activeTab: BottomPanelTab = "GeoJSON"): string {
   const z = vs.zoom.toFixed(2);
   const lat = vs.latitude.toFixed(5);
   const lng = vs.longitude.toFixed(5);
@@ -93,7 +93,7 @@ export function formatHash(vs: ViewState, mapStyleId: MapStyleId, locate: boolea
     ? `map=${z}/${lat}/${lng}/${Math.round(vs.bearing)}/${Math.round(vs.pitch)}`
     : `map=${z}/${lat}/${lng}`;
   const locatePart = locate ? "&locate=1" : "";
-  const tabPart = activeTab !== "JSON" ? `&tab=${tabToSlug[activeTab]}` : "";
+  const tabPart = activeTab !== "GeoJSON" ? `&tab=${tabToSlug[activeTab]}` : "";
   return `#${mapPart}&style=${mapStyleId}${locatePart}${tabPart}`;
 }
 

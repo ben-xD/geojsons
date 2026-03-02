@@ -6,7 +6,7 @@ import { SettingsPanel } from "./SettingsPanel";
 import { useStore } from "@/store/store";
 import type { BottomPanelTab } from "@/store/featureEditorSlice";
 
-const tabs: BottomPanelTab[] = ["Features", "Offline Maps", "JSON", "Settings"];
+const tabs: BottomPanelTab[] = ["Features", "GeoJSON", "Offline Maps", "Settings"];
 
 export const BottomPanel = () => {
   const activeTab = useStore.use.activeTab();
@@ -33,7 +33,7 @@ export const BottomPanel = () => {
       <div className="flex-1 min-h-0">
         {activeTab === "Features" && <FeaturesPanel />}
         {activeTab === "Offline Maps" && <OfflineMapsPanel />}
-        {activeTab === "JSON" && <RawGeojsonPanel />}
+        {activeTab === "GeoJSON" && <RawGeojsonPanel />}
         {activeTab === "Settings" && <SettingsPanel />}
       </div>
     </div>
