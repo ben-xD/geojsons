@@ -2,17 +2,14 @@ import { openDB, type IDBPDatabase } from "idb";
 import type { TileBackend, OfflineRegion, StorageStats } from "./tileBackend";
 import { v4 as uuidv4 } from "uuid";
 import { bboxFromPolygon, getTilesForBbox } from "./tileCoords";
+import { arcgisTileCacheKeyUrl } from "./arcgis";
 
 const DB_NAME = "offline-tiles";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
+const TILE_CACHE_NAME = "arcgis-world-imagery-tiles-v1";
 
 interface OfflineTilesDB {
-  tiles: { key: string; value: ArrayBuffer };
   regions: { key: string; value: OfflineRegion; indexes: {} };
-}
-
-function tileKey(z: number, x: number, y: number): string {
-  return `${z}/${x}/${y}`;
 }
 
 let dbPromise: Promise<IDBPDatabase<OfflineTilesDB>> | undefined;
@@ -21,8 +18,8 @@ function getDb(): Promise<IDBPDatabase<OfflineTilesDB>> {
   if (!dbPromise) {
     dbPromise = openDB<OfflineTilesDB>(DB_NAME, DB_VERSION, {
       upgrade(db) {
-        if (!db.objectStoreNames.contains("tiles")) {
-          db.createObjectStore("tiles");
+        if (db.objectStoreNames.contains("tiles")) {
+          db.deleteObjectStore("tiles");
         }
         if (!db.objectStoreNames.contains("regions")) {
           db.createObjectStore("regions", { keyPath: "id" });
@@ -35,20 +32,24 @@ function getDb(): Promise<IDBPDatabase<OfflineTilesDB>> {
 
 export const indexedDbBackend: TileBackend = {
   async getTile(z, x, y) {
-    const db = await getDb();
-    const data = await db.get("tiles", tileKey(z, x, y));
-    return data ?? null;
+    const cache = await caches.open(TILE_CACHE_NAME);
+    const response = await cache.match(arcgisTileCacheKeyUrl(z, x, y));
+    if (!response) return null;
+    return response.arrayBuffer();
   },
 
   async hasTile(z, x, y) {
-    const db = await getDb();
-    const key = await db.getKey("tiles", tileKey(z, x, y));
-    return key !== undefined;
+    const cache = await caches.open(TILE_CACHE_NAME);
+    const response = await cache.match(arcgisTileCacheKeyUrl(z, x, y));
+    return response !== undefined;
   },
 
   async storeTile(z, x, y, data) {
-    const db = await getDb();
-    await db.put("tiles", data, tileKey(z, x, y));
+    const cache = await caches.open(TILE_CACHE_NAME);
+    await cache.put(
+      arcgisTileCacheKeyUrl(z, x, y),
+      new Response(data, { headers: { "Content-Type": "image/jpeg" } }),
+    );
   },
 
   async getRegions() {
@@ -77,21 +78,18 @@ export const indexedDbBackend: TileBackend = {
     if (region) {
       const bbox = bboxFromPolygon(region.polygon);
       const tiles = getTilesForBbox(bbox, [region.zoomMin, region.zoomMax]);
-      const tx = db.transaction("tiles", "readwrite");
-      for (const tile of tiles) {
-        tx.store.delete(tileKey(tile.z, tile.x, tile.y));
-      }
-      await tx.done;
+      const cache = await caches.open(TILE_CACHE_NAME);
+      await Promise.all(
+        tiles.map((tile) => cache.delete(arcgisTileCacheKeyUrl(tile.z, tile.x, tile.y))),
+      );
     }
     await db.delete("regions", id);
   },
 
   async deleteAllRegions() {
     const db = await getDb();
-    const tx = db.transaction(["tiles", "regions"], "readwrite");
-    tx.objectStore("tiles").clear();
-    tx.objectStore("regions").clear();
-    await tx.done;
+    await db.clear("regions");
+    await caches.delete(TILE_CACHE_NAME);
   },
 
   async getStorageStats(): Promise<StorageStats> {
