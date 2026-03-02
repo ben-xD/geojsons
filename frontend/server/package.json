@@ -8,14 +8,19 @@
     "dev": "tsx watch server.ts"
   },
   "dependencies": {
+    "@hono/node-server": "^1.14.1",
+    "@hono/standard-validator": "^0.2.2",
+    "@scalar/hono-api-reference": "^0.9.46",
+    "@scalar/openapi-to-markdown": "^0.3.53",
+    "@valibot/to-json-schema": "^1.5.0",
     "better-sqlite3": "^11.7.0",
-    "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "dotenv": "^17.3.1",
+    "hono": "^4.7.5",
+    "hono-openapi": "^1.2.0",
+    "valibot": "^1.2.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
     "tsx": "^4.19.0"
   }
 }
