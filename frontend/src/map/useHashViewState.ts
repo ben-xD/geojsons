@@ -12,6 +12,7 @@ interface HashState {
   mapStyleId?: MapStyleId;
   locate?: boolean;
   activeTab?: BottomPanelTab;
+  searchQuery?: string;
 }
 
 const tabToSlug: Record<BottomPanelTab, string> = {
@@ -70,6 +71,9 @@ export function parseHash(hash: string): HashState | null {
   const tabValue = params.get("tab");
   const activeTab = tabValue && tabValue in slugToTab ? slugToTab[tabValue] : undefined;
 
+  const qValue = params.get("q");
+  const searchQuery = qValue ? decodeURIComponent(qValue) : undefined;
+
   return {
     viewState: {
       zoom: Math.max(0, Math.min(24, zoom)),
@@ -81,10 +85,32 @@ export function parseHash(hash: string): HashState | null {
     mapStyleId,
     locate,
     activeTab,
+    searchQuery,
   };
 }
 
-export function formatHash(vs: ViewState, mapStyleId: MapStyleId, locate: boolean, activeTab: BottomPanelTab = "GeoJSON"): string {
+function applyParsedToState(
+  parsed: HashState,
+  current: Pick<typeof useStoreOriginal extends { getState: () => infer S } ? S : never, "viewState" | "mapStyleId">,
+) {
+  return {
+    viewState: { ...current.viewState, ...parsed.viewState },
+    mapStyleId: parsed.mapStyleId ?? current.mapStyleId,
+    locate: parsed.locate ?? false,
+    activeTab: parsed.activeTab ?? "GeoJSON" as BottomPanelTab,
+    searchQuery: parsed.searchQuery ?? "",
+  };
+}
+
+interface FormatHashOptions {
+  viewState: ViewState;
+  mapStyleId: MapStyleId;
+  locate: boolean;
+  activeTab?: BottomPanelTab;
+  searchQuery?: string;
+}
+
+export function formatHash({ viewState: vs, mapStyleId, locate, activeTab = "GeoJSON", searchQuery = "" }: FormatHashOptions): string {
   const z = vs.zoom.toFixed(2);
   const lat = vs.latitude.toFixed(5);
   const lng = vs.longitude.toFixed(5);
@@ -94,7 +120,8 @@ export function formatHash(vs: ViewState, mapStyleId: MapStyleId, locate: boolea
     : `map=${z}/${lat}/${lng}`;
   const locatePart = locate ? "&locate=1" : "";
   const tabPart = activeTab !== "GeoJSON" ? `&tab=${tabToSlug[activeTab]}` : "";
-  return `#${mapPart}&style=${mapStyleId}${locatePart}${tabPart}`;
+  const queryPart = searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : "";
+  return `#${mapPart}&style=${mapStyleId}${locatePart}${tabPart}${queryPart}`;
 }
 
 // --- Pre-render bootstrap ---
@@ -103,12 +130,7 @@ export function applyHashToStore(): void {
   const parsed = parseHash(window.location.hash);
   if (!parsed) return;
   const state = useStoreOriginal.getState();
-  useStoreOriginal.setState({
-    viewState: { ...state.viewState, ...parsed.viewState },
-    ...(parsed.mapStyleId && { mapStyleId: parsed.mapStyleId }),
-    ...(parsed.locate !== undefined && { locate: parsed.locate }),
-    ...(parsed.activeTab && { activeTab: parsed.activeTab }),
-  });
+  useStoreOriginal.setState(applyParsedToState(parsed, state));
 }
 
 // --- React hook ---
@@ -116,8 +138,8 @@ export function applyHashToStore(): void {
 export function useHashViewState(): void {
   useEffect(() => {
     const getHash = () => {
-      const { viewState, mapStyleId, locate, activeTab } = useStoreOriginal.getState();
-      return formatHash(viewState, mapStyleId, locate, activeTab);
+      const { viewState, mapStyleId, locate, activeTab, searchQuery } = useStoreOriginal.getState();
+      return formatHash({ viewState, mapStyleId, locate, activeTab, searchQuery });
     };
 
     const updateHash = (newHash: string) => {
@@ -159,6 +181,11 @@ export function useHashViewState(): void {
       () => updateHash(getHash()),
     );
 
+    const unsubSearchQuery = useStoreOriginal.subscribe(
+      (state) => state.searchQuery,
+      () => debouncedUpdateHash(),
+    );
+
     // Listen for manual URL edits
     const onHashChange = () => {
       const currentHash = window.location.hash;
@@ -168,12 +195,7 @@ export function useHashViewState(): void {
       const parsed = parseHash(currentHash);
       if (!parsed) return;
       const state = useStoreOriginal.getState();
-      useStoreOriginal.setState({
-        viewState: { ...state.viewState, ...parsed.viewState },
-        ...(parsed.mapStyleId && { mapStyleId: parsed.mapStyleId }),
-        ...(parsed.locate !== undefined && { locate: parsed.locate }),
-        ...(parsed.activeTab && { activeTab: parsed.activeTab }),
-      });
+      useStoreOriginal.setState(applyParsedToState(parsed, state));
     };
 
     window.addEventListener("hashchange", onHashChange);
@@ -183,6 +205,7 @@ export function useHashViewState(): void {
       unsubMapStyle();
       unsubLocate();
       unsubActiveTab();
+      unsubSearchQuery();
       debouncedUpdateHash.cancel();
       window.removeEventListener("hashchange", onHashChange);
     };

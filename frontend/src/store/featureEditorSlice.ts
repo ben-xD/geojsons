@@ -56,6 +56,8 @@ export interface FeatureEditorSlice {
   setLocate: (locate: boolean) => void;
   mapStyleId: MapStyleId;
   setMapStyleId: (mapStyleId: MapStyleId) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
   animateToFeature: boolean;
   setAnimateToFeature: (animateToFeature: boolean) => void;
   geocodeFeature: (featureId: string, name: string) => void;
@@ -281,6 +283,11 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
       false,
       { type: "setMapStyleId" },
     ),
+  searchQuery: "",
+  setSearchQuery: (query: string) =>
+    set((state) => {
+      state.searchQuery = query;
+    }),
   animateToFeature: true,
   setAnimateToFeature: (animateToFeature: boolean) =>
     set((state) => {

@@ -11,7 +11,8 @@ interface SearchBarProps {
 }
 
 export const SearchBar = ({ open, onClose }: SearchBarProps) => {
-	const [query, setQuery] = useState("");
+	const searchQuery = useStore.use.searchQuery();
+	const setSearchQuery = useStore.use.setSearchQuery();
 	const [results, setResults] = useState<GeocodingResult[]>([]);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const abortRef = useRef<AbortController | null>(null);
@@ -33,8 +34,9 @@ export const SearchBar = ({ open, onClose }: SearchBarProps) => {
 			try {
 				const res = await geocode(q, provider, controller.signal);
 				setResults(res);
-			} catch {
-				// Silently ignore aborted/failed requests
+			} catch (err) {
+				if (err instanceof DOMException && err.name === "AbortError") return;
+				console.error("Geocoding failed:", err);
 			}
 		}, 300),
 		[provider],
@@ -49,8 +51,11 @@ export const SearchBar = ({ open, onClose }: SearchBarProps) => {
 
 	useEffect(() => {
 		if (open) {
-			setQuery("");
 			setResults([]);
+			// If there's an existing query from the URL, trigger a search
+			if (searchQuery) {
+				debouncedSearch(searchQuery);
+			}
 			// Delay focus to after render
 			requestAnimationFrame(() => inputRef.current?.focus());
 		}
@@ -79,9 +84,9 @@ export const SearchBar = ({ open, onClose }: SearchBarProps) => {
 				<input
 					ref={inputRef}
 					type="text"
-					value={query}
+					value={searchQuery}
 					onChange={(e) => {
-						setQuery(e.target.value);
+						setSearchQuery(e.target.value);
 						debouncedSearch(e.target.value);
 					}}
 					onKeyDown={handleKeyDown}
