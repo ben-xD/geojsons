@@ -17,29 +17,35 @@ function formatLimit(bytes: number): string {
 }
 
 async function deleteAllAppData() {
-  // Clear localStorage
-  localStorage.clear();
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
 
-  // Clear sessionStorage
-  sessionStorage.clear();
+    // Delete all IndexedDB databases
+    if ("databases" in indexedDB) {
+      const dbs = await indexedDB.databases();
+      await Promise.allSettled(
+        dbs.map((db) => {
+          if (db.name) {
+            return new Promise<void>((resolve) => {
+              const req = indexedDB.deleteDatabase(db.name!);
+              req.onsuccess = () => resolve();
+              req.onerror = () => resolve(); // resolve anyway — we're nuking everything
+              req.onblocked = () => resolve(); // open connections block deletion on mobile
+            });
+          }
+        }),
+      );
+    }
 
-  // Delete all IndexedDB databases
-  if ("databases" in indexedDB) {
-    const dbs = await indexedDB.databases();
-    await Promise.all(
-      dbs.map((db) => {
-        if (db.name) {
-          return new Promise<void>((resolve, reject) => {
-            const req = indexedDB.deleteDatabase(db.name!);
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-          });
-        }
-      }),
-    );
+    // Clear service worker caches
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.allSettled(keys.map((k) => caches.delete(k)));
+    }
+  } finally {
+    window.location.reload();
   }
-
-  window.location.reload();
 }
 
 export const SettingsPanel = () => {
