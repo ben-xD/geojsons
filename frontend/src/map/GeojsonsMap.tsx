@@ -28,6 +28,7 @@ import { useArcgisStyle } from "@/map/useArcgisStyle";
 import { reverseGeocode } from "@/map/geocode";
 import { getFeatureCenter } from "@/geo/featureCenter";
 import { WebGLErrorBoundary } from "@/components/WebGLErrorBoundary";
+import { useIsOnline } from "@/hooks/useIsOnline";
 
 const createSvgUrl = (svg: string) => `data:image/svg+xml,${svg}`;
 
@@ -99,6 +100,32 @@ const editableGeojsonLayerId = "editable-geojson-layer";
 // deck.log.level = 3; // or 1 or 2
 
 
+// Minimal style for offline mode — dark background + cached satellite tiles
+const OFFLINE_TILES_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    "offline-tiles": {
+      type: "raster",
+      tiles: ["offline://{z}/{x}/{y}"],
+      tileSize: 256,
+      minzoom: 10,
+      maxzoom: 16,
+    },
+  },
+  layers: [
+    { id: "background", type: "background", paint: { "background-color": "#191a1a" } },
+    { id: "offline-tiles-layer", type: "raster", source: "offline-tiles" },
+  ],
+};
+
+const OFFLINE_EMPTY_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {},
+  layers: [
+    { id: "background", type: "background", paint: { "background-color": "#191a1a" } },
+  ],
+};
+
 const DRAGGING_EDIT_TYPES = new Set([
   'translating', 'scaling', 'rotating', 'movePosition',
 ]);
@@ -125,15 +152,24 @@ export const GeojsonsMap = () => {
   const setViewState = useStore.use.setViewState();
   const mapStyleId = useStore.use.mapStyleId();
   const geocodeFeature = useStore.use.geocodeFeature();
+  const showOfflineTiles = useStore.use.showOfflineTiles();
   const mapStyleConfig = getMapStyle(mapStyleId);
+  const isOnline = useIsOnline();
   const arcgisStyle = useArcgisStyle(mapStyleConfig);
   // For ArcGIS, use the loaded style object; for others, use the URL.
   // While ArcGIS is loading, fall back to a blank style (Map is keyed by mapStyleId
   // so it remounts fresh — no broken diff transitions).
   const EMPTY_STYLE: StyleSpecification = { version: 8, sources: {}, layers: [] };
-  const mapStyle = mapStyleConfig.provider === "arcgis"
+  const onlineMapStyle = mapStyleConfig.provider === "arcgis"
     ? (arcgisStyle ?? EMPTY_STYLE)
     : mapStyleConfig.url;
+
+  // When offline, the style URL can't be fetched, so use a minimal inline style.
+  // If showOfflineTiles is on, bake the offline tile source into the style directly.
+  const mapStyle = isOnline
+    ? onlineMapStyle
+    : showOfflineTiles ? OFFLINE_TILES_STYLE : OFFLINE_EMPTY_STYLE;
+  const mapKey = isOnline ? mapStyleId : showOfflineTiles ? "offline-tiles" : "offline-empty";
   const colors = featureColors[mapStyleConfig.variant];
   const icons = getMarkerIcons(colors.marker);
 
@@ -341,7 +377,6 @@ export const GeojsonsMap = () => {
   // not necessary for now? I just saw it in https://github.com/visgl/deck.gl/discussions/6103
   // const [glContext,setGlContext] = useState<WebGLRenderingContext>();
 
-  const showOfflineTiles = useStore.use.showOfflineTiles();
   const offlineRegions = useStore.use.offlineRegions();
 
   const offlineRegionsLayer = new GeoJsonLayer({
@@ -509,14 +544,20 @@ export const GeojsonsMap = () => {
         ref={deckGlRef}
         // Use Object.assign to create a new object instead of mutating it, to avoid error: `Object is not extensible`
         initialViewState={Object.assign({}, viewState)}
-        onViewStateChange={(params) =>
+        onViewStateChange={(params) => {
+          // During programmatic transitions (flyTo), DeckGL manages the
+          // animation internally. Feeding intermediate values back through
+          // initialViewState can cause the transition to cancel on slower
+          // devices (mobile) due to render-cycle lag.
+          if ((params as Record<string, unknown>).interactionState &&
+              (params.interactionState as Record<string, unknown>).inTransition) return;
           // Defer to avoid setState-during-render warning: DeckGL fires
           // this callback inside its own useMemo, so a synchronous store
           // update would re-render subscribers (e.g. ZoomToolbar) mid-render.
           queueMicrotask(() =>
             setViewState(Object.assign({}, params.viewState as unknown as ViewState)),
-          )
-        }
+          );
+        }}
         layers={[
           offlineRegions.length > 0 ? offlineRegionsLayer : undefined,
           editableGeojsonLayer as unknown as Layer,
@@ -525,7 +566,7 @@ export const GeojsonsMap = () => {
         ]}
       >
         <Map
-          key={mapStyleId}
+          key={mapKey}
           ref={mapRef}
           onLoad={onMapLoad}
           onClick={() => {}}

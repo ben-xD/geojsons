@@ -3,6 +3,8 @@ import { useStore } from "@/store/store";
 import type { Feature, Geometry, Position } from "@/data/validator/geojson";
 
 const FIT_BOUNDS_PADDING_RATIO = 0.2;
+const TRANSITION_DURATION = 1500;
+let flyToTimer: ReturnType<typeof setTimeout> | undefined;
 
 export function flyToBbox(bbox: [number, number, number, number]) {
   const [minLng, minLat, maxLng, maxLat] = bbox;
@@ -28,9 +30,25 @@ export function flyToPoint(latitude: number, longitude: number, zoom = 14) {
     latitude,
     longitude,
     zoom,
-    transitionDuration: 1500,
+    transitionDuration: TRANSITION_DURATION,
     transitionInterpolator: new FlyToInterpolator(),
   } as typeof viewState);
+
+  // After the transition, commit the final position without transition
+  // properties so the store/hash stay clean and DeckGL won't accidentally
+  // re-trigger an old transition on a future re-render.
+  clearTimeout(flyToTimer);
+  flyToTimer = setTimeout(() => {
+    const current = useStore.getState().viewState;
+    setViewState({
+      longitude: current.longitude,
+      latitude: current.latitude,
+      zoom: current.zoom,
+      bearing: current.bearing,
+      pitch: current.pitch,
+      padding: current.padding,
+    } as typeof current);
+  }, TRANSITION_DURATION + 100);
 }
 
 function collectCoordinates(geometry: Geometry): Position[] {
