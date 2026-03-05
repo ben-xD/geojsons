@@ -333,8 +333,8 @@ export const GeojsonsMap = () => {
 		},
 	};
 
-	// @ts-expect-error TS2554 EditableGeoJsonLayer types say 0 args but constructor takes props
 	const editableGeojsonLayer = new EditableGeoJsonLayer(
+		// @ts-expect-error TS2554 EditableGeoJsonLayer types say 0 args but constructor takes props
 		editableGeojsonLayerProps,
 	);
 
