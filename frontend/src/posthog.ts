@@ -7,7 +7,8 @@ const host = env.VITE_PUBLIC_POSTHOG_HOST;
 if (token && host) {
   posthog.init(token, {
     api_host: host,
-    persistence: "memory",
+    // "memory" breaks session recordings; "localStorage" avoids cookies while keeping recordings working
+    persistence: "localStorage",
     capture_pageview: true,
     autocapture: true,
   });
