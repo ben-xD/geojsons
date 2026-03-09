@@ -61,6 +61,8 @@ export interface FeatureEditorSlice {
   setSearchQuery: (query: string) => void;
   animateToFeature: boolean;
   setAnimateToFeature: (animateToFeature: boolean) => void;
+  editLocked: boolean;
+  setEditLocked: (editLocked: boolean) => void;
   geocodeFeature: (featureId: string, name: string) => void;
 }
 
@@ -294,6 +296,11 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
   setAnimateToFeature: (animateToFeature: boolean) =>
     set((state) => {
       state.animateToFeature = animateToFeature;
+    }),
+  editLocked: false,
+  setEditLocked: (editLocked: boolean) =>
+    set((state) => {
+      state.editLocked = editLocked;
     }),
   geocodeFeature: (featureId: string, name: string) =>
     set((state) => {

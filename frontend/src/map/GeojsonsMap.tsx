@@ -342,7 +342,14 @@ export const GeojsonsMap = () => {
     getTentativeLineWidth: 1,
   });
 
+  const editLocked = useStore.use.editLocked();
+
   useEffect(() => {
+    if (editLocked) {
+      setIsMapDraggable(true);
+      setPickable(true);
+      return;
+    }
     if (isSpacePressed) {
       setIsMapDraggable(true);
       setPickable(false);
@@ -354,7 +361,7 @@ export const GeojsonsMap = () => {
     const shouldDrag = !isDrawingTool && tool !== Tool.boxSelect && !shouldBlockForDrag;
     setIsMapDraggable(shouldDrag);
     setPickable(true);
-  }, [setIsMapDraggable, setPickable, tool, hoveredFeatureIndex, isSpacePressed]);
+  }, [setIsMapDraggable, setPickable, tool, hoveredFeatureIndex, isSpacePressed, editLocked]);
 
   // Doesn't work nicely because getTooltip is only called when the mouse moves
   // Pressing alt whilst cursor hovers over a feature doesn't show tooltip unless you move the cursor. Even then, it would flicker.

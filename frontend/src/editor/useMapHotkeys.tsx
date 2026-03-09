@@ -2,10 +2,10 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useStore, useRedoStackSize, useUndoStackSize } from "../store/store";
 import { Tool, toolToConfig } from "./tools";
 
-const useKeyboardConfig = (tool: Tool) => {
+const useKeyboardConfig = (tool: Tool, enabled: boolean) => {
   const setTool = useStore((state) => state.setTool);
   const keys = toolToConfig[tool]?.keys;
-  useHotkeys(keys ?? [], () => setTool(tool), { enabled: !!keys });
+  useHotkeys(keys ?? [], () => setTool(tool), { enabled: enabled && !!keys });
 };
 
 export const useMapHotkeys = () => {
@@ -16,22 +16,26 @@ export const useMapHotkeys = () => {
   const redoStackSize = useRedoStackSize();
   const redo = useStore((state) => state.redo);
   const deleteSelectedFeatures = useStore((state) => state.deleteSelectedFeatures);
+  const editLocked = useStore((state) => state.editLocked);
 
-  useKeyboardConfig(Tool.select);
-  useKeyboardConfig(Tool.boxSelect);
+  // Select/box-select always allowed
+  useKeyboardConfig(Tool.select, true);
+  useKeyboardConfig(Tool.boxSelect, true);
 
-  useKeyboardConfig(Tool.polygon);
-  useKeyboardConfig(Tool.drawPolygonByDragging);
+  // Drawing tools disabled when locked
+  useKeyboardConfig(Tool.polygon, !editLocked);
+  useKeyboardConfig(Tool.drawPolygonByDragging, !editLocked);
+  useKeyboardConfig(Tool.line, !editLocked);
+  useKeyboardConfig(Tool.rectangle, !editLocked);
+  useKeyboardConfig(Tool.pencil, !editLocked);
+  useKeyboardConfig(Tool.marker, !editLocked);
+  useKeyboardConfig(Tool.circle, !editLocked);
+  useKeyboardConfig(Tool.catMarker, !editLocked);
+  useKeyboardConfig(Tool.ellipse, !editLocked);
 
-  useKeyboardConfig(Tool.line);
-  useKeyboardConfig(Tool.rectangle);
-  useKeyboardConfig(Tool.pencil);
-  useKeyboardConfig(Tool.marker);
-  useKeyboardConfig(Tool.circle);
-  useKeyboardConfig(Tool.catMarker);
-  useKeyboardConfig(Tool.ellipse);
-
-  useHotkeys(["backspace", "delete"], () => deleteSelectedFeatures());
+  useHotkeys(["backspace", "delete"], () => deleteSelectedFeatures(), {
+    enabled: !editLocked,
+  });
   useHotkeys(["meta+z"], () => {
     if (undoStackSize > 0) undo();
   });

@@ -152,6 +152,8 @@ const RedoButton = () => {
 
 const ToolbarToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
   const setTool = useStore.use.setTool();
+  const editLocked = useStore.use.editLocked();
+  const isViewOnly = props.tool !== Tool.select && props.tool !== Tool.boxSelect;
   const onClick = () => {
     posthog.capture("tool_selected", { tool: props.tool });
     setTool(props.tool);
@@ -162,6 +164,7 @@ const ToolbarToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
 
   return (
     <ToolbarButton
+      disabled={editLocked && isViewOnly}
       className={cn({
         "bg-primary text-primary-foreground hover:bg-primary/90": isSelected,
       })}

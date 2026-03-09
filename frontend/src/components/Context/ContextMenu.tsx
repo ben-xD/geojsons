@@ -14,6 +14,7 @@ export const ContextMenu = (props: ControlledMenuProps) => {
 
   const sendSelectionBackward = useStore((state) => state.sendSelectionBackward);
   const sendSelectionToBack = useStore((state) => state.sendSelectionToBack);
+  const editLocked = useStore((state) => state.editLocked);
 
   const onDelete = (event: ClickEvent) => {
     deleteCurrentSelectedFeatures();
@@ -25,13 +26,17 @@ export const ContextMenu = (props: ControlledMenuProps) => {
       {/* <MenuItem>Cut</MenuItem>
       <MenuItem>Copy</MenuItem>
       <MenuItem>Paste</MenuItem> */}
-      <SubMenu label="Reorder">
-        <MenuItem onClick={bringSelectionToFront}>Bring to front</MenuItem>
-        <MenuItem onClick={bringSelectionForward}>Bring forward</MenuItem>
-        <MenuItem onClick={sendSelectionBackward}>Send backward</MenuItem>
-        <MenuItem onClick={sendSelectionToBack}>Send to back</MenuItem>
-      </SubMenu>
-      <MenuItem onClick={onDelete}>Delete</MenuItem>
+      {!editLocked && (
+        <>
+          <SubMenu label="Reorder">
+            <MenuItem onClick={bringSelectionToFront}>Bring to front</MenuItem>
+            <MenuItem onClick={bringSelectionForward}>Bring forward</MenuItem>
+            <MenuItem onClick={sendSelectionBackward}>Send backward</MenuItem>
+            <MenuItem onClick={sendSelectionToBack}>Send to back</MenuItem>
+          </SubMenu>
+          <MenuItem onClick={onDelete}>Delete</MenuItem>
+        </>
+      )}
     </ControlledMenu>
   );
 };

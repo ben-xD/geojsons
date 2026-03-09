@@ -95,6 +95,8 @@ export const useEditingMode = () => {
   // );
   const tool = useStore.use.tool();
   const selectedFeatureIndexes = useStore.use.selectedFeatureIndexes();
+  const editLocked = useStore.use.editLocked();
+  if (editLocked) return ViewMode;
   const editMode = getEditModeForTool(tool);
   const preventModeMisuse =
     selectedFeatureIndexes.length === 0 && modesRequiringFeatures.has(editMode);

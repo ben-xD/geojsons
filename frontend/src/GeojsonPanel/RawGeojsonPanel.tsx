@@ -1,5 +1,5 @@
 import { useStore } from "@/store/store.ts";
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 import { basicSetup } from "codemirror";
 import { EditorView } from "@codemirror/view";
 import { json } from "@codemirror/lang-json";
@@ -13,9 +13,13 @@ import { Trash2 } from "lucide-react";
 import { ClearDataAlertDialog } from "@/GeojsonPanel/ClearDataAlertDialog";
 import { starryNightTheme } from "@/editor/codemirrorTheme";
 
+const readOnlyCompartment = new Compartment();
+
 export const RawGeojsonPanel = () => {
   const fc = useStore.use.featureCollection();
   const setFc = useStore.use.updateFeatureCollection();
+  const editLocked = useStore.use.editLocked();
+  const setEditLocked = useStore.use.setEditLocked();
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const editorViewRef = useRef<EditorView | undefined>(undefined);
 
@@ -27,6 +31,7 @@ export const RawGeojsonPanel = () => {
       ...starryNightTheme,
       json(),
       EditorView.lineWrapping,
+      readOnlyCompartment.of(EditorState.readOnly.of(false)),
       EditorView.updateListener.of(function (e) {
         if (e.docChanged) {
           const unparsedJsonString = e.state.doc.toString();
@@ -68,6 +73,14 @@ export const RawGeojsonPanel = () => {
       editorViewRef.current?.destroy();
     };
   }, [extensions]);
+
+  useEffect(() => {
+    const view = editorViewRef.current;
+    if (!view) return;
+    view.dispatch({
+      effects: readOnlyCompartment.reconfigure(EditorState.readOnly.of(editLocked)),
+    });
+  }, [editLocked]);
 
   useEffect(() => {
     const view = editorViewRef.current;
@@ -123,12 +136,24 @@ export const RawGeojsonPanel = () => {
           </a>
           , but on a map.
         </p>
-        <div className="flex gap-4">
-          <Trash2
-            className="cursor-pointer hover:text-destructive transition-colors"
-            onClick={() => setFc(emptyFeatureCollection)}
-          />
-          <ClearDataAlertDialog />
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={editLocked}
+              onChange={(e) => setEditLocked(e.target.checked)}
+            />
+            Lock editing
+          </label>
+          {!editLocked && (
+            <>
+              <Trash2
+                className="cursor-pointer hover:text-destructive transition-colors"
+                onClick={() => setFc(emptyFeatureCollection)}
+              />
+              <ClearDataAlertDialog />
+            </>
+          )}
         </div>
       </div>
       <p>
