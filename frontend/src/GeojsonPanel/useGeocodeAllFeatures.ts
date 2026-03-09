@@ -46,12 +46,7 @@ export function useGeocodeAllFeatures() {
       const feature = toGeocode[i];
       const center = getFeatureCenter(feature)!;
       try {
-        const name = await reverseGeocode(
-          center[1],
-          center[0],
-          provider,
-          controller.signal,
-        );
+        const name = await reverseGeocode(center[1], center[0], provider, controller.signal);
         if (!controller.signal.aborted) {
           geocodeFeature(String(feature.id), name);
           setCompleted(i + 1);

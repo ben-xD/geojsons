@@ -124,7 +124,10 @@ export const RawGeojsonPanel = () => {
           , but on a map.
         </p>
         <div className="flex gap-4">
-          <Trash2 className="cursor-pointer hover:text-destructive transition-colors" onClick={() => setFc(emptyFeatureCollection)} />
+          <Trash2
+            className="cursor-pointer hover:text-destructive transition-colors"
+            onClick={() => setFc(emptyFeatureCollection)}
+          />
           <ClearDataAlertDialog />
         </div>
       </div>

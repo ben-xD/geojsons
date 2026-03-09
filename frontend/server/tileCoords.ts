@@ -12,11 +12,18 @@ export function lngLatToTile(lng: number, lat: number, z: number): { x: number; 
   return { x: Math.max(0, Math.min(n - 1, x)), y: Math.max(0, Math.min(n - 1, y)) };
 }
 
-export function bboxFromPolygon(polygon: { type: string; coordinates: number[][][] | number[][][][] }): [number, number, number, number] {
-  const coords = polygon.type === "MultiPolygon"
-    ? (polygon.coordinates as number[][][][]).flat(2)
-    : (polygon.coordinates as number[][][]).flat();
-  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+export function bboxFromPolygon(polygon: {
+  type: string;
+  coordinates: number[][][] | number[][][][];
+}): [number, number, number, number] {
+  const coords =
+    polygon.type === "MultiPolygon"
+      ? (polygon.coordinates as number[][][][]).flat(2)
+      : (polygon.coordinates as number[][][]).flat();
+  let minLng = Infinity,
+    minLat = Infinity,
+    maxLng = -Infinity,
+    maxLat = -Infinity;
   for (const [lng, lat] of coords) {
     if (lng < minLng) minLng = lng;
     if (lat < minLat) minLat = lat;
@@ -26,7 +33,10 @@ export function bboxFromPolygon(polygon: { type: string; coordinates: number[][]
   return [minLng, minLat, maxLng, maxLat];
 }
 
-export function getTilesForBbox(bbox: [number, number, number, number], zoomRange: [number, number]): TileCoord[] {
+export function getTilesForBbox(
+  bbox: [number, number, number, number],
+  zoomRange: [number, number],
+): TileCoord[] {
   const [minLng, minLat, maxLng, maxLat] = bbox;
   const tiles: TileCoord[] = [];
   for (let z = zoomRange[0]; z <= zoomRange[1]; z++) {

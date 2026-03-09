@@ -12,8 +12,8 @@ export interface OfflineRegion {
 }
 
 export interface StorageStats {
-  used: number;       // bytes used by offline tiles
-  quota?: number;     // total quota (if known)
+  used: number; // bytes used by offline tiles
+  quota?: number; // total quota (if known)
 }
 
 export interface TileBackend {

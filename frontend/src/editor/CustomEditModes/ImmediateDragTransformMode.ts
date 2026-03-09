@@ -1,7 +1,4 @@
-import {
-  TransformMode,
-  TranslateMode,
-} from "@deck.gl-community/editable-layers";
+import { TransformMode, TranslateMode } from "@deck.gl-community/editable-layers";
 import type {
   ClickEvent,
   StartDraggingEvent,
@@ -28,9 +25,7 @@ export class ImmediateDragTransformMode extends TransformMode {
 
   handleClick(event: ClickEvent, props: ModeProps<FeatureCollection>) {
     if (props.modeConfig?.isSpacePressed) return;
-    const nonGuidePicks = event.picks.filter(
-      (p: Record<string, unknown>) => !p.isGuide,
-    );
+    const nonGuidePicks = event.picks.filter((p: Record<string, unknown>) => !p.isGuide);
 
     if (nonGuidePicks.length === 0) {
       // Clicked empty space → deselect
@@ -56,9 +51,7 @@ export class ImmediateDragTransformMode extends TransformMode {
 
   handleStartDragging(event: StartDraggingEvent, props: ModeProps<FeatureCollection>) {
     if (props.modeConfig?.isSpacePressed) return;
-    const nonGuidePicks = event.picks.filter(
-      (p: Record<string, unknown>) => !p.isGuide,
-    );
+    const nonGuidePicks = event.picks.filter((p: Record<string, unknown>) => !p.isGuide);
 
     if (nonGuidePicks.length > 0) {
       const pickedIndex = nonGuidePicks[0].index as number;

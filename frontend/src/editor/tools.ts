@@ -51,7 +51,7 @@ export const toolToConfig: Partial<Record<Tool, ToolConfig>> = {
     tooltipText: "Select · V",
     keys: ["v"],
   },
-rectangle: {
+  rectangle: {
     tooltipText: "Rectangle · R",
     keys: ["r"],
   },

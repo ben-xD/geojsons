@@ -22,9 +22,7 @@ export class WebGLErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error) {
     const now = Date.now();
-    const recent = this.state.retryTimestamps.filter(
-      (t) => now - t < RETRY_WINDOW_MS,
-    );
+    const recent = this.state.retryTimestamps.filter((t) => now - t < RETRY_WINDOW_MS);
 
     if (recent.length >= MAX_RETRIES) {
       console.error("[WebGLErrorBoundary] retries exhausted, giving up", error);
@@ -45,10 +43,7 @@ export class WebGLErrorBoundary extends Component<Props, State> {
         <div className="flex size-full items-center justify-center bg-neutral-900 text-neutral-200">
           <p>
             The map crashed repeatedly.{" "}
-            <button
-              className="underline"
-              onClick={() => window.location.reload()}
-            >
+            <button className="underline" onClick={() => window.location.reload()}>
               Reload the page
             </button>
           </p>

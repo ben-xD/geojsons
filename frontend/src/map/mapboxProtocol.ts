@@ -3,8 +3,15 @@ import { env } from "@/env";
 
 // Properties in Mapbox API style responses that aren't in the MapLibre style spec.
 const MAPBOX_STYLE_METADATA_KEYS = new Set([
-  "name", "created", "modified", "owner", "id", "draft", "visibility",
-  "fog", "projection",
+  "name",
+  "created",
+  "modified",
+  "owner",
+  "id",
+  "draft",
+  "visibility",
+  "fog",
+  "projection",
 ]);
 
 /**

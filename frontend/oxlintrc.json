@@ -1,6 +1,6 @@
 {
-	"plugins": ["react", "react-hooks", "react-perf", "typescript"],
-	"env": {
-		"browser": true
-	}
+  "plugins": ["react", "react-hooks", "react-perf", "typescript"],
+  "env": {
+    "browser": true
+  }
 }

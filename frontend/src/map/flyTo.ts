@@ -16,7 +16,10 @@ export function flyToBbox(bbox: [number, number, number, number]) {
     Math.min(window.innerWidth, window.innerHeight) * FIT_BOUNDS_PADDING_RATIO,
   );
   const { longitude, latitude, zoom } = viewport.fitBounds(
-    [[minLng, minLat], [maxLng, maxLat]],
+    [
+      [minLng, minLat],
+      [maxLng, maxLat],
+    ],
     { padding },
   );
   flyToPoint(latitude, longitude, zoom);
@@ -73,7 +76,10 @@ function collectCoordinates(geometry: Geometry): Position[] {
 }
 
 function bboxFromCoordinates(coords: Position[]): [number, number, number, number] {
-  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+  let minLng = Infinity,
+    minLat = Infinity,
+    maxLng = -Infinity,
+    maxLat = -Infinity;
   for (const [lng, lat] of coords) {
     if (lng < minLng) minLng = lng;
     if (lng > maxLng) maxLng = lng;

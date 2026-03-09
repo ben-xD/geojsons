@@ -16,10 +16,10 @@ interface HashState {
 }
 
 const tabToSlug: Record<BottomPanelTab, string> = {
-  "Features": "features",
+  Features: "features",
   "Offline Maps": "offline",
-  "GeoJSON": "geojson",
-  "Settings": "settings",
+  GeoJSON: "geojson",
+  Settings: "settings",
 };
 const slugToTab: Record<string, BottomPanelTab> = Object.fromEntries(
   Object.entries(tabToSlug).map(([k, v]) => [v, k]),
@@ -64,9 +64,8 @@ export function parseHash(hash: string): HashState | null {
   if ([zoom, latitude, longitude, bearing, pitch].some(Number.isNaN)) return null;
 
   const styleValue = params.get("style");
-  const mapStyleId = styleValue && validMapStyleIds.has(styleValue)
-    ? (styleValue as MapStyleId)
-    : undefined;
+  const mapStyleId =
+    styleValue && validMapStyleIds.has(styleValue) ? (styleValue as MapStyleId) : undefined;
 
   const locate = params.has("locate") ? params.get("locate") !== "0" : undefined;
 
@@ -81,7 +80,7 @@ export function parseHash(hash: string): HashState | null {
       zoom: Math.max(0, Math.min(24, zoom)),
       latitude: Math.max(-90, Math.min(90, latitude)),
       longitude: Math.max(-180, Math.min(180, longitude)),
-      bearing: ((((bearing % 360) + 540) % 360) - 180),
+      bearing: (((bearing % 360) + 540) % 360) - 180,
       pitch: Math.max(0, Math.min(85, pitch)),
     },
     mapStyleId,
@@ -93,13 +92,16 @@ export function parseHash(hash: string): HashState | null {
 
 function applyParsedToState(
   parsed: HashState,
-  current: Pick<typeof useStoreOriginal extends { getState: () => infer S } ? S : never, "viewState" | "mapStyleId">,
+  current: Pick<
+    typeof useStoreOriginal extends { getState: () => infer S } ? S : never,
+    "viewState" | "mapStyleId"
+  >,
 ) {
   return {
     viewState: { ...current.viewState, ...parsed.viewState },
     mapStyleId: parsed.mapStyleId ?? current.mapStyleId,
     locate: parsed.locate ?? false,
-    activeTab: parsed.activeTab ?? "GeoJSON" as BottomPanelTab,
+    activeTab: parsed.activeTab ?? ("GeoJSON" as BottomPanelTab),
     searchQuery: parsed.searchQuery ?? "",
   };
 }
@@ -112,7 +114,13 @@ interface FormatHashOptions {
   searchQuery?: string;
 }
 
-export function formatHash({ viewState: vs, mapStyleId, locate, activeTab = "GeoJSON", searchQuery = "" }: FormatHashOptions): string {
+export function formatHash({
+  viewState: vs,
+  mapStyleId,
+  locate,
+  activeTab = "GeoJSON",
+  searchQuery = "",
+}: FormatHashOptions): string {
   const z = vs.zoom.toFixed(2);
   const lat = vs.latitude.toFixed(5);
   const lng = vs.longitude.toFixed(5);

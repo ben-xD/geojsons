@@ -20,10 +20,7 @@ interface MapboxFeature {
   bbox?: [number, number, number, number];
 }
 
-async function geocodeMaptiler(
-  query: string,
-  signal?: AbortSignal,
-): Promise<GeocodingResult[]> {
+async function geocodeMaptiler(query: string, signal?: AbortSignal): Promise<GeocodingResult[]> {
   const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json?key=${env.VITE_MAPTILER_API_KEY}&limit=5`;
   const res = await fetch(url, { signal });
   const data = await res.json();
@@ -35,10 +32,7 @@ async function geocodeMaptiler(
   }));
 }
 
-async function geocodeMapbox(
-  query: string,
-  signal?: AbortSignal,
-): Promise<GeocodingResult[]> {
+async function geocodeMapbox(query: string, signal?: AbortSignal): Promise<GeocodingResult[]> {
   const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${env.VITE_MAPBOX_API_KEY}&limit=5`;
   const res = await fetch(url, { signal });
   const data = await res.json();

@@ -13,7 +13,7 @@ The app supports two map tile providers, each offering vector and satellite styl
 
 Both providers require API keys configured via environment variables:
 
-| Variable | Description |
-|---|---|
-| `VITE_MAPTILER_API_KEY` | [MapTiler](https://www.maptiler.com/) API key |
-| `VITE_MAPBOX_API_KEY` | [Mapbox](https://www.mapbox.com/) public access token (`pk.*`) |
+| Variable                | Description                                                    |
+| ----------------------- | -------------------------------------------------------------- |
+| `VITE_MAPTILER_API_KEY` | [MapTiler](https://www.maptiler.com/) API key                  |
+| `VITE_MAPBOX_API_KEY`   | [Mapbox](https://www.mapbox.com/) public access token (`pk.*`) |

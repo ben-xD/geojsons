@@ -52,6 +52,7 @@ The boundary allows **3 retries within 10 seconds**. If the crash keeps recurrin
 - The map reappears at the same position/zoom
 
 If retries are exhausted:
+
 - Console error: `[WebGLErrorBoundary] retries exhausted, giving up`
 - A centered message: "The map crashed repeatedly. Reload the page"
 

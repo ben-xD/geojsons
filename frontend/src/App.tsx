@@ -16,9 +16,7 @@ function App() {
               <GripHorizontal className="text-muted-foreground" height={24} width={24} />
             </div>
           </Separator>
-          <Panel
-            defaultSize="40%"
-          >
+          <Panel defaultSize="40%">
             <BottomPanel />
           </Panel>
         </Group>

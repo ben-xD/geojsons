@@ -1,6 +1,6 @@
 onlyBuiltDependencies:
-  - '@danmarshall/deckgl-typings'
-  - '@swc/core'
+  - "@danmarshall/deckgl-typings"
+  - "@swc/core"
   - core-js
   - esbuild
   - protobufjs

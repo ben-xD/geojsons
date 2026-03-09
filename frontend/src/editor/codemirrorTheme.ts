@@ -17,10 +17,9 @@ const starryNightEditorTheme = EditorView.theme({
   ".cm-cursor, .cm-dropCursor": {
     borderLeftColor: "var(--foreground)",
   },
-  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection":
-    {
-      backgroundColor: "var(--muted)",
-    },
+  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
+    backgroundColor: "var(--muted)",
+  },
   ".cm-activeLine": {
     backgroundColor: "color-mix(in oklch, var(--muted) 50%, transparent)",
   },

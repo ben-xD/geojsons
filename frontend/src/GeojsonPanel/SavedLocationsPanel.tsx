@@ -31,7 +31,10 @@ export const SavedLocationsPanel = () => {
     <div className="flex flex-col h-full overflow-hidden p-2 gap-2">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+          <Search
+            className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={14}
+          />
           <input
             type="text"
             placeholder="Search locations..."
