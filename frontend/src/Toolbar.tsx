@@ -13,6 +13,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  Lock,
+  LockOpen,
 } from "lucide-react";
 import { useStore, useUndoStackSize } from "./store/store";
 import { useTheme } from "@/components/theme-provider";
@@ -115,6 +117,7 @@ export const Toolbar = () => {
           <UndoButton></UndoButton>
           <RedoButton></RedoButton>
           <div className="bg-border w-0.5 my-2"></div>
+          <LockToggleButton />
           <ThemeToggleButton />
         </div>
       </div>
@@ -178,6 +181,24 @@ const ToolbarToolButton = (props: { icon: React.ReactNode; tool: Tool }) => {
 const themeOrder = ["light", "dark", "system"] as const;
 const themeIcon = { light: <Sun />, dark: <Moon />, system: <Monitor /> };
 const themeLabel = { light: "Light", dark: "Dark", system: "System" };
+
+const LockToggleButton = () => {
+  const editLocked = useStore.use.editLocked();
+  const setEditLocked = useStore.use.setEditLocked();
+
+  return (
+    <ToolbarButton
+      className={cn({ "text-destructive": editLocked })}
+      icon={editLocked ? <Lock /> : <LockOpen />}
+      tooltipText={editLocked ? "Unlock editing" : "Lock editing"}
+      onClick={() => {
+        const next = !editLocked;
+        posthog.capture("edit_lock_toggled", { locked: next });
+        setEditLocked(next);
+      }}
+    />
+  );
+};
 
 const ThemeToggleButton = () => {
   const { theme, setTheme } = useTheme();

@@ -28,8 +28,6 @@ export const FeaturesPanel = () => {
   const setSelectedFeatureIndexes = useStore.use.setSelectedFeatureIndexes();
   const animateToFeature = useStore.use.animateToFeature();
   const setAnimateToFeature = useStore.use.setAnimateToFeature();
-  const editLocked = useStore.use.editLocked();
-  const setEditLocked = useStore.use.setEditLocked();
   const features = featureCollection.features;
   const { unnamedCount, isGeocoding, completed, total, startGeocoding, cancel } =
     useGeocodeAllFeatures();
@@ -52,14 +50,6 @@ export const FeaturesPanel = () => {
             onChange={(e) => setAnimateToFeature(e.target.checked)}
           />
           Animate to feature
-        </label>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={editLocked}
-            onChange={(e) => setEditLocked(e.target.checked)}
-          />
-          Lock editing
         </label>
         {isGeocoding ? (
           <button

@@ -19,7 +19,6 @@ export const RawGeojsonPanel = () => {
   const fc = useStore.use.featureCollection();
   const setFc = useStore.use.updateFeatureCollection();
   const editLocked = useStore.use.editLocked();
-  const setEditLocked = useStore.use.setEditLocked();
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const editorViewRef = useRef<EditorView | undefined>(undefined);
 
@@ -137,14 +136,6 @@ export const RawGeojsonPanel = () => {
           , but on a map.
         </p>
         <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={editLocked}
-              onChange={(e) => setEditLocked(e.target.checked)}
-            />
-            Lock editing
-          </label>
           {!editLocked && (
             <>
               <Trash2
