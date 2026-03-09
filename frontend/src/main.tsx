@@ -7,6 +7,7 @@ import { registerMapboxProtocol } from "./map/mapboxProtocol.ts";
 import { applyHashToStore } from "./map/useHashViewState.ts";
 import { ThemeProvider } from "./components/theme-provider.tsx";
 import { initServiceWorkerPreferenceSync } from "./offline/syncServiceWorkerPreferences.ts";
+import "./posthog.ts";
 
 const queryClient = new QueryClient();
 

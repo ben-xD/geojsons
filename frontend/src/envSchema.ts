@@ -5,4 +5,5 @@ export const envSchema = v.object({
   VITE_MAPBOX_API_KEY: v.pipe(v.string(), v.minLength(1)),
   VITE_ARCGIS_API_KEY: v.pipe(v.string(), v.minLength(1)),
   VITE_TILE_SERVER_URL: v.optional(v.string(), "http://localhost:3456"),
+  VITE_POSTHOG_PROJECT_TOKEN: v.optional(v.string()),
 });
