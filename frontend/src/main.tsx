@@ -5,13 +5,21 @@ import App from "./App.tsx";
 import "./index.css";
 import { registerMapboxProtocol } from "./map/mapboxProtocol.ts";
 import { applyHashToStore } from "./map/useHashViewState.ts";
+import { PostHogProvider } from "@posthog/react";
 import { ThemeProvider } from "./components/theme-provider.tsx";
 import { initServiceWorkerPreferenceSync } from "./offline/syncServiceWorkerPreferences.ts";
-import "./posthog.ts";
+import { posthog } from "./posthog.ts";
 
 const queryClient = new QueryClient();
 
-registerSW({ immediate: true });
+registerSW({
+  immediate: true,
+  onRegisteredSW(_swUrl, registration) {
+    // Force an update check on every page load so users get the latest version
+    // without needing a hard refresh
+    registration?.update();
+  },
+});
 registerMapboxProtocol();
 initServiceWorkerPreferenceSync();
 applyHashToStore();
@@ -32,9 +40,11 @@ if (rootElement === null) {
 //     at WebGLCanvasContext._handleResize
 //     at ResizeObserver.<anonymous>
 ReactDOM.createRoot(rootElement).render(
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
-  </QueryClientProvider>,
+  <PostHogProvider client={posthog}>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </QueryClientProvider>
+  </PostHogProvider>,
 );

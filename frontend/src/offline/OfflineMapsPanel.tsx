@@ -1,3 +1,4 @@
+import posthog from "posthog-js";
 import { useRef, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/store/store";
@@ -161,6 +162,7 @@ export const OfflineMapsPanel = () => {
 
   const handleDownload = async (feature: GeoJSON.Feature, featureIndex: number) => {
     if (downloadingIndexes.has(featureIndex)) return;
+    posthog.capture("offline_download_started", { backend: offlineTileBackend });
     setDownloadingIndexes((prev) => new Set(prev).add(featureIndex));
 
     const targetBackend = offlineTileBackend;
@@ -260,6 +262,7 @@ export const OfflineMapsPanel = () => {
   };
 
   const handleDeleteRegion = async (regionId: string) => {
+    posthog.capture("offline_region_deleted", { backend: offlineTileBackend });
     const controllerKey = regionStateKey(offlineTileBackend, regionId);
     const controller = abortControllers.current[controllerKey];
     if (controller) controller.abort();

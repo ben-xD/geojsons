@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePostHog } from "@posthog/react";
 import { useStore } from "@/store/store";
 
 async function deleteAllAppData() {
@@ -34,8 +35,11 @@ async function deleteAllAppData() {
 }
 
 export const SettingsPanel = () => {
+  const posthog = usePostHog();
   const preferOffline = useStore.use.preferOffline();
   const setPreferOffline = useStore.use.setPreferOffline();
+  const analyticsEnabled = useStore.use.analyticsEnabled();
+  const setAnalyticsEnabled = useStore.use.setAnalyticsEnabled();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
@@ -50,10 +54,37 @@ export const SettingsPanel = () => {
           <input
             type="checkbox"
             checked={preferOffline}
-            onChange={(e) => setPreferOffline(e.target.checked)}
+            onChange={(e) => {
+              posthog.capture("force_offline_toggled", { enabled: e.target.checked });
+              setPreferOffline(e.target.checked);
+            }}
             className="accent-primary"
           />
           Force offline maps
+        </label>
+      </div>
+
+      <div>
+        <label className="text-xs text-muted-foreground font-medium">Analytics</label>
+        <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+          Help improve geojsons by sending anonymous usage data. No cookies are used.
+        </p>
+        <label className="inline-flex items-center gap-2 text-xs cursor-pointer">
+          <input
+            type="checkbox"
+            checked={analyticsEnabled}
+            onChange={(e) => {
+              const enabled = e.target.checked;
+              setAnalyticsEnabled(enabled);
+              if (enabled) {
+                posthog.opt_in_capturing();
+              } else {
+                posthog.opt_out_capturing();
+              }
+            }}
+            className="accent-primary"
+          />
+          Enable analytics
         </label>
       </div>
 
@@ -74,7 +105,10 @@ export const SettingsPanel = () => {
           <div className="flex items-center gap-2">
             <button
               className="rounded-md px-3 py-1.5 text-xs transition-colors bg-red-600 text-white hover:bg-red-700"
-              onClick={deleteAllAppData}
+              onClick={() => {
+                posthog.capture("all_data_deleted");
+                deleteAllAppData();
+              }}
             >
               Confirm — delete everything
             </button>

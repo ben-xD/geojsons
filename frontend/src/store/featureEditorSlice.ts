@@ -1,3 +1,4 @@
+import posthog from "posthog-js";
 import { Feature, FeatureCollection } from "@/data/validator/geojson";
 import { Tool } from "../editor/tools";
 import { StateCreator } from "zustand";
@@ -102,6 +103,7 @@ export const createFeatureEditorSlice: StateCreator<State, Mutators, [], Feature
   deleteSelectedFeatures: () =>
     set(
       (state) => {
+        posthog.capture("features_deleted", { count: state.selectedFeatureIndexes.length });
         const features = state.featureCollection.features.filter(
           (_f, i) => !state.selectedFeatureIndexes.includes(i),
         );

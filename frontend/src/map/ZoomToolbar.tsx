@@ -1,3 +1,4 @@
+import posthog from "posthog-js";
 import { useStore } from "@/store/store";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Minus, Plus, Target } from "lucide-react";
@@ -39,11 +40,13 @@ export const ZoomToolbar = () => {
 
   const onToggleLocation = () => {
     if (isUserLocated) {
+      posthog.capture("location_tracking_toggled", { enabled: false });
       // Stop tracking
       cancelWatch();
       setUserLocation(undefined);
       setLocate(false);
     } else {
+      posthog.capture("location_tracking_toggled", { enabled: true });
       // Start tracking
       startWatch();
       setLocate(true);

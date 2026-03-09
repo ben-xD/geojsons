@@ -7,6 +7,7 @@ import { createReorderFeatureSlice, ReorderFeatureSlice } from "./reorderFeature
 import { FeatureEditorSlice, createFeatureEditorSlice } from "./featureEditorSlice";
 import { createSavedLocationsSlice, SavedLocationsSlice } from "./savedLocationsSlice";
 import { createOfflineTileSlice, OfflineTileSlice } from "./offlineTileSlice";
+import { AnalyticsSlice, createAnalyticsSlice } from "./analyticsSlice";
 import { createSelectors } from "./createSelectors";
 
 // Consider reading https://docs.pmnd.rs/zustand/guides/typescript
@@ -24,7 +25,8 @@ import { createSelectors } from "./createSelectors";
 export type State = FeatureEditorSlice &
   ReorderFeatureSlice &
   SavedLocationsSlice &
-  OfflineTileSlice;
+  OfflineTileSlice &
+  AnalyticsSlice;
 
 export type GeojsonsStateCreator<T> = StateCreator<State, Mutators, [], T>;
 
@@ -61,6 +63,7 @@ export const useStoreOriginal = create<State>()(
           ...createReorderFeatureSlice(...a),
           ...createSavedLocationsSlice(...a),
           ...createOfflineTileSlice(...a),
+          ...createAnalyticsSlice(...a),
         })),
         {
           name: applicationLocalStorageName,

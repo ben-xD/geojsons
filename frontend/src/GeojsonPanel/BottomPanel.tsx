@@ -1,3 +1,4 @@
+import posthog from "posthog-js";
 import { cn } from "@/lib/utils";
 import { RawGeojsonPanel } from "./RawGeojsonPanel";
 import { FeaturesPanel } from "./FeaturesPanel";
@@ -24,7 +25,10 @@ export const BottomPanel = () => {
                 ? "border-b-2 border-primary text-foreground"
                 : "text-muted-foreground",
             )}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              posthog.capture("tab_changed", { tab });
+              setActiveTab(tab);
+            }}
           >
             {tab}
           </button>

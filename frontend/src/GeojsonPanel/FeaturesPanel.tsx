@@ -1,3 +1,4 @@
+import posthog from "posthog-js";
 import { useStore } from "@/store/store";
 import { cn } from "@/lib/utils";
 import { flyToFeature } from "@/map/flyTo";
@@ -61,7 +62,10 @@ export const FeaturesPanel = () => {
           unnamedCount > 0 && (
             <button
               className="ml-auto text-xs px-2 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-              onClick={startGeocoding}
+              onClick={() => {
+                posthog.capture("batch_geocode_started", { unnamed_count: unnamedCount });
+                startGeocoding();
+              }}
             >
               Geocode unnamed ({unnamedCount})
             </button>

@@ -1,3 +1,4 @@
+import posthog from "posthog-js";
 import { useStore } from "@/store/store";
 import { mapStylesByProvider, type MapStyleId } from "@/map/mapStyles";
 import { Map, Satellite } from "lucide-react";
@@ -64,6 +65,11 @@ export const MapStyleSwitcher = () => {
                         : "hover:bg-primary/10 active:bg-primary",
                     )}
                     onClick={() => {
+                      posthog.capture("map_style_changed", {
+                        style_id: style.id,
+                        provider: label,
+                        variant: style.variant,
+                      });
                       setMapStyleId(style.id as MapStyleId);
                       setOpen(false);
                     }}
