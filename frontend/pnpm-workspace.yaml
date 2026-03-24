@@ -1,6 +1,7 @@
 onlyBuiltDependencies:
   - "@danmarshall/deckgl-typings"
   - "@swc/core"
+  - '@vaadin/vaadin-usage-statistics'
   - core-js
   - esbuild
   - protobufjs

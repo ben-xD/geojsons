@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useStore } from "@/store/store";
 import type { SavedQrCode } from "@/store/qrCodesSlice";
-import { ChevronLeft, ChevronRight, ExternalLink, Pencil, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Check, ExternalLink, Pencil, X } from "lucide-react";
 function formatRelativeTime(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
   if (seconds < 60) return "just now";
@@ -115,6 +115,26 @@ function FullscreenQr({ qrCode, onClose }: { qrCode: SavedQrCode; onClose: () =>
   );
 }
 
+function CopyableData({ data }: { data: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(data);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      onClick={copy}
+      className="flex items-center gap-1.5 max-w-full px-2 py-1 rounded-md text-xs text-muted-foreground hover:bg-muted transition-colors group"
+    >
+      <span className="truncate select-all">{data}</span>
+      {copied ? <Check size={12} className="shrink-0 text-green-500" /> : <Copy size={12} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />}
+    </button>
+  );
+}
+
 function QrSlide({ qrCode }: { qrCode: SavedQrCode }) {
   return (
     <div className="flex flex-col items-center gap-2 w-full shrink-0 px-4 h-full overflow-hidden">
@@ -134,6 +154,7 @@ function QrSlide({ qrCode }: { qrCode: SavedQrCode }) {
       <div className="shrink-0 flex flex-col items-center gap-1 w-full pb-1" onPointerDown={(e) => e.stopPropagation()}>
         <EditableName key={qrCode.id} qrCode={qrCode} />
         <span className="text-xs text-muted-foreground">{formatRelativeTime(qrCode.scannedAt)}</span>
+        <CopyableData data={qrCode.data} />
       </div>
     </div>
   );
