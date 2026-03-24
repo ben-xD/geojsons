@@ -8,6 +8,7 @@ import { FeatureEditorSlice, createFeatureEditorSlice } from "./featureEditorSli
 import { createSavedLocationsSlice, SavedLocationsSlice } from "./savedLocationsSlice";
 import { createOfflineTileSlice, OfflineTileSlice } from "./offlineTileSlice";
 import { AnalyticsSlice, createAnalyticsSlice } from "./analyticsSlice";
+import { createQrCodesSlice, QrCodesSlice } from "./qrCodesSlice";
 import { createSelectors } from "./createSelectors";
 
 // Consider reading https://docs.pmnd.rs/zustand/guides/typescript
@@ -26,7 +27,8 @@ export type State = FeatureEditorSlice &
   ReorderFeatureSlice &
   SavedLocationsSlice &
   OfflineTileSlice &
-  AnalyticsSlice;
+  AnalyticsSlice &
+  QrCodesSlice;
 
 export type GeojsonsStateCreator<T> = StateCreator<State, Mutators, [], T>;
 
@@ -46,6 +48,7 @@ const unpersistedProperties = [
   "activeDownloadsByBackend",
   "activeTab",
   "searchQuery",
+  "selectedQrCodeId",
 ];
 
 const applicationLocalStorageName = "geojsons.com";
@@ -64,6 +67,7 @@ export const useStoreOriginal = create<State>()(
           ...createSavedLocationsSlice(...a),
           ...createOfflineTileSlice(...a),
           ...createAnalyticsSlice(...a),
+          ...createQrCodesSlice(...a),
         })),
         {
           name: applicationLocalStorageName,

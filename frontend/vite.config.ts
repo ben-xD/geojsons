@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
@@ -20,6 +21,7 @@ function validateEnv(): Plugin {
 export default defineConfig({
   plugins: [
     validateEnv(),
+    tanstackRouter({ target: "react", autoCodeSplitting: true }),
     tailwindcss(),
     react(),
     svgr({
